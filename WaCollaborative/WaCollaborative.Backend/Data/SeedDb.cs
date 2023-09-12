@@ -34,7 +34,28 @@ namespace WaCollaborative.Backend.Data
         public async Task SeedAsync()
         {
             await _context.Database.EnsureCreatedAsync();
-            await CheckCountriesAsync();            
+            await CheckCountriesAsync();
+            await CheckMeasurementUnits();
+        }
+
+        private async Task CheckMeasurementUnits()
+        {
+            if (!_context.MeasurementUnits.Any())
+            {
+                _context.MeasurementUnits.Add(new MeasurementUnit {Name = "Tonelada"});
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Kilogramo" });
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Libra" });
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Gramo" });
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Onza" });
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Caja" });
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Bulto" });
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Estiba" });
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Lote" });
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Metro Cúbico" });
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Litro" });
+
+                await _context.SaveChangesAsync();
+            }
         }
 
         private async Task CheckCountriesAsync()

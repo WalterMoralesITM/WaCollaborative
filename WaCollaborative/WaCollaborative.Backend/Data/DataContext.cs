@@ -30,6 +30,7 @@ namespace WaCollaborative.Backend.Data
         public DbSet<Country> Countries { get; set; }
 
         public DbSet<State> States { get; set; }
+        public DbSet<MeasurementUnit> MeasurementUnits { get; set; }
 
         #endregion Entities
 

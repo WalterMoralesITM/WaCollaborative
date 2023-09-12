@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34003.232
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaCollaborative.Shared", "WaCollaborative.Shared\WaCollaborative.Shared.csproj", "{F3880DAD-54B7-48EA-9649-E12A9179C8CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WaCollaborative.Shared", "WaCollaborative.Shared\WaCollaborative.Shared.csproj", "{F3880DAD-54B7-48EA-9649-E12A9179C8CD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaCollaborative.Backend", "WaCollaborative.Backend\WaCollaborative.Backend.csproj", "{011C6397-7A17-459E-A276-82342ED33E79}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WaCollaborative.Backend", "WaCollaborative.Backend\WaCollaborative.Backend.csproj", "{011C6397-7A17-459E-A276-82342ED33E79}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaCollaborative.Frontend", "WaCollaborative.Frontend\WaCollaborative.Frontend.csproj", "{896D6874-D6BD-4377-93D8-DDF753D2F981}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WaCollaborative.Frontend", "WaCollaborative.Frontend\WaCollaborative.Frontend.csproj", "{896D6874-D6BD-4377-93D8-DDF753D2F981}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

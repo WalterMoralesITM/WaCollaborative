@@ -35,7 +35,38 @@ namespace WaCollaborative.Backend.Data
         {
             await _context.Database.EnsureCreatedAsync();
             await CheckCountriesAsync();
+            await CheckStatusType();
+            await CheckStatus();
             await CheckMeasurementUnits();
+        }
+
+        private async Task CheckStatusType() 
+        {
+            if (!_context.StatusType.Any()) 
+            {
+                _context.StatusType.Add(new StatusType { Name = "Paramétrico" });
+                _context.StatusType.Add(new StatusType { Name = "Proceso" });
+
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        private async Task CheckStatus()
+        {
+            if (!_context.Status.Any())
+            {
+                _context.Status.Add(new Status { Name = "Activo", StatusTypeId = 1 });
+                _context.Status.Add(new Status { Name = "Inactivo", StatusTypeId = 1 });
+                _context.Status.Add(new Status { Name = "Creado", StatusTypeId = 2 });
+                _context.Status.Add(new Status { Name = "Parametrizado", StatusTypeId = 2 });
+                _context.Status.Add(new Status { Name = "Elaboración", StatusTypeId = 2 });
+                _context.Status.Add(new Status { Name = "Pendiente Por Aprobación", StatusTypeId = 2 });
+                _context.Status.Add(new Status { Name = "Aprobado", StatusTypeId = 2 });
+                _context.Status.Add(new Status { Name = "Terminado", StatusTypeId = 2 });
+                _context.Status.Add(new Status { Name = "Archivado", StatusTypeId = 2 });
+                _context.Status.Add(new Status { Name = "Anulado", StatusTypeId = 2 });
+                await _context.SaveChangesAsync();
+            }
         }
 
         private async Task CheckMeasurementUnits()

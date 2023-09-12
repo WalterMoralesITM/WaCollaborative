@@ -1,0 +1,50 @@
+﻿@page "/status"
+@inject IRepository repository
+@inject SweetAlertService sweetAlertService
+
+<h3>Estados</h3>
+
+<GenericList List="status">
+    <NoRecords>
+        <p>Aun no hay estados registrados.</p>
+    </NoRecords>
+    <Body>       
+        <table class="table table-striped">
+            <thead>
+                <tr>                   
+                    <th>Estados</th>                    
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var status in status!)
+                {
+                    <tr>
+                        <td>@status.Name</td>                       
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </Body>
+</GenericList>
+
+@code {
+    private List<Status>? status;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        var response = await repository.GetAsync<List<Status>>("api/status");
+        if (response.Error)
+        {
+            var message = await response.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        status = response.Response;
+    }
+}

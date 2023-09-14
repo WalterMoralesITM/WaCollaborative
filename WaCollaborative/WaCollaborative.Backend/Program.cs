@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using WaCollaborative.Backend.Data;
 using WaCollaborative.Backend.Interfaces;
 using WaCollaborative.Backend.Repositories;
+using WaCollaborative.Backend.Services;
 using WaCollaborative.Backend.UnitsOfWork;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
@@ -20,6 +21,7 @@ builder.Services.AddDbContext<DataContext>(x => x.UseSqlServer("name=WaCollabora
 
 builder.Services.AddScoped(typeof(IGenericUnitOfWork<>), typeof(GenericUnitOfWork<>));
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IApiService, ApiService>();
 builder.Services.AddTransient<SeedDb>();
 
 var app = builder.Build();

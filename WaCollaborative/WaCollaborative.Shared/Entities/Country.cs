@@ -11,7 +11,6 @@ namespace WaCollaborative.Shared.Entities
     /// The class entity Country
     /// </summary>
 
-    [Table("Country")]
     public class Country
     {
 

@@ -11,8 +11,8 @@ using WaCollaborative.Backend.Data;
 namespace WaCollaborative.Backend.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230907161724_InitialDb")]
-    partial class InitialDb
+    [Migration("20230916164528_Recreate-Database")]
+    partial class RecreateDatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -47,7 +47,7 @@ namespace WaCollaborative.Backend.Migrations
                     b.HasIndex("Name", "StateId")
                         .IsUnique();
 
-                    b.ToTable("City");
+                    b.ToTable("Cities");
                 });
 
             modelBuilder.Entity("WaCollaborative.Shared.Entities.Country", b =>
@@ -68,7 +68,28 @@ namespace WaCollaborative.Backend.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Country");
+                    b.ToTable("Countries");
+                });
+
+            modelBuilder.Entity("WaCollaborative.Shared.Entities.MeasurementUnit", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("MeasurementUnits");
                 });
 
             modelBuilder.Entity("WaCollaborative.Shared.Entities.State", b =>
@@ -94,7 +115,54 @@ namespace WaCollaborative.Backend.Migrations
                     b.HasIndex("Name", "CountryId")
                         .IsUnique();
 
-                    b.ToTable("State");
+                    b.ToTable("States");
+                });
+
+            modelBuilder.Entity("WaCollaborative.Shared.Entities.Status", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("StatusTypeId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StatusTypeId");
+
+                    b.HasIndex("Name", "StatusTypeId")
+                        .IsUnique();
+
+                    b.ToTable("Status");
+                });
+
+            modelBuilder.Entity("WaCollaborative.Shared.Entities.StatusType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("StatusType");
                 });
 
             modelBuilder.Entity("WaCollaborative.Shared.Entities.City", b =>
@@ -119,6 +187,17 @@ namespace WaCollaborative.Backend.Migrations
                     b.Navigation("Country");
                 });
 
+            modelBuilder.Entity("WaCollaborative.Shared.Entities.Status", b =>
+                {
+                    b.HasOne("WaCollaborative.Shared.Entities.StatusType", "StatusType")
+                        .WithMany("Status")
+                        .HasForeignKey("StatusTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("StatusType");
+                });
+
             modelBuilder.Entity("WaCollaborative.Shared.Entities.Country", b =>
                 {
                     b.Navigation("States");
@@ -127,6 +206,11 @@ namespace WaCollaborative.Backend.Migrations
             modelBuilder.Entity("WaCollaborative.Shared.Entities.State", b =>
                 {
                     b.Navigation("Cities");
+                });
+
+            modelBuilder.Entity("WaCollaborative.Shared.Entities.StatusType", b =>
+                {
+                    b.Navigation("Status");
                 });
 #pragma warning restore 612, 618
         }

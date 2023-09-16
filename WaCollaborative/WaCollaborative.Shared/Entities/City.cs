@@ -12,7 +12,6 @@ namespace WaCollaborative.Shared.Entities
     /// The class entity City
     /// </summary>
 
-    [Table("City")]
     public class City
     {
 

@@ -38,11 +38,11 @@ namespace WaCollaborative.Backend.Data
 
         public async Task SeedAsync()
         {
-            await _context.Database.EnsureCreatedAsync();
-            await CheckCountriesAsync();
+            await _context.Database.EnsureCreatedAsync();            
             await CheckStatusType();
             await CheckStatus();
             await CheckMeasurementUnits();
+            await CheckCountriesAsync();
         }
 
         private async Task CheckStatusType() 

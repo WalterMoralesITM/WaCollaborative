@@ -44,7 +44,7 @@ namespace WaCollaborative.Backend.Migrations
                     b.HasIndex("Name", "StateId")
                         .IsUnique();
 
-                    b.ToTable("City");
+                    b.ToTable("Cities");
                 });
 
             modelBuilder.Entity("WaCollaborative.Shared.Entities.Country", b =>
@@ -65,7 +65,7 @@ namespace WaCollaborative.Backend.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Country");
+                    b.ToTable("Countries");
                 });
 
             modelBuilder.Entity("WaCollaborative.Shared.Entities.MeasurementUnit", b =>
@@ -112,7 +112,7 @@ namespace WaCollaborative.Backend.Migrations
                     b.HasIndex("Name", "CountryId")
                         .IsUnique();
 
-                    b.ToTable("State");
+                    b.ToTable("States");
                 });
 
             modelBuilder.Entity("WaCollaborative.Shared.Entities.Status", b =>

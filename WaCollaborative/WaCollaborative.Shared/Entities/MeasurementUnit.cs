@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace WaCollaborative.Shared.Entities
 {
-    [Table("MeasurementUnits")]
     public class MeasurementUnit
     {
         public int Id { get; set; }

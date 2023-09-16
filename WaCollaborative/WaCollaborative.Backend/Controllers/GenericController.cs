@@ -1,31 +1,37 @@
 ﻿#region Using
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using WaCollaborative.Backend.Data;
+using WaCollaborative.Backend.Helpers;
 using WaCollaborative.Backend.Interfaces;
+using WaCollaborative.Shared.DTOs;
 
 #endregion Using
 
 namespace WaCollaborative.Backend.Controllers
 {
-
     /// <summary>
     /// The Controller GenericController
     /// </summary>
 
     public class GenericController<T> : Controller where T : class
     {
-
         #region Attributes
 
         private readonly IGenericUnitOfWork<T> _unitOfWork;
+        private readonly DataContext _context;
+        private readonly DbSet<T> _entity;
 
         #endregion Attributes
 
         #region Constructor
 
-        public GenericController(IGenericUnitOfWork<T> unitOfWork)
+        public GenericController(IGenericUnitOfWork<T> unitOfWork, DataContext context)
         {
             _unitOfWork = unitOfWork;
+            _context = context;
+            _entity = context.Set<T>();
         }
 
         #endregion Constructor
@@ -33,14 +39,21 @@ namespace WaCollaborative.Backend.Controllers
         #region Methods
 
         [HttpGet]
-        public virtual async Task<IActionResult> GetAsync()
+        public virtual async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
         {
-            var action = await _unitOfWork.GetAsync();
-            if (action.WasSuccess)
-            {
-                return Ok(action.Result);
-            }
-            return BadRequest(action.Message);
+            var queryable = _entity.AsQueryable();
+            return Ok(await queryable
+                .Paginate(pagination)
+                .ToListAsync());
+        }
+
+        [HttpGet("totalPages")]
+        public virtual async Task<IActionResult> GetPagesAsync([FromQuery] PaginationDTO pagination)
+        {
+            var queryable = _entity.AsQueryable();
+            double count = await queryable.CountAsync();
+            double totalPages = Math.Ceiling(count / pagination.RecordsNumber);
+            return Ok(totalPages);
         }
 
         [HttpGet("{id}")]
@@ -93,6 +106,5 @@ namespace WaCollaborative.Backend.Controllers
         }
 
         #endregion Methods
-
     }
 }

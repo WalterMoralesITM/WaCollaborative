@@ -1,6 +1,7 @@
 ﻿#region Using
 
 using Microsoft.AspNetCore.Mvc;
+using WaCollaborative.Backend.Data;
 using WaCollaborative.Backend.Interfaces;
 using WaCollaborative.Shared.Entities;
 
@@ -18,7 +19,7 @@ namespace WaCollaborative.Backend.Controllers
     {
         #region Constructor
 
-        public StatusController(IGenericUnitOfWork<Status> unitOfWork) : base(unitOfWork)
+        public StatusController(IGenericUnitOfWork<Status> unitOfWork, DataContext context) : base(unitOfWork, context)
         {
         }
 

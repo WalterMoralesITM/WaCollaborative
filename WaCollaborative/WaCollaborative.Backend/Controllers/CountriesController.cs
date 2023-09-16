@@ -3,7 +3,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WaCollaborative.Backend.Data;
+using WaCollaborative.Backend.Helpers;
 using WaCollaborative.Backend.Interfaces;
+using WaCollaborative.Shared.DTOs;
 using WaCollaborative.Shared.Entities;
 
 #endregion Using
@@ -28,7 +30,7 @@ namespace WaCollaborative.Backend.Controllers
 
         #region Constructor
 
-        public CountriesController(IGenericUnitOfWork<Country> unitOfWork, DataContext context) : base(unitOfWork)
+        public CountriesController(IGenericUnitOfWork<Country> unitOfWork, DataContext context) : base(unitOfWork, context)
         {
             _context = context;
         }
@@ -38,11 +40,18 @@ namespace WaCollaborative.Backend.Controllers
         #region Methods
 
         [HttpGet]
-        public override async Task<IActionResult> GetAsync()
+        public override async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
         {
-            return Ok(await _context.Countries
+            var queryable = _context.Countries
                 .Include(c => c.States)
-                .ToListAsync());
+                .AsQueryable();
+
+            var result = await queryable
+                .OrderBy(c => c.Name)
+                .Paginate(pagination)
+                .ToListAsync();
+
+            return Ok(result);
         }
 
         [HttpGet("{id}")]

@@ -3,7 +3,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WaCollaborative.Backend.Data;
+using WaCollaborative.Backend.Helpers;
 using WaCollaborative.Backend.Interfaces;
+using WaCollaborative.Shared.DTOs;
 using WaCollaborative.Shared.Entities;
 
 #endregion Using
@@ -26,7 +28,7 @@ namespace WaCollaborative.Backend.Controllers
 
         #region Constructor
 
-        public StatesController(IGenericUnitOfWork<State> unitOfWork, DataContext context) : base(unitOfWork)
+        public StatesController(IGenericUnitOfWork<State> unitOfWork, DataContext context) : base(unitOfWork, context)
         {
             _context = context;
         }
@@ -36,10 +38,32 @@ namespace WaCollaborative.Backend.Controllers
         #region Methods
 
         [HttpGet]
-        public override async Task<IActionResult> GetAsync()
+        public override async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
         {
-            return Ok(await _context.States.Include(e => e.Cities).ToListAsync());
+            var queryable = _context.States
+                .Include(c => c.Cities)
+                .Where(x => x.Country!.Id == pagination.Id)
+                .AsQueryable();
+
+            var result = await queryable
+                .OrderBy(c => c.Name)
+                .Paginate(pagination)
+                .ToListAsync();
+
+            return Ok(result);
         }
+
+        [HttpGet("totalPages")]
+        public override async Task<IActionResult> GetPagesAsync([FromQuery] PaginationDTO pagination)
+        {
+            var queryable = _context.States
+                .Where(x=>x.Country!.Id == pagination.Id)
+                .AsQueryable();
+            double count = await queryable.CountAsync();
+            double totalPages = Math.Ceiling(count / pagination.RecordsNumber);
+            return Ok(totalPages);
+        }
+
 
         [HttpGet("{id}")]
         public override async Task<IActionResult> GetAsync(int id)

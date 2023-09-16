@@ -1,5 +1,5 @@
 ﻿<nav>
-    <ul class="pagination">
+    <ul class="pagination pagination-sm">
         @foreach (var link in Links)
         {
             <li @onclick=@(() => InternalSelectedPage(link)) style="cursor: pointer" class="page-item @(link.Enable ? null : "disabled") @(link.Enable ? "active" : null)">

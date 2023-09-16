@@ -11,8 +11,8 @@ else
 {
     <h3>@state.Name</h3>
     <div class="mb-2">
-        <a class="btn btn-primary" href="/cities/create/@StateId">Nueva Ciudad</a>
-        <a class="btn btn-success" href="/countries/details/@state.CountryId">Regresar</a>
+        <a class="btn btn-primary btn-sm" href="/cities/create/@StateId">Nueva Ciudad</a>
+        <a class="btn btn-success btn-sm" href="/countries/details/@state.CountryId">Regresar</a>
     </div>
 
     <Pagination CurrentPage="currentPage"
@@ -37,8 +37,8 @@ else
                                 @city.Name
                             </td>
                             <td>
-                                <a class="btn btn-warning" href="/cities/edit/@city.Id">Editar</a>
-                                <button class="btn btn-danger" @onclick=@(() => DeleteAsync(city.Id))>Borrar</button>
+                                <a class="btn btn-warning btn-sm" href="/cities/edit/@city.Id">Editar</a>
+                                <button class="btn btn-danger btn-sm" @onclick=@(() => DeleteAsync(city.Id))>Borrar</button>
                             </td>
                         </tr>
                     }

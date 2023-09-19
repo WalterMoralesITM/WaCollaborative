@@ -20,7 +20,13 @@ namespace WaCollaborative.Backend.Controllers
     [Route("api/[controller]")]
     public class CitiesController : GenericController<City>
     {
-        DataContext _context;
+
+        #region Attributes
+
+        private readonly DataContext _context;
+
+        #endregion Attributes
+
         #region Constructor
 
         public CitiesController(IGenericUnitOfWork<City> unitOfWork, DataContext context) : base(unitOfWork, context)
@@ -45,7 +51,6 @@ namespace WaCollaborative.Backend.Controllers
                 .ToListAsync());
         }
 
-
         [HttpGet("totalPages")]
         public override async Task<IActionResult> GetPagesAsync([FromQuery] PaginationDTO pagination)
         {
@@ -58,7 +63,7 @@ namespace WaCollaborative.Backend.Controllers
             return Ok(totalPages);
         }
 
-
         #endregion Methods
+
     }
 }

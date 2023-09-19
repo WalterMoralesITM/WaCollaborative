@@ -20,6 +20,7 @@ namespace WaCollaborative.Backend.Controllers
     [Route("api/[controller]")]
     public class StatusTypeController : GenericController<StatusType>
     {
+
         #region Attributes
 
         private readonly DataContext _context;
@@ -64,5 +65,6 @@ namespace WaCollaborative.Backend.Controllers
         }
 
         #endregion Methods
+
     }
 }

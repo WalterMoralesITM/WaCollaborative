@@ -13,12 +13,12 @@ using WaCollaborative.Shared.Entities;
 namespace WaCollaborative.Backend.Controllers
 {
     /// <summary>
-    /// The Controller StatesController
+    /// The Controller CitiesController
     /// </summary>
 
     [ApiController]
     [Route("api/[controller]")]
-    public class StatesController : GenericController<State>
+    public class SegmentsController : GenericController<Segment>
     {
 
         #region Attributes
@@ -29,7 +29,7 @@ namespace WaCollaborative.Backend.Controllers
 
         #region Constructor
 
-        public StatesController(IGenericUnitOfWork<State> unitOfWork, DataContext context) : base(unitOfWork, context)
+        public SegmentsController(IGenericUnitOfWork<Segment> unitOfWork, DataContext context) : base(unitOfWork, context)
         {
             _context = context;
         }
@@ -41,42 +41,39 @@ namespace WaCollaborative.Backend.Controllers
         [HttpGet]
         public override async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
         {
-            var queryable = _context.States
-                .Include(c => c.Cities)
-                .Where(x => x.Country!.Id == pagination.Id)
+            var queryable = _context.Segments
                 .AsQueryable();
 
             var result = await queryable
-                .OrderBy(c => c.Name)
+                .OrderBy(s => s.Name)
                 .Paginate(pagination)
                 .ToListAsync();
 
             return Ok(result);
         }
 
-        [HttpGet("totalPages")]
-        public override async Task<IActionResult> GetPagesAsync([FromQuery] PaginationDTO pagination)
-        {
-            var queryable = _context.States
-                .Where(x=>x.Country!.Id == pagination.Id)
-                .AsQueryable();
-            double count = await queryable.CountAsync();
-            double totalPages = Math.Ceiling(count / pagination.RecordsNumber);
-            return Ok(totalPages);
-        }
-
         [HttpGet("{id}")]
         public override async Task<IActionResult> GetAsync(int id)
         {
-            var state = await _context.States
-                 .Include(x => x.Cities)
-                 .FirstOrDefaultAsync(x => x.Id == id);
-            if (state is null)
+            Segment? segment = await _context.Segments
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (segment == null)
             {
                 return NotFound();
             }
+            return Ok(segment);
+        }
 
-            return Ok(state);
+        [HttpGet("totalPages")]
+        public override async Task<IActionResult> GetPagesAsync([FromQuery] PaginationDTO pagination)
+        {
+            var queryable = _context.Segments
+                .AsQueryable();
+
+            double count = await queryable.CountAsync();
+            double totalPages = Math.Ceiling(count / pagination.RecordsNumber);
+            return Ok(totalPages);
         }
 
         #endregion Methods

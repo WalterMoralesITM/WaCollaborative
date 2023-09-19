@@ -17,6 +17,7 @@ namespace WaCollaborative.Backend.Controllers
     [Route("api/[controller]")]
     public class StatusController : GenericController<Status>
     {
+
         #region Constructor
 
         public StatusController(IGenericUnitOfWork<Status> unitOfWork, DataContext context) : base(unitOfWork, context)
@@ -24,5 +25,6 @@ namespace WaCollaborative.Backend.Controllers
         }
 
         #endregion Constructor
+
     }
 }

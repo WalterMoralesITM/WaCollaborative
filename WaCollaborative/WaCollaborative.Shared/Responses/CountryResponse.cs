@@ -1,11 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿#region Using
+
+#endregion Using
 
 namespace WaCollaborative.Shared.Responses
 {
+
+    /// <summary>
+    /// The class CountryResponse
+    /// </summary>
+
     public class CountryResponse
     {
         public long Id { get; set; }

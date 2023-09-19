@@ -1,0 +1,41 @@
+﻿@page "/segments/create"
+@inject NavigationManager navigationManager
+@inject IRepository repository
+@inject SweetAlertService sweetAlertService
+
+<h3>Nuevo Segmento</h3>
+
+<SegmentsForm @ref="segmentsForm" Segment="segment" OnValidSubmit="CreateAsync" ReturnAction="Return" />
+
+@code {
+
+    private Segment segment = new();
+    private SegmentsForm? segmentsForm;
+
+    private async Task CreateAsync()
+    {
+        var response = await repository.PostAsync("/api/segments", segment);
+        if (response.Error)
+        {
+            var message = await response.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+        Return();
+        var toast = sweetAlertService.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                Position = SweetAlertPosition.BottomEnd,
+                ShowConfirmButton = true,
+                Timer = 3000
+            });
+        await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Registro creado con éxito.");
+    }
+
+    private void Return()
+    {
+        segmentsForm!.FormPostedSuccessfully = true;
+        navigationManager.NavigateTo("/segments");
+    }
+
+}

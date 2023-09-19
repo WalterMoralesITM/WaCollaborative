@@ -13,12 +13,12 @@ using WaCollaborative.Shared.Entities;
 namespace WaCollaborative.Backend.Controllers
 {
     /// <summary>
-    /// The Controller StatesController
+    /// The Controller CategoriesController
     /// </summary>
 
     [ApiController]
     [Route("api/[controller]")]
-    public class StatesController : GenericController<State>
+    public class CategoriesController : GenericController<Category>
     {
 
         #region Attributes
@@ -29,7 +29,7 @@ namespace WaCollaborative.Backend.Controllers
 
         #region Constructor
 
-        public StatesController(IGenericUnitOfWork<State> unitOfWork, DataContext context) : base(unitOfWork, context)
+        public CategoriesController(IGenericUnitOfWork<Category> unitOfWork, DataContext context) : base(unitOfWork, context)
         {
             _context = context;
         }
@@ -41,9 +41,7 @@ namespace WaCollaborative.Backend.Controllers
         [HttpGet]
         public override async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
         {
-            var queryable = _context.States
-                .Include(c => c.Cities)
-                .Where(x => x.Country!.Id == pagination.Id)
+            var queryable = _context.Categories
                 .AsQueryable();
 
             var result = await queryable
@@ -54,29 +52,28 @@ namespace WaCollaborative.Backend.Controllers
             return Ok(result);
         }
 
-        [HttpGet("totalPages")]
-        public override async Task<IActionResult> GetPagesAsync([FromQuery] PaginationDTO pagination)
-        {
-            var queryable = _context.States
-                .Where(x=>x.Country!.Id == pagination.Id)
-                .AsQueryable();
-            double count = await queryable.CountAsync();
-            double totalPages = Math.Ceiling(count / pagination.RecordsNumber);
-            return Ok(totalPages);
-        }
-
         [HttpGet("{id}")]
         public override async Task<IActionResult> GetAsync(int id)
         {
-            var state = await _context.States
-                 .Include(x => x.Cities)
-                 .FirstOrDefaultAsync(x => x.Id == id);
-            if (state is null)
+            Category? category = await _context.Categories
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (category == null)
             {
                 return NotFound();
             }
+            return Ok(category);
+        }
 
-            return Ok(state);
+        [HttpGet("totalPages")]
+        public override async Task<IActionResult> GetPagesAsync([FromQuery] PaginationDTO pagination)
+        {
+            var queryable = _context.Categories
+                .AsQueryable();
+
+            double count = await queryable.CountAsync();
+            double totalPages = Math.Ceiling(count / pagination.RecordsNumber);
+            return Ok(totalPages);
         }
 
         #endregion Methods

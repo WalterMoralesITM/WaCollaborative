@@ -37,6 +37,10 @@ namespace WaCollaborative.Backend.Data
 
         public DbSet<MeasurementUnit> MeasurementUnits { get; set; }
 
+        public DbSet<Category> Categories { get; set; }
+
+        public DbSet<Segment> Segments { get; set; }
+
         #endregion Entities
 
         #region Methods
@@ -50,6 +54,8 @@ namespace WaCollaborative.Backend.Data
             modelBuilder.Entity<StatusType>().HasIndex(s => s.Name).IsUnique();
             modelBuilder.Entity<Status>().HasIndex(s => new { s.Name, s.StatusTypeId }).IsUnique();
             modelBuilder.Entity<MeasurementUnit>().HasIndex(m => m.Name).IsUnique();
+            modelBuilder.Entity<Category>().HasIndex(c => c.Name).IsUnique();
+            modelBuilder.Entity<Segment>().HasIndex(s => s.Name).IsUnique();
         }
 
         #endregion Methods

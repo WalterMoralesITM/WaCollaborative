@@ -1,0 +1,41 @@
+﻿@page "/eventtypes/create"
+@inject NavigationManager navigationManager
+@inject IRepository repository
+@inject SweetAlertService sweetAlertService
+
+<h3>Nuevo Tipo de Evento</h3>
+
+<EventTypeForm @ref="eventTypeForm" EventType="eventType" OnValidSubmit="CreateAsync" ReturnAction="Return" />
+
+@code {
+
+    private EventType eventType = new();
+    private EventTypeForm? eventTypeForm;
+
+    private async Task CreateAsync()
+    {
+        var response = await repository.PostAsync("/api/eventtypes", eventType);
+        if (response.Error)
+        {
+            var message = await response.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+        Return();
+        var toast = sweetAlertService.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                Position = SweetAlertPosition.BottomEnd,
+                ShowConfirmButton = true,
+                Timer = 3000
+            });
+        await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Registro creado con éxito.");
+    }
+
+    private void Return()
+    {
+        eventTypeForm!.FormPostedSuccessfully = true;
+        navigationManager.NavigateTo("/eventtypes");
+    }
+
+}

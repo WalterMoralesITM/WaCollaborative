@@ -1,0 +1,130 @@
+﻿@page "/eventtypes"
+@inject IRepository repository
+@inject SweetAlertService sweetAlertService
+
+<h3>Tipos de Evento</h3>
+
+<div class="mb-2">
+    <a class="btn btn-primary btn-sm" href="/eventtypes/create">Nuevo Tipo de Evento</a>
+</div>
+
+<Pagination CurrentPage="currentPage"
+            TotalPages="totalPages"
+            SelectedPage="SelectedPageAsync" />
+
+<GenericList List="eventTypes">
+    <NoRecords>
+        <p>Aun no hay Tipos de Evento registrados.</p>
+    </NoRecords>
+    <Body>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Tipo de Evento</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var eventType in eventTypes!)
+                {
+                    <tr>
+                        <td>@eventType.Name</td>
+                        <td>
+                            <a class="btn btn-warning btn-sm" href="/eventtypes/edit/@eventType.Id">Editar</a>
+                            <button class="btn btn-danger btn-sm" @onclick=@(() => DeleteAsync(eventType))>Borrar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </Body>
+</GenericList>
+
+@code {
+
+    private List<EventType>? eventTypes;
+    private int currentPage = 1;
+    private int totalPages;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task SelectedPageAsync(int page)
+    {
+        currentPage = page;
+        await LoadAsync(page);
+    }
+
+    private async Task LoadAsync(int page = 1)
+    {
+        var ok = await LoadListAsync(page);
+        if (ok)
+        {
+            await LoadPagesAsync();
+        }
+    }
+
+    private async Task<bool> LoadListAsync(int page)
+    {
+        var response = await repository.GetAsync<List<EventType>>($"api/EventTypes?page={page}");
+        if (response.Error)
+        {
+            var message = await response.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return false;
+        }
+        eventTypes = response.Response;
+        return true;
+    }
+
+    private async Task LoadPagesAsync()
+    {
+        var response = await repository.GetAsync<int>("api/EventTypes/totalPages");
+        if (response.Error)
+        {
+            var message = await response.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+        totalPages = response.Response;
+    }
+
+    private async Task DeleteAsync(EventType eventType)
+    {
+        var result = await sweetAlertService.FireAsync(new SweetAlertOptions
+            {
+                Title = "Confirmación",
+                Text = $"¿Esta seguro que quieres borrar el Tipo de Evento : {eventType.Name}?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true
+            });
+
+        var confirm = string.IsNullOrEmpty(result.Value);
+        if (confirm)
+        {
+            return;
+        }
+
+        var response = await repository.DeleteAsync($"api/EventTypes/{eventType.Id}");
+        if (response.Error)
+        {
+            var message = await response.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        await LoadAsync();
+
+        var toast = sweetAlertService.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                Position = SweetAlertPosition.BottomEnd,
+                ShowConfirmButton = true,
+                Timer = 3000
+            });
+        await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Registro borrado con éxito.");
+    }
+
+}

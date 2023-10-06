@@ -1,5 +1,7 @@
 ﻿#region Using
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WaCollaborative.Backend.Data;
@@ -13,9 +15,7 @@ using WaCollaborative.Shared.Entities;
 namespace WaCollaborative.Backend.Controllers
 {
 
-    /// <summary>
-    /// The Controller CountriesController
-    /// </summary>
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 
     [ApiController]
     [Route("api/[controller]")]

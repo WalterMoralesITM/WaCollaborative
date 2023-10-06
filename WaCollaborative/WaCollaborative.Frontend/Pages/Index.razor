@@ -6,4 +6,14 @@
 
 Welcome to your new app.
 
+<AuthorizeView>
+    <Authorized>
+        <p>Estas autenticado, @context.User.Identity?.Name</p>
+    </Authorized>
+    <NotAuthorized>
+        <p>No estas autorizado</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+
 <SurveyPrompt Title="How is Blazor working for you?" />

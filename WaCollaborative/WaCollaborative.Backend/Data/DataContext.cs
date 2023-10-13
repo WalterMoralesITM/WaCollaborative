@@ -1,5 +1,6 @@
 ﻿#region Using
 
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using WaCollaborative.Shared.Entities;
 
@@ -12,7 +13,7 @@ namespace WaCollaborative.Backend.Data
     /// The Class DataContext
     /// </summary>
 
-    public class DataContext : DbContext
+    public class DataContext : IdentityDbContext<User>
     {
 
         #region Constructor

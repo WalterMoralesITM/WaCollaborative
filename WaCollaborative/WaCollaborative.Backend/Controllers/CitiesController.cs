@@ -63,6 +63,16 @@ namespace WaCollaborative.Backend.Controllers
             return Ok(totalPages);
         }
 
+        [AllowAnonymous]
+        [HttpGet("combo/{stateId:int}")]
+        public async Task<ActionResult> GetCombo(int stateId)
+        {
+            return Ok(await _context.Cities
+                .Where(c => c.StateId == stateId)
+                .OrderBy(c => c.Name)
+                .ToListAsync());
+        }
+
         #endregion Methods
 
     }

@@ -79,6 +79,17 @@ namespace WaCollaborative.Backend.Controllers
             return Ok(state);
         }
 
+        [AllowAnonymous]
+        [HttpGet("combo/{countryId:int}")]
+        public async Task<ActionResult> GetCombo(int countryId)
+        {
+            return Ok(await _context.States
+                .Where(s => s.CountryId == countryId)
+                .OrderBy(s => s.Name)
+                .ToListAsync());
+        }
+
+
         #endregion Methods
 
     }

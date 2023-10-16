@@ -1,10 +1,10 @@
-﻿﻿
-@page "/cities/create/{StateId:int}"
-@inject IRepository repository
+﻿@page "/cities/create/{StateId:int}"
+@attribute [Authorize(Roles = "Planner")]
 @inject NavigationManager navigationManager
+@inject IRepository repository
 @inject SweetAlertService sweetAlertService
 
-<h3>Crear Ciudad</h3>
+<h3>Nueva Ciudad</h3>
 
 <CityForm @ref="cityForm" City="city" OnValidSubmit="CreateAsync" ReturnAction="Return" />
 
@@ -12,21 +12,34 @@
     private City city = new();
     private CityForm? cityForm;
 
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; } = default!;
+
     [Parameter]
     public int StateId { get; set; }
 
     private async Task CreateAsync()
     {
         city.StateId = StateId;
-        var httpResponse = await repository.PostAsync("/api/cities", city);
-        if (httpResponse.Error)
+        var response = await repository.PostAsync("/api/cities", city);
+        if (response.Error)
         {
-            var message = await httpResponse.GetErrorMessageAsync();
+            var message = await response.GetErrorMessageAsync();
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
             return;
         }
 
+        await BlazoredModal.CloseAsync(ModalResult.Ok());
         Return();
+
+        var toast = sweetAlertService.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                Position = SweetAlertPosition.BottomEnd,
+                ShowConfirmButton = true,
+                Timer = 3000
+            });
+        await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Registro creado con éxito.");
     }
 
     private void Return()

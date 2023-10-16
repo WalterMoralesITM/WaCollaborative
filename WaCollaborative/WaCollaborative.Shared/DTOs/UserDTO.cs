@@ -1,15 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
+﻿#region Using
+
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using WaCollaborative.Shared.Entities;
+
+#endregion Using
 
 namespace WaCollaborative.Shared.DTOs
 {
+
+    /// <summary>
+    /// The class UserDTO
+    /// </summary>
+
     public class UserDTO : User
     {
+
+        #region Attributes
+
         [DataType(DataType.Password)]
         [Display(Name = "Contraseña")]
         [Required(ErrorMessage = "El campo {0} es obligatorio.")]
@@ -22,6 +29,8 @@ namespace WaCollaborative.Shared.DTOs
         [Required(ErrorMessage = "El campo {0} es obligatorio.")]
         [StringLength(20, MinimumLength = 6, ErrorMessage = "El campo {0} debe tener entre {2} y {1} carácteres.")]
         public string PasswordConfirm { get; set; } = null!;
-    }
 
+        #endregion Attributes
+
+    }
 }

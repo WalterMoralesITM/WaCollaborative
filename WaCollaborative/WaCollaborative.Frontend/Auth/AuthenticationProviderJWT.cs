@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.JSInterop;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.JSInterop;
 using WaCollaborative.Frontend.Helpers;
 
 namespace WaCollaborative.Frontend.Auth
@@ -20,6 +20,7 @@ namespace WaCollaborative.Frontend.Auth
             _httpClient = httpClient;
             _tokenKey = "TOKEN_KEY";
             _anonimous = new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+
         }
 
         public async override Task<AuthenticationState> GetAuthenticationStateAsync()
@@ -31,6 +32,20 @@ namespace WaCollaborative.Frontend.Auth
             }
 
             return BuildAuthenticationState(token.ToString()!);
+        }
+
+        public async Task LoginAsync(string token)
+        {
+            await _jSRuntime.SetLocalStorage(_tokenKey, token);
+            var authState = BuildAuthenticationState(token);
+            NotifyAuthenticationStateChanged(Task.FromResult(authState));
+        }
+
+        public async Task LogoutAsync()
+        {
+            await _jSRuntime.RemoveLocalStorage(_tokenKey);
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+            NotifyAuthenticationStateChanged(Task.FromResult(_anonimous));
         }
 
         private AuthenticationState BuildAuthenticationState(string token)
@@ -47,20 +62,5 @@ namespace WaCollaborative.Frontend.Auth
             return unserializedToken.Claims;
 
         }
-
-        public async Task LoginAsync(string token)
-        {
-            await _jSRuntime.SetLocalStorage(_tokenKey, token);
-            var authState = BuildAuthenticationState(token);
-            NotifyAuthenticationStateChanged(Task.FromResult(authState));
-        }
-
-        public async Task LogoutAsync()
-        {
-            await _jSRuntime.RemoveLocalStorage(_tokenKey);
-            _httpClient.DefaultRequestHeaders.Authorization = null;
-            NotifyAuthenticationStateChanged(Task.FromResult(_anonimous));
-        }
     }
-
 }

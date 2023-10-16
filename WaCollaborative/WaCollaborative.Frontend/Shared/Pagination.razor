@@ -1,5 +1,5 @@
 ﻿<nav>
-    <ul class="pagination pagination-sm">
+    <ul class="pagination">
         @foreach (var link in Links)
         {
             <li @onclick=@(() => InternalSelectedPage(link)) style="cursor: pointer" class="page-item @(link.Enable ? null : "disabled") @(link.Enable ? "active" : null)">
@@ -29,6 +29,7 @@
     protected override void OnParametersSet()
     {
         Links = new List<PageModel>();
+
         var previousLinkEnable = CurrentPage != 1;
         var previousLinkPage = CurrentPage - 1;
 

@@ -2,9 +2,9 @@
 
 @if(List is null)
 {
-    @if(Loading is null)
+    @if (Loading is null)
     {
-        <Loading/>
+        <Loading />
     }
     else
     {
@@ -13,13 +13,13 @@
 }
 else if(List.Count == 0)
 {
-    @if(NoRecords is null)
+    @if (NoRecords is null)
     {
         <p>No hay registros..</p>
     }
     else
     {
-        @Loading
+        @NoRecords
     }
 } 
 else

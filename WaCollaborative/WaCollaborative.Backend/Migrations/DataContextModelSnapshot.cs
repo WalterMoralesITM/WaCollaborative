@@ -223,6 +223,32 @@ namespace WaCollaborative.Backend.Migrations
                     b.ToTable("Countries");
                 });
 
+            modelBuilder.Entity("WaCollaborative.Shared.Entities.DemandType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("EventTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventTypeId");
+
+                    b.HasIndex("Name", "EventTypeId")
+                        .IsUnique();
+
+                    b.ToTable("DemandTypes");
+                });
+
             modelBuilder.Entity("WaCollaborative.Shared.Entities.DistributionChannel", b =>
                 {
                     b.Property<int>("Id")
@@ -258,6 +284,9 @@ namespace WaCollaborative.Backend.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("EventTypes");
                 });
@@ -533,6 +562,17 @@ namespace WaCollaborative.Backend.Migrations
                         .IsRequired();
 
                     b.Navigation("State");
+                });
+
+            modelBuilder.Entity("WaCollaborative.Shared.Entities.DemandType", b =>
+                {
+                    b.HasOne("WaCollaborative.Shared.Entities.EventType", "EventType")
+                        .WithMany()
+                        .HasForeignKey("EventTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EventType");
                 });
 
             modelBuilder.Entity("WaCollaborative.Shared.Entities.State", b =>

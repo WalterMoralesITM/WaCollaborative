@@ -15,7 +15,7 @@ namespace WaCollaborative.Shared.Entities
     {
 
         #region Attributes
-                
+
         public int Id { get; set; }
 
         [Display(Name = "Ciudad")]

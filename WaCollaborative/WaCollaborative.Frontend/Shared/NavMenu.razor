@@ -14,41 +14,58 @@
                 <span class="oi oi-home" aria-hidden="true"></span> Home
             </NavLink>
         </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/countries">
-                <span class="oi oi-globe" aria-hidden="true"></span> Paises
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/measurementUnits">
-                <span class="oi oi-beaker" aria-hidden="true"></span> Unidades de Medida
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/categories">
-                <span class="oi oi-briefcase" aria-hidden="true"></span> Categorias
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/segments">
-                <span class="oi oi-aperture" aria-hidden="true"></span> Segmentos
-            </NavLink>
-        </div>        
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/status">
-                <span class="oi oi-ellipses" aria-hidden="true"></span> Estados
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/eventtypes">
-                <span class="oi oi-eject" aria-hidden="true"></span> Tipos de Evento
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/distributionchannels">
-                <span class="oi oi-map-marker" aria-hidden="true"></span> Canales de Distribución
-            </NavLink>
-        </div>
+        <AuthorizeView Roles="Planner">
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/countries">
+                    <span class="oi oi-globe" aria-hidden="true"></span> Paises
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/measurementUnits">
+                    <span class="oi oi-beaker" aria-hidden="true"></span> Unidades de Medida
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/categories">
+                    <span class="oi oi-briefcase" aria-hidden="true"></span> Categorias
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/segments">
+                    <span class="oi oi-aperture" aria-hidden="true"></span> Segmentos
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/status">
+                    <span class="oi oi-ellipses" aria-hidden="true"></span> Estados
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/statustypes">
+                    <span class="oi oi-eject" aria-hidden="true"></span> Tipos de Estados
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/demandtypes">
+                    <span class="oi oi-ellipses" aria-hidden="true"></span> Tipos de Demanda
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/eventtypes">
+                    <span class="oi oi-eject" aria-hidden="true"></span> Tipos de Evento
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/distributionchannels">
+                    <span class="oi oi-map-marker" aria-hidden="true"></span> Canales de Distribución
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/users">
+                    <span class="oi oi-people" aria-hidden="true"></span> Usuarios
+                </NavLink>
+            </div>
+        </AuthorizeView>        
     </nav>
 </div>
 

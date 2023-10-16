@@ -1,24 +1,61 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿#region Using
+
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WaCollaborative.Backend.Data;
+using WaCollaborative.Backend.Helpers.Interfaces;
 using WaCollaborative.Shared.DTOs;
 using WaCollaborative.Shared.Entities;
 
+#endregion Using
+
 namespace WaCollaborative.Backend.Helpers
 {
+
+    /// <summary>
+    /// The class UserHelper
+    /// </summary>
+
     public class UserHelper : IUserHelper
     {
-        private readonly DataContext _context;
+
+        #region Attributes
+
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly DataContext _context;
         private readonly SignInManager<User> _signInManager;
 
-        public UserHelper(DataContext context, UserManager<User> userManager, RoleManager<IdentityRole> roleManager, SignInManager<User> signInManager)
+        #endregion Attributes
+
+        public UserHelper(UserManager<User> userManager, RoleManager<IdentityRole> roleManager, DataContext context, SignInManager<User> signInManager)
         {
-            _context = context;
             _userManager = userManager;
             _roleManager = roleManager;
+            _context = context;
             _signInManager = signInManager;
+        }
+
+        #region Methods
+
+        public async Task<string> GeneratePasswordResetTokenAsync(User user)
+        {
+            return await _userManager.GeneratePasswordResetTokenAsync(user);
+        }
+
+        public async Task<IdentityResult> ResetPasswordAsync(User user, string token, string password)
+        {
+            return await _userManager.ResetPasswordAsync(user, token, password);
+        }
+
+        public async Task<string> GenerateEmailConfirmationTokenAsync(User user)
+        {
+            return await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        }
+
+        public async Task<IdentityResult> ConfirmEmailAsync(User user, string token)
+        {
+            return await _userManager.ConfirmEmailAsync(user, token);
         }
 
         public async Task<IdentityResult> AddUserAsync(User user, string password)
@@ -31,9 +68,14 @@ namespace WaCollaborative.Backend.Helpers
             await _userManager.AddToRoleAsync(user, roleName);
         }
 
+        public async Task<IdentityResult> ChangePasswordAsync(User user, string currentPassword, string newPassword)
+        {
+            return await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+        }
+
         public async Task CheckRoleAsync(string roleName)
         {
-            bool roleExists = await _roleManager.RoleExistsAsync(roleName);
+            var roleExists = await _roleManager.RoleExistsAsync(roleName);
             if (!roleExists)
             {
                 await _roleManager.CreateAsync(new IdentityRole
@@ -53,6 +95,16 @@ namespace WaCollaborative.Backend.Helpers
             return user!;
         }
 
+        public async Task<User> GetUserAsync(Guid userId)
+        {
+            var user = await _context.Users
+                .Include(u => u.City!)
+                .ThenInclude(c => c.State!)
+                .ThenInclude(s => s.Country)
+                .FirstOrDefaultAsync(x => x.Id == userId.ToString());
+            return user!;
+        }
+
         public async Task<bool> IsUserInRoleAsync(User user, string roleName)
         {
             return await _userManager.IsInRoleAsync(user, roleName);
@@ -67,6 +119,13 @@ namespace WaCollaborative.Backend.Helpers
         {
             await _signInManager.SignOutAsync();
         }
+
+        public async Task<IdentityResult> UpdateUserAsync(User user)
+        {
+            return await _userManager.UpdateAsync(user);
+        }
+
+        #endregion Methods
 
     }
 }

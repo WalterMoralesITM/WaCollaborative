@@ -3,9 +3,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WaCollaborative.Backend.Data;
-using WaCollaborative.Backend.Helpers;
 using WaCollaborative.Backend.Interfaces;
 using WaCollaborative.Shared.DTOs;
+using WaCollaborative.Shared.Helpers;
 
 #endregion Using
 
@@ -31,7 +31,7 @@ namespace WaCollaborative.Backend.Controllers
         {
             _unitOfWork = unitOfWork;
             _context = context;
-            _entity = context.Set<T>();
+            _entity = _context.Set<T>();
         }
 
         #endregion Constructor
@@ -48,7 +48,7 @@ namespace WaCollaborative.Backend.Controllers
         }
 
         [HttpGet("totalPages")]
-        public virtual async Task<IActionResult> GetPagesAsync([FromQuery] PaginationDTO pagination)
+        public virtual async Task<ActionResult> GetPagesAsync([FromQuery] PaginationDTO pagination)
         {
             var queryable = _entity.AsQueryable();
             double count = await queryable.CountAsync();
@@ -56,52 +56,49 @@ namespace WaCollaborative.Backend.Controllers
             return Ok(totalPages);
         }
 
+
         [HttpGet("{id}")]
         public virtual async Task<IActionResult> GetAsync(int id)
         {
-            var action = await _unitOfWork.GetAsync(id);
-            if (action.WasSuccess)
+            var row = await _unitOfWork.GetAsync(id);
+            if (row == null)
             {
-                return Ok(action.Result);
+                return NotFound();
             }
-            return NotFound();
+            return Ok(row);
         }
 
         [HttpPost]
         public virtual async Task<IActionResult> PostAsync(T model)
         {
-            var action = await _unitOfWork.AddAsync(model);
-            if (action.WasSuccess)
+            var result = await _unitOfWork.AddAsync(model);
+            if (result.WasSuccess)
             {
-                return Ok(action.Result);
+                return Ok(result.Result);
             }
-            return BadRequest(action.Message);
+            return BadRequest(result.Message);
         }
 
         [HttpPut]
         public virtual async Task<IActionResult> PutAsync(T model)
         {
-            var action = await _unitOfWork.UpdateAsync(model);
-            if (action.WasSuccess)
+            var result = await _unitOfWork.UpdateAsync(model);
+            if (result.WasSuccess)
             {
-                return Ok(action.Result);
+                return Ok(result.Result);
             }
-            return BadRequest(action.Message);
+            return BadRequest(result.Message);
         }
 
         [HttpDelete("{id}")]
         public virtual async Task<IActionResult> DeleteAsync(int id)
         {
-            var action = await _unitOfWork.GetAsync(id);
-            if (!action.WasSuccess)
+            var row = await _unitOfWork.GetAsync(id);
+            if (row == null)
             {
                 return NotFound();
             }
-            action = await _unitOfWork.DeleteAsync(id);
-            if (!action.WasSuccess)
-            {
-                return BadRequest(action.Message);
-            }
+            await _unitOfWork.DeleteAsync(id);
             return NoContent();
         }
 

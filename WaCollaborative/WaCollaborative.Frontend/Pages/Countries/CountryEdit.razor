@@ -1,13 +1,14 @@
-﻿@page "/countries/edit/{Id:int}"
+﻿@page "/countries/edit/{CountryId:int}"
+@attribute [Authorize(Roles = "Planner")]
 @inject NavigationManager navigationManager
 @inject IRepository repository
 @inject SweetAlertService sweetAlertService
 
 <h3>Editar País</h3>
 
-@if(country is null)
+@if (country is null)
 {
-    <Loading/>
+    <Loading />
 }
 else
 {
@@ -19,12 +20,15 @@ else
     private Country? country;
     private CountryForm? countryForm;
 
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; } = default!;
+
     [Parameter]
-    public int Id { get; set; }
+    public int CountryId { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
-        var response = await repository.GetAsync<Country>($"/api/countries/{Id}");
+        var response = await repository.GetAsync<Country>($"/api/countries/{CountryId}");
         if (response.Error)
         {
             if (response.HttpResponseMessage.StatusCode == HttpStatusCode.NotFound)
@@ -47,7 +51,10 @@ else
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
             return;
         }
+
+        await BlazoredModal.CloseAsync(ModalResult.Ok());
         Return();
+
         var toast = sweetAlertService.Mixin(new SweetAlertOptions
             {
                 Toast = true,

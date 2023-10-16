@@ -1,11 +1,10 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
+﻿#region Using
+
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using WaCollaborative.Shared.Enums;
+
+#endregion Using
 
 namespace WaCollaborative.Shared.Entities
 {
@@ -45,6 +44,6 @@ namespace WaCollaborative.Shared.Entities
 
         [Display(Name = "Usuario")]
         public string FullName => $"{FirstName} {LastName}";
+               
     }
-
 }

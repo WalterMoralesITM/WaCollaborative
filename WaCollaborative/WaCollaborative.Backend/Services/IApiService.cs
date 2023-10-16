@@ -1,9 +1,24 @@
-﻿using WaCollaborative.Shared.Responses;
+﻿#region Using
+
+using WaCollaborative.Shared.Responses;
+
+#endregion Using
 
 namespace WaCollaborative.Backend.Services
 {
+
+    /// <summary>
+    /// The interface IApiService
+    /// </summary>
+
     public interface IApiService
     {
-        Task<Response<T>> GetAsync<T>(string servicePrefix, string controller);
+
+        #region Methods
+
+        public Task<Response<T>> GetAsync<T>(string servicePrefix, string controller);
+
+        #endregion Methods
+
     }
 }

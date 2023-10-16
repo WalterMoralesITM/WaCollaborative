@@ -6,18 +6,18 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WaCollaborative.Backend.Data;
 using WaCollaborative.Backend.Helpers;
-using WaCollaborative.Backend.Interfaces;
 using WaCollaborative.Shared.DTOs;
 using WaCollaborative.Shared.Entities;
+using WaCollaborative.Shared.Helpers;
+using WaCollaborative.Backend.Interfaces;
 
 #endregion Using
 
 namespace WaCollaborative.Backend.Controllers
 {
 
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     public class CountriesController : GenericController<Country>
     {
@@ -39,6 +39,15 @@ namespace WaCollaborative.Backend.Controllers
 
         #region Methods
 
+        [AllowAnonymous]
+        [HttpGet("combo")]
+        public async Task<ActionResult> GetComboAsync()
+        {
+            return Ok(await _context.Countries
+                .OrderBy(c => c.Name)
+                .ToListAsync());
+        }
+
         [HttpGet]
         public override async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
         {
@@ -46,12 +55,30 @@ namespace WaCollaborative.Backend.Controllers
                 .Include(c => c.States)
                 .AsQueryable();
 
-            var result = await queryable
+            if (!string.IsNullOrWhiteSpace(pagination.Filter))
+            {
+                queryable = queryable.Where(x => x.Name.ToLower().Contains(pagination.Filter.ToLower()));
+            }
+
+            return Ok(await queryable
                 .OrderBy(c => c.Name)
                 .Paginate(pagination)
-                .ToListAsync();
+                .ToListAsync());
+        }
 
-            return Ok(result);
+        [HttpGet("totalPages")]
+        public override async Task<ActionResult> GetPagesAsync([FromQuery] PaginationDTO pagination)
+        {
+            var queryable = _context.Countries.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(pagination.Filter))
+            {
+                queryable = queryable.Where(x => x.Name.ToLower().Contains(pagination.Filter.ToLower()));
+            }
+
+            double count = await queryable.CountAsync();
+            double totalPages = Math.Ceiling(count / pagination.RecordsNumber);
+            return Ok(totalPages);
         }
 
         [HttpGet("{id}")]
@@ -67,16 +94,6 @@ namespace WaCollaborative.Backend.Controllers
             }
             return Ok(country);
         }
-
-        [AllowAnonymous]
-        [HttpGet("combo")]
-        public async Task<ActionResult> GetCombo()
-        {
-            return Ok(await _context.Countries
-                .OrderBy(c => c.Name)
-                .ToListAsync());
-        }
-
 
         #endregion Methods
 

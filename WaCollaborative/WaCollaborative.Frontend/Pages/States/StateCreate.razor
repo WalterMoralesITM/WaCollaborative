@@ -1,9 +1,10 @@
 ﻿@page "/states/create/{CountryId:int}"
-@inject IRepository repository;
-@inject NavigationManager navigationManager;
-@inject SweetAlertService sweetAlertService;
+@attribute [Authorize(Roles = "Planner")]
+@inject NavigationManager navigationManager
+@inject IRepository repository
+@inject SweetAlertService sweetAlertService
 
-<h3>Crear Estado/Departamento</h3>
+<h3>Nuevo Estado/Departamento</h3>
 
 <StateForm @ref="stateForm" State="state" OnValidSubmit="CreateAsync" ReturnAction="Return" />
 
@@ -11,22 +12,34 @@
     private State state = new();
     private StateForm? stateForm;
 
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; } = default!;
+
     [Parameter]
     public int CountryId { get; set; }
 
     private async Task CreateAsync()
     {
-
         state.CountryId = CountryId;
-        var httpResponse = await repository.PostAsync("/api/states", state);
-        if (httpResponse.Error)
+        var response = await repository.PostAsync("/api/states", state);
+        if (response.Error)
         {
-            var message = await httpResponse.GetErrorMessageAsync();
+            var message = await response.GetErrorMessageAsync();
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
             return;
         }
 
+        await BlazoredModal.CloseAsync(ModalResult.Ok());
         Return();
+
+        var toast = sweetAlertService.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                Position = SweetAlertPosition.BottomEnd,
+                ShowConfirmButton = true,
+                Timer = 3000
+            });
+        await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Registro creado con éxito.");
     }
 
     private void Return()

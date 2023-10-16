@@ -11,10 +11,16 @@ namespace WaCollaborative.Shared.Responses
 
     public class StateResponse
     {
+
+        #region Attributes
+
         public long Id { get; set; }
 
         public string? Name { get; set; }
 
         public string? Iso2 { get; set; }
+
+        #endregion Attributes
+
     }
 }

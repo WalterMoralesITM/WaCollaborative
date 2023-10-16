@@ -1,7 +1,8 @@
 ﻿#region Using
 
+using System.Runtime.InteropServices;
 using Microsoft.EntityFrameworkCore;
-using WaCollaborative.Backend.Helpers;
+using WaCollaborative.Backend.Helpers.Interfaces;
 using WaCollaborative.Backend.Services;
 using WaCollaborative.Shared.Entities;
 using WaCollaborative.Shared.Enums;
@@ -24,16 +25,18 @@ namespace WaCollaborative.Backend.Data
         private readonly DataContext _context;
         private readonly IApiService _apiService;
         private readonly IUserHelper _userHelper;
+        private readonly IFileStorage _fileStorage;
 
         #endregion Attributes
 
         #region Constructor
 
-        public SeedDb(DataContext context, IApiService apiService, IUserHelper userHelper)
+        public SeedDb(DataContext context, IApiService apiService, IUserHelper userHelper, IFileStorage fileStorage)
         {
             _context = context;
             _apiService = apiService;
             _userHelper = userHelper;
+            _fileStorage = fileStorage;
         }
 
         #endregion Constructor
@@ -42,21 +45,41 @@ namespace WaCollaborative.Backend.Data
 
         public async Task SeedAsync()
         {
-            await _context.Database.EnsureCreatedAsync();            
+            await _context.Database.EnsureCreatedAsync();
+            await CheckCategoriesAsync();
             await CheckStatusType();
             await CheckStatus();
             await CheckMeasurementUnits();
             await CheckCountriesAsync();
             await CheckRolesAsync();
-            await CheckUserAsync("1010", "Efrain", "Trujillo", "truji@yopmail.com", "322 111 2222", "Avenida siempre viva 123", UserType.Planner);
-
+            await CheckUserAsync("1010", "Efrain", "Trujillo", "truji@yopmail.com", "322 111 2222", "Avenida siempre viva 123", "EfrainTrujillo.jpeg", UserType.Planner);
+            await CheckUserAsync("1020", "Jose", "Daza", "josedaza@yopmail.com", "313 644 9685", "Calle 5", "JoseDaza.jpeg", UserType.Planner);
         }
 
-        private async Task<User> CheckUserAsync(string document, string firstName, string lastName, string email, string phone, string address, UserType userType)
+        private async Task<User> CheckUserAsync(string document, string firstName, string lastName, string email, string phone, string address, string image, UserType userType)
         {
             var user = await _userHelper.GetUserAsync(email);
             if (user == null)
             {
+                var city = await _context.Cities.FirstOrDefaultAsync(x => x.Name == "Medellín");
+                if (city == null)
+                {
+                    city = await _context.Cities.FirstOrDefaultAsync();
+                }
+
+                string filePath;
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    filePath = $"{Environment.CurrentDirectory}\\Images\\users\\{image}";
+                }
+                else
+                {
+                    filePath = $"{Environment.CurrentDirectory}/Images/users/{image}";
+                }
+
+                var fileBytes = File.ReadAllBytes(filePath);
+                var imagePath = await _fileStorage.SaveFileAsync(fileBytes, "jpg", "users");
+
                 user = new User
                 {
                     FirstName = firstName,
@@ -66,12 +89,16 @@ namespace WaCollaborative.Backend.Data
                     PhoneNumber = phone,
                     Address = address,
                     Document = document,
-                    City = _context.Cities.FirstOrDefault(),
+                    City = city,
                     UserType = userType,
+                    Photo = imagePath,
                 };
 
                 await _userHelper.AddUserAsync(user, "123456");
                 await _userHelper.AddUserToRoleAsync(user, userType.ToString());
+
+                var token = await _userHelper.GenerateEmailConfirmationTokenAsync(user);
+                await _userHelper.ConfirmEmailAsync(user, token);
             }
 
             return user;
@@ -81,6 +108,32 @@ namespace WaCollaborative.Backend.Data
         {
             await _userHelper.CheckRoleAsync(UserType.Planner.ToString());
             await _userHelper.CheckRoleAsync(UserType.Collaborator.ToString());
+        }
+
+        private async Task CheckCategoriesAsync()
+        {
+            if (!_context.Categories.Any())
+            {
+                _context.Categories.Add(new Category { Name = "Apple" });
+                _context.Categories.Add(new Category { Name = "Autos" });
+                _context.Categories.Add(new Category { Name = "Belleza" });
+                _context.Categories.Add(new Category { Name = "Calzado" });
+                _context.Categories.Add(new Category { Name = "Comida" });
+                _context.Categories.Add(new Category { Name = "Cosmeticos" });
+                _context.Categories.Add(new Category { Name = "Deportes" });
+                _context.Categories.Add(new Category { Name = "Erótica" });
+                _context.Categories.Add(new Category { Name = "Ferreteria" });
+                _context.Categories.Add(new Category { Name = "Gamer" });
+                _context.Categories.Add(new Category { Name = "Hogar" });
+                _context.Categories.Add(new Category { Name = "Jardín" });
+                _context.Categories.Add(new Category { Name = "Jugetes" });
+                _context.Categories.Add(new Category { Name = "Lenceria" });
+                _context.Categories.Add(new Category { Name = "Mascotas" });
+                _context.Categories.Add(new Category { Name = "Nutrición" });
+                _context.Categories.Add(new Category { Name = "Ropa" });
+                _context.Categories.Add(new Category { Name = "Tecnología" });
+                await _context.SaveChangesAsync();
+            }
         }
 
         private async Task CheckStatusType() 

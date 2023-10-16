@@ -1,14 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿#region Using
+
+using System.ComponentModel;
+
+#endregion Using
 
 namespace WaCollaborative.Shared.Enums
 {
     public enum UserType
     {
+        [Description("Planeador")]
         Planner,
-        Collaborator
+
+        [Description("Colaborador")]
+        Collaborator       
     }
 }

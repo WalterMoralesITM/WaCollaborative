@@ -21,11 +21,6 @@ namespace WaCollaborative.Frontend.Repositories
 
         #endregion Attributes
 
-        private JsonSerializerOptions _jsonDefaultOptions => new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true,
-        };
-
         #region Constructor
 
         public Repository(HttpClient httpClient)
@@ -37,10 +32,21 @@ namespace WaCollaborative.Frontend.Repositories
 
         #region Methods
 
+        private JsonSerializerOptions _jsonDefaultOptions => new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+        };
+
         private async Task<T> UnserializeAnswer<T>(HttpResponseMessage responseHttp)
         {
             var response = await responseHttp.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<T>(response, _jsonDefaultOptions)!;
+        }
+
+        public async Task<HttpResponseWrapper<object>> GetAsync(string url)
+        {
+            var responseHTTP = await _httpClient.GetAsync(url);
+            return new HttpResponseWrapper<object>(null, !responseHTTP.IsSuccessStatusCode, responseHTTP);
         }
 
         public async Task<HttpResponseWrapper<T>> GetAsync<T>(string url)
@@ -76,7 +82,7 @@ namespace WaCollaborative.Frontend.Repositories
 
             return new HttpResponseWrapper<TResponse>(default, !responseHttp.IsSuccessStatusCode, responseHttp);
         }
-               
+
         public async Task<HttpResponseWrapper<object>> PutAsync<T>(string url, T model)
         {
             var messageJSON = JsonSerializer.Serialize(model);

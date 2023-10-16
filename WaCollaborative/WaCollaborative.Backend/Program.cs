@@ -3,21 +3,20 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using WaCollaborative.Backend.Data;
 using WaCollaborative.Backend.Helpers;
+using WaCollaborative.Backend.Helpers.Interfaces;
 using WaCollaborative.Backend.Interfaces;
 using WaCollaborative.Backend.Repositories;
 using WaCollaborative.Backend.Services;
 using WaCollaborative.Backend.UnitsOfWork;
 using WaCollaborative.Shared.Entities;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+/// Add services to the container.
 
 builder.Services
     .AddControllers()
@@ -27,7 +26,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Sales Backend", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "WaCollaborative Backend", Version = "v1" });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = @"JWT Authorization header using the Bearer scheme. <br /> <br />
@@ -59,7 +58,6 @@ builder.Services.AddSwaggerGen(c =>
 
 
 builder.Services.AddDbContext<DataContext>(x => x.UseSqlServer("name=WaCollaborative"));
-
 builder.Services.AddScoped(typeof(IGenericUnitOfWork<>), typeof(GenericUnitOfWork<>));
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IApiService, ApiService>();
@@ -67,12 +65,17 @@ builder.Services.AddTransient<SeedDb>();
 
 builder.Services.AddIdentity<User, IdentityRole>(x =>
 {
+    x.Tokens.AuthenticatorTokenProvider = TokenOptions.DefaultAuthenticatorProvider;
+    x.SignIn.RequireConfirmedEmail = true;
     x.User.RequireUniqueEmail = true;
     x.Password.RequireDigit = false;
     x.Password.RequiredUniqueChars = 0;
     x.Password.RequireLowercase = false;
     x.Password.RequireNonAlphanumeric = false;
     x.Password.RequireUppercase = false;
+    x.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+    x.Lockout.MaxFailedAccessAttempts = 3;
+    x.Lockout.AllowedForNewUsers = true;
 })
     .AddEntityFrameworkStores<DataContext>()
     .AddDefaultTokenProviders();
@@ -90,7 +93,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         ClockSkew = TimeSpan.Zero
     });
 
-
+builder.Services.AddScoped<IFileStorage, FileStorage>();
+builder.Services.AddScoped<IMailHelper, MailHelper>();
 
 var app = builder.Build();
 SeedData(app);
@@ -105,7 +109,7 @@ void SeedData(WebApplication app)
     }
 }
 
-// Configure the HTTP request pipeline.
+/// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -113,11 +117,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
-
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.UseCors(x => x

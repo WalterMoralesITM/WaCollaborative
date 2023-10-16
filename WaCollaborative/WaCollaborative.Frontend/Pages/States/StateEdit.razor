@@ -1,56 +1,67 @@
 ﻿@page "/states/edit/{StateId:int}"
-@inject IRepository repository
+@attribute [Authorize(Roles = "Planner")]
 @inject NavigationManager navigationManager
+@inject IRepository repository
 @inject SweetAlertService sweetAlertService
 
 <h3>Editar Estado/Departamento</h3>
 
 @if (state is null)
 {
-    <p>Cargando...</p>
+    <Loading />
 }
 else
 {
-    <StateForm @ref="stateForm" State="state" OnValidSubmit="EditAsync" ReturnAction="Return" />
+    <StateForm @ref="stateForm" State="state" OnValidSubmit="SaveAsync" ReturnAction="Return" />
 }
 
 @code {
     private State? state;
     private StateForm? stateForm;
 
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; } = default!;
+
     [Parameter]
     public int StateId { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        var responseHttp = await repository.GetAsync<State>($"/api/states/{StateId}");
-        if (responseHttp.Error)
+        var response = await repository.GetAsync<State>($"/api/states/{StateId}");
+        if (response.Error)
         {
-            if (responseHttp.HttpResponseMessage.StatusCode == HttpStatusCode.NotFound)
+            if (response.HttpResponseMessage.StatusCode == HttpStatusCode.NotFound)
             {
-                navigationManager.NavigateTo("/countries");
-                return;
+                Return();
             }
-
-            var message = await responseHttp.GetErrorMessageAsync();
+            var message = await response.GetErrorMessageAsync();
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
             return;
         }
-
-        state = responseHttp.Response;
+        state = response.Response;
     }
 
-    private async Task EditAsync()
+    private async Task SaveAsync()
     {
-        var responseHttp = await repository.PutAsync("/api/states", state);
-        if (responseHttp.Error)
+        var response = await repository.PutAsync($"/api/states", state);
+        if (response.Error)
         {
-            var message = await responseHttp.GetErrorMessageAsync();
+            var message = await response.GetErrorMessageAsync();
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
             return;
         }
 
+        await BlazoredModal.CloseAsync(ModalResult.Ok());
         Return();
+
+        var toast = sweetAlertService.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                Position = SweetAlertPosition.BottomEnd,
+                ShowConfirmButton = true,
+                Timer = 3000
+            });
+        await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Cambios guardados con éxito.");
     }
 
     private void Return()

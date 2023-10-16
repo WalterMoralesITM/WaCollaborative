@@ -1,13 +1,29 @@
-﻿using System.Text.Json;
+﻿#region Using
+
+using System.Text.Json;
 using WaCollaborative.Shared.Responses;
+
+#endregion Using
 
 namespace WaCollaborative.Backend.Services
 {
+
+    /// <summary>
+    /// The class ApiService
+    /// </summary>
+
     public class ApiService : IApiService
     {
+
+        #region Attributes
+
         private readonly string _urlBase;
         private readonly string _tokenName;
         private readonly string _tokenValue;
+
+        #endregion Attributes
+
+        #region Constructor
 
         public ApiService(IConfiguration configuration)
         {
@@ -15,6 +31,10 @@ namespace WaCollaborative.Backend.Services
             _tokenName = configuration["CoutriesAPI:tokenName"]!;
             _tokenValue = configuration["CoutriesAPI:tokenValue"]!;
         }
+
+        #endregion Constructor
+
+        #region Methods
 
         private JsonSerializerOptions _jsonDefaultOptions => new JsonSerializerOptions
         {
@@ -58,6 +78,8 @@ namespace WaCollaborative.Backend.Services
                 };
             }
         }
+
+        #endregion Methods
 
     }
 }

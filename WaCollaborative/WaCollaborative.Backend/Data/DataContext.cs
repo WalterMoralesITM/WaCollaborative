@@ -46,6 +46,8 @@ namespace WaCollaborative.Backend.Data
 
         public DbSet<EventType> EventTypes { get; set; }
 
+        public DbSet<DemandType> DemandTypes { get; set; }
+
         #endregion Entities
 
         #region Methods
@@ -62,6 +64,8 @@ namespace WaCollaborative.Backend.Data
             modelBuilder.Entity<Category>().HasIndex(c => c.Name).IsUnique();
             modelBuilder.Entity<Segment>().HasIndex(s => s.Name).IsUnique();
             modelBuilder.Entity<DistributionChannel>().HasIndex(d => d.Name).IsUnique();
+            modelBuilder.Entity<EventType>().HasIndex(s => s.Name).IsUnique();
+            modelBuilder.Entity<DemandType>().HasIndex(s => new { s.Name, s.EventTypeId }).IsUnique();
         }
 
         #endregion Methods

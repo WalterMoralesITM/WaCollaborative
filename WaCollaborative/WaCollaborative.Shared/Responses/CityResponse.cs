@@ -11,8 +11,14 @@ namespace WaCollaborative.Shared.Responses
 
     public class CityResponse
     {
+
+        #region Attributes
+
         public long Id { get; set; }
 
         public string? Name { get; set; }
+
+        #endregion Attributes
+
     }
 }

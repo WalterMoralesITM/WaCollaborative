@@ -1,7 +1,6 @@
-﻿﻿
-@inject SweetAlertService sweetAlertService
+﻿@inject SweetAlertService sweetAlertService
 
-<NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigation" />
+<NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigationAsync"></NavigationLock>
 
 <EditForm EditContext="editContext" OnValidSubmit="OnValidSubmit">
     <DataAnnotationsValidator />
@@ -12,36 +11,42 @@
             <ValidationMessage For="@(() => City.Name)" />
         </div>
     </div>
-    <button class="btn btn-primary btn-sm" type="submit">Guardar Cambios</button>
-    <button class="btn btn-success btn-sm" @onclick="ReturnAction">Regresar</button>
+    <button class="btn btn-primary" type="submit">Guardar</button>
+    <button class="btn btn-success" @onclick="ReturnAction">Regresar</button>
 </EditForm>
 
 @code {
     private EditContext editContext = null!;
-
-    [Parameter]
-    [EditorRequired]
-    public City City { get; set; } = null!;
-
-    [Parameter]
-    [EditorRequired]
-    public EventCallback OnValidSubmit { get; set; }
-
-    [Parameter]
-    [EditorRequired]
-    public EventCallback ReturnAction { get; set; }
-
-    public bool FormPostedSuccessfully { get; set; }
 
     protected override void OnInitialized()
     {
         editContext = new(City);
     }
 
-    private async Task OnBeforeInternalNavigation(LocationChangingContext context)
+    [EditorRequired]
+    [Parameter]
+    public City City { get; set; } = null!;
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback OnValidSubmit { get; set; }
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback ReturnAction { get; set; }
+
+    public bool FormPostedSuccessfully { get; set; }
+
+    private async Task OnBeforeInternalNavigationAsync(LocationChangingContext context)
     {
-        var formWasMofied = editContext.IsModified();
-        if (!formWasMofied || FormPostedSuccessfully)
+        var formWasEdited = editContext.IsModified();
+
+        if (!formWasEdited)
+        {
+            return;
+        }
+
+        if (FormPostedSuccessfully)
         {
             return;
         }
@@ -51,12 +56,11 @@
                 Title = "Confirmación",
                 Text = "¿Deseas abandonar la página y perder los cambios?",
                 Icon = SweetAlertIcon.Question,
-                ShowCancelButton = true,
-                CancelButtonText = "No",
-                ConfirmButtonText = "Si"
+                ShowCancelButton = true
             });
 
         var confirm = !string.IsNullOrEmpty(result.Value);
+
         if (confirm)
         {
             return;

@@ -6,17 +6,17 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WaCollaborative.Backend.Data;
 using WaCollaborative.Backend.Helpers;
-using WaCollaborative.Backend.Interfaces;
 using WaCollaborative.Shared.DTOs;
 using WaCollaborative.Shared.Entities;
+using WaCollaborative.Shared.Helpers;
+using WaCollaborative.Backend.Interfaces;
 
 #endregion Using
 
 namespace WaCollaborative.Backend.Controllers
 {
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     public class StatesController : GenericController<State>
     {
@@ -38,28 +38,47 @@ namespace WaCollaborative.Backend.Controllers
 
         #region Methods
 
+        [AllowAnonymous]
+        [HttpGet("combo/{countryId:int}")]
+        public async Task<ActionResult> GetComboAsync(int countryId)
+        {
+            return Ok(await _context.States
+                .Where(s => s.CountryId == countryId)
+                .OrderBy(s => s.Name)
+                .ToListAsync());
+        }
+
         [HttpGet]
         public override async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
         {
             var queryable = _context.States
-                .Include(c => c.Cities)
+                .Include(x => x.Cities)
                 .Where(x => x.Country!.Id == pagination.Id)
                 .AsQueryable();
 
-            var result = await queryable
-                .OrderBy(c => c.Name)
-                .Paginate(pagination)
-                .ToListAsync();
+            if (!string.IsNullOrWhiteSpace(pagination.Filter))
+            {
+                queryable = queryable.Where(x => x.Name.ToLower().Contains(pagination.Filter.ToLower()));
+            }
 
-            return Ok(result);
+            return Ok(await queryable
+                .OrderBy(x => x.Name)
+                .Paginate(pagination)
+                .ToListAsync());
         }
 
         [HttpGet("totalPages")]
-        public override async Task<IActionResult> GetPagesAsync([FromQuery] PaginationDTO pagination)
+        public override async Task<ActionResult> GetPagesAsync([FromQuery] PaginationDTO pagination)
         {
             var queryable = _context.States
-                .Where(x=>x.Country!.Id == pagination.Id)
+                .Where(x => x.Country!.Id == pagination.Id)
                 .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(pagination.Filter))
+            {
+                queryable = queryable.Where(x => x.Name.ToLower().Contains(pagination.Filter.ToLower()));
+            }
+
             double count = await queryable.CountAsync();
             double totalPages = Math.Ceiling(count / pagination.RecordsNumber);
             return Ok(totalPages);
@@ -69,26 +88,14 @@ namespace WaCollaborative.Backend.Controllers
         public override async Task<IActionResult> GetAsync(int id)
         {
             var state = await _context.States
-                 .Include(x => x.Cities)
-                 .FirstOrDefaultAsync(x => x.Id == id);
-            if (state is null)
+                .Include(s => s.Cities)
+                .FirstOrDefaultAsync(s => s.Id == id);
+            if (state == null)
             {
                 return NotFound();
             }
-
             return Ok(state);
         }
-
-        [AllowAnonymous]
-        [HttpGet("combo/{countryId:int}")]
-        public async Task<ActionResult> GetCombo(int countryId)
-        {
-            return Ok(await _context.States
-                .Where(s => s.CountryId == countryId)
-                .OrderBy(s => s.Name)
-                .ToListAsync());
-        }
-
 
         #endregion Methods
 

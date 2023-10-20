@@ -24,6 +24,7 @@ namespace WaCollaborative.Backend.Controllers
 
         #region Attributes
 
+        private readonly IGenericUnitOfWork<Country> _unitOfWork;
         private readonly DataContext _context;
 
         #endregion Attributes
@@ -32,6 +33,7 @@ namespace WaCollaborative.Backend.Controllers
 
         public CountriesController(IGenericUnitOfWork<Country> unitOfWork, DataContext context) : base(unitOfWork, context)
         {
+            _unitOfWork = unitOfWork;
             _context = context;
         }
 
@@ -84,10 +86,7 @@ namespace WaCollaborative.Backend.Controllers
         [HttpGet("{id}")]
         public override async Task<IActionResult> GetAsync(int id)
         {
-            var country = await _context.Countries
-                .Include(c => c.States!)
-                .ThenInclude(s => s.Cities)
-                .FirstOrDefaultAsync(c => c.Id == id);
+            var country = await _unitOfWork.GetCountryAsync(id);
             if (country == null)
             {
                 return NotFound();

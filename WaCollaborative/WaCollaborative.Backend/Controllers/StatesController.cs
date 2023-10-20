@@ -23,6 +23,7 @@ namespace WaCollaborative.Backend.Controllers
 
         #region Attributes
 
+        private readonly IGenericUnitOfWork<State> _unitOfWork;
         private readonly DataContext _context;
 
         #endregion Attributes
@@ -31,6 +32,7 @@ namespace WaCollaborative.Backend.Controllers
 
         public StatesController(IGenericUnitOfWork<State> unitOfWork, DataContext context) : base(unitOfWork, context)
         {
+            _unitOfWork = unitOfWork;
             _context = context;
         }
 

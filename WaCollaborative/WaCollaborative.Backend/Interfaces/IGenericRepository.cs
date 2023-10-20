@@ -1,5 +1,6 @@
 ﻿#region Using
 
+using WaCollaborative.Shared.Entities;
 using WaCollaborative.Shared.Responses;
 
 #endregion Using
@@ -25,6 +26,10 @@ namespace WaCollaborative.Backend.Interfaces
         public Task<Response<T>> UpdateAsync(T entity);
 
         public Task<Response<T>> DeleteAsync(int id);
+
+        public Task<Country> GetCountryAsync(int id);
+
+        public Task<State> GetStateAsync(int id);
 
         #endregion Methods
 

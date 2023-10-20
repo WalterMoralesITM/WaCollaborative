@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WaCollaborative.Backend", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WaCollaborative.Frontend", "WaCollaborative.Frontend\WaCollaborative.Frontend.csproj", "{896D6874-D6BD-4377-93D8-DDF753D2F981}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaCollaborative.UnitTest", "WaCollaborative.UnitTest\WaCollaborative.UnitTest.csproj", "{0CBBDE51-A529-4AE3-8651-9CA8D7E8D2ED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{896D6874-D6BD-4377-93D8-DDF753D2F981}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{896D6874-D6BD-4377-93D8-DDF753D2F981}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{896D6874-D6BD-4377-93D8-DDF753D2F981}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0CBBDE51-A529-4AE3-8651-9CA8D7E8D2ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CBBDE51-A529-4AE3-8651-9CA8D7E8D2ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CBBDE51-A529-4AE3-8651-9CA8D7E8D2ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CBBDE51-A529-4AE3-8651-9CA8D7E8D2ED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

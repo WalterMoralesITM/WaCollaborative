@@ -1,6 +1,7 @@
 ﻿#region Using
 
 using WaCollaborative.Backend.Interfaces;
+using WaCollaborative.Shared.Entities;
 using WaCollaborative.Shared.Responses;
 
 #endregion Using
@@ -41,6 +42,10 @@ namespace WaCollaborative.Backend.UnitsOfWork
         public async Task<Response<T>> UpdateAsync(T model) => await _repository.UpdateAsync(model);
 
         public async Task DeleteAsync(int id) => await _repository.DeleteAsync(id);
+
+        public async Task<Country> GetCountryAsync(int id) => await _repository.GetCountryAsync(id);
+
+        public async Task<State> GetStateAsync(int id) => await _repository.GetStateAsync(id);
 
         #endregion Methods
 

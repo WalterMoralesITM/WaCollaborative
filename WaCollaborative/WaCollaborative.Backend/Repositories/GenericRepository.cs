@@ -3,6 +3,7 @@
 using Microsoft.EntityFrameworkCore;
 using WaCollaborative.Backend.Data;
 using WaCollaborative.Backend.Interfaces;
+using WaCollaborative.Shared.Entities;
 using WaCollaborative.Shared.Responses;
 
 #endregion Using
@@ -136,6 +137,23 @@ namespace WaCollaborative.Backend.Repositories
                     Message = dbUpdateException.InnerException.Message
                 };
             }
+        }
+
+        public async Task<Country> GetCountryAsync(int id)
+        {
+            var country = await _context.Countries
+                    .Include(c => c.States!)
+                    .ThenInclude(s => s.Cities)
+                    .FirstOrDefaultAsync(c => c.Id == id);
+            return country!;
+        }
+
+        public async Task<State> GetStateAsync(int id)
+        {
+            var state = await _context.States
+                    .Include(s => s.Cities)
+                    .FirstOrDefaultAsync(c => c.Id == id);
+            return state!;
         }
 
         #endregion Methods

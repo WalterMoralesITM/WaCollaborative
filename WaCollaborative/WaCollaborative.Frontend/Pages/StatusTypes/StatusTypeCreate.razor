@@ -18,7 +18,7 @@
 
     private async Task CreateAsync()
     {
-        var response = await repository.PostAsync("/api/statustypes", statusType);
+        var response = await repository.PostAsync("/api/statustype", statusType);
         if (response.Error)
         {
             var message = await response.GetErrorMessageAsync();

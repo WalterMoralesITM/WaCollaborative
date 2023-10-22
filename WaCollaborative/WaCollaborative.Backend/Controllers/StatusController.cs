@@ -56,7 +56,6 @@ namespace WaCollaborative.Backend.Controllers
         {
             var queryable = _context.Status
                .Include(x => x.StatusType)
-               .Where(x => x.StatusType!.Id == pagination.Id)
                .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(pagination.Filter))
@@ -65,7 +64,7 @@ namespace WaCollaborative.Backend.Controllers
             }
 
             return Ok(await queryable
-                .OrderBy(x => x.Name)
+                .OrderBy(c => c.Name)
                 .Paginate(pagination)
                 .ToListAsync());
         }
@@ -73,9 +72,7 @@ namespace WaCollaborative.Backend.Controllers
         [HttpGet("totalPages")]
         public override async Task<ActionResult> GetPagesAsync([FromQuery] PaginationDTO pagination)
         {
-            var queryable = _context.Status
-               .Where(x => x.StatusType!.Id == pagination.Id)
-               .AsQueryable();
+            var queryable = _context.Countries.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(pagination.Filter))
             {

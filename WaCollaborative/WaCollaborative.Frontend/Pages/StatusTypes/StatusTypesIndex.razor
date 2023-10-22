@@ -122,11 +122,11 @@
         var url = string.Empty;
         if (string.IsNullOrEmpty(Filter))
         {
-            url = $"api/statustypes/totalPages";
+            url = $"api/statustype/totalPages";
         }
         else
         {
-            url = $"api/statustypes/totalPages?filter={Filter}";
+            url = $"api/statustype/totalPages?filter={Filter}";
         }
 
         var response = await repository.GetAsync<int>(url);
@@ -144,11 +144,11 @@
         var url = string.Empty;
         if (string.IsNullOrEmpty(Filter))
         {
-            url = $"api/statustypes?page={page}";
+            url = $"api/statustype?page={page}";
         }
         else
         {
-            url = $"api/statustypes?page={page}&filter={Filter}";
+            url = $"api/statustype?page={page}&filter={Filter}";
         }
 
         var response = await repository.GetAsync<List<StatusType>>(url);
@@ -192,7 +192,7 @@
             return;
         }
 
-        var response = await repository.DeleteAsync($"api/statustypes/{statustype.Id}");
+        var response = await repository.DeleteAsync($"api/statustype/{statustype.Id}");
         if (response.Error)
         {
             var message = await response.GetErrorMessageAsync();

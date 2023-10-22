@@ -22,6 +22,8 @@ namespace WaCollaborative.Shared.Entities
         [Required(ErrorMessage = "El campo {0} es obligatorio.")]
         public string Name { get; set; } = null!;
 
+        [Display(Name = "Tipo de Evento")]
+        [Required(ErrorMessage = "El campo {0} es obligatorio.")]
         public int EventTypeId { get; set; }
 
         public EventType? EventType { get; set; }

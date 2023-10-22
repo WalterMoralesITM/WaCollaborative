@@ -1,0 +1,121 @@
+﻿@page "/demandtypes/create"
+@attribute [Authorize(Roles = "Planner")]
+@inject IRepository repository
+@inject SweetAlertService sweetAlertService
+@inject NavigationManager navigationManager
+
+@if (loading)
+{
+    <Loading />
+}
+else
+{
+    <EditForm Model="demandType" OnValidSubmit="CreateAsync">
+        <DataAnnotationsValidator />
+        <div class="card">
+            <div class="card-header">
+                <span>
+                    <label> Registrar Nuevo Tipo de Demanda:</label>
+                    <button class="btn btn-sm btn-primary float-end" type="submit"><i class="oi oi-check" /> Registrar</button>
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="mb-3">
+                            <label>Tipo de Demanda:</label>
+                            <div>
+                                <InputText class="form-control" @bind-Value="@demandType.Name" />
+                                <ValidationMessage For="@(() => demandType.Name)" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label>Tipo de Evento:</label>
+                            <div>
+                                <select class="form-select" @bind="demandType.EventTypeId">
+                                    <option value="0">-- Seleccione un tipo de evento --</option>
+                                    @if (eventTypes is not null)
+                                    {
+                                        @foreach (var eventType in eventTypes)
+                                        {
+                                            <option value="@eventType.Id">@eventType.Name</option>
+                                        }
+                                    }
+                                </select>
+                                <ValidationMessage For="@(() => demandType.EventTypeId)" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        <button class="btn btn-success" @onclick="Return">Regresar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+}
+
+@code {
+    private DemandType demandType = new();
+    private List<EventType>? eventTypes;
+    private bool loading;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEventTypesAsync();
+    }
+
+    private async Task LoadEventTypesAsync()
+    {
+        loading = true;
+        var responseHttp = await repository.GetAsync<List<EventType>>("/api/eventtypes/combo");
+        if (responseHttp.Error)
+        {
+            loading = false;
+            var message = await responseHttp.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        eventTypes = responseHttp.Response;
+        loading = false;
+    }
+
+    private async Task CreateAsync()
+    {
+        if (demandType.EventTypeId <= 0)
+        {
+            await sweetAlertService.FireAsync("Error", "Falta El tipo de Evento.", SweetAlertIcon.Error);
+            return;
+        }
+        else
+        {
+            var response = await repository.PostAsync("/api/demandtypes", demandType);
+            if (response.Error)
+            {
+                var message = await response.GetErrorMessageAsync();
+                await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+                return;
+            }
+
+            Return();
+
+            var toast = sweetAlertService.Mixin(new SweetAlertOptions
+                {
+                    Toast = true,
+                    Position = SweetAlertPosition.BottomEnd,
+                    ShowConfirmButton = true,
+                    Timer = 3000
+                });
+            await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Registro creado con éxito.");
+        }
+    }
+
+    private void Return()
+    {       
+        navigationManager.NavigateTo("/demandtypes");
+    }
+
+}

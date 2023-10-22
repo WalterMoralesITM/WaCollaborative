@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WaCollaborative.Backend.Data;
-using WaCollaborative.Backend.Helpers;
 using WaCollaborative.Shared.DTOs;
 using WaCollaborative.Shared.Entities;
 using WaCollaborative.Shared.Helpers;
@@ -41,6 +40,15 @@ namespace WaCollaborative.Backend.Controllers
         #endregion Constructor
 
         #region Methods
+
+        [AllowAnonymous]
+        [HttpGet("combo")]
+        public async Task<ActionResult> GetComboAsync()
+        {
+            return Ok(await _context.StatusType
+                .OrderBy(s => s.Name)
+                .ToListAsync());
+        }
 
         [HttpGet]
         public override async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)

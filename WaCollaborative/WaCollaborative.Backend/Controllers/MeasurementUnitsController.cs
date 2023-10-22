@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WaCollaborative.Backend.Data;
-using WaCollaborative.Backend.Helpers;
 using WaCollaborative.Shared.DTOs;
 using WaCollaborative.Shared.Entities;
 using WaCollaborative.Shared.Helpers;

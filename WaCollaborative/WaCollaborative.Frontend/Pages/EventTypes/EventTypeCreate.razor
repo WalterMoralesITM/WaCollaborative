@@ -1,4 +1,5 @@
 ﻿@page "/eventtypes/create"
+@attribute [Authorize(Roles = "Planner")]
 @inject NavigationManager navigationManager
 @inject IRepository repository
 @inject SweetAlertService sweetAlertService
@@ -12,6 +13,9 @@
     private EventType eventType = new();
     private EventTypeForm? eventTypeForm;
 
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; } = default!;
+
     private async Task CreateAsync()
     {
         var response = await repository.PostAsync("/api/eventtypes", eventType);
@@ -21,7 +25,10 @@
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
             return;
         }
+
+        await BlazoredModal.CloseAsync(ModalResult.Ok());
         Return();
+
         var toast = sweetAlertService.Mixin(new SweetAlertOptions
             {
                 Toast = true,

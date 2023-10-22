@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using WaCollaborative.Backend.Data;
-using WaCollaborative.Backend.Helpers;
 using WaCollaborative.Shared.DTOs;
 using WaCollaborative.Shared.Entities;
 using WaCollaborative.Shared.Responses;

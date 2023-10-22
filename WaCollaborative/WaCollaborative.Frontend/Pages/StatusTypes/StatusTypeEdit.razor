@@ -1,34 +1,33 @@
-﻿@page "/eventtypes/edit/{Id:int}"
+﻿@page "/statustypes/edit/{StatustypeId:int}"
 @attribute [Authorize(Roles = "Planner")]
 @inject NavigationManager navigationManager
 @inject IRepository repository
 @inject SweetAlertService sweetAlertService
 
-<h3>Editar Tipo de Evento</h3>
+<h3>Editar Tipo de Estado</h3>
 
-@if (eventType is null)
+@if (statusType is null)
 {
     <Loading />
 }
 else
 {
-    <EventTypeForm @ref="eventTypeForm" EventType="eventType" OnValidSubmit="SaveAsync" ReturnAction="Return" />
+    <StatusTypeForm @ref="statusTypeForm" StatusType="statusType" OnValidSubmit="SaveAsync" ReturnAction="Return" />
 }
 
 @code {
-
-    private EventType? eventType;
-    private EventTypeForm? eventTypeForm;
+    private StatusType? statusType;
+    private StatusTypeForm? statusTypeForm;
 
     [CascadingParameter]
     BlazoredModalInstance BlazoredModal { get; set; } = default!;
 
     [Parameter]
-    public int Id { get; set; }
+    public int StatustypeId { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
-        var response = await repository.GetAsync<EventType>($"/api/eventtypes/{Id}");
+        var response = await repository.GetAsync<StatusType>($"/api/statustypes/{StatustypeId}");
         if (response.Error)
         {
             if (response.HttpResponseMessage.StatusCode == HttpStatusCode.NotFound)
@@ -39,12 +38,12 @@ else
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
             return;
         }
-        eventType = response.Response;
+        statusType = response.Response;
     }
 
     private async Task SaveAsync()
     {
-        var response = await repository.PutAsync($"/api/eventtypes", eventType);
+        var response = await repository.PutAsync($"/api/statustypes", statusType);
         if (response.Error)
         {
             var message = await response.GetErrorMessageAsync();
@@ -67,8 +66,8 @@ else
 
     private void Return()
     {
-        eventTypeForm!.FormPostedSuccessfully = true;
-        navigationManager.NavigateTo("/eventtypes");
+        statusTypeForm!.FormPostedSuccessfully = true;
+        navigationManager.NavigateTo("/statustypes");
     }
 
 }

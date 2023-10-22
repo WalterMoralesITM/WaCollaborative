@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WaCollaborative.Backend.Data;
-using WaCollaborative.Backend.Helpers;
 using WaCollaborative.Shared.DTOs;
 using WaCollaborative.Shared.Entities;
 using WaCollaborative.Shared.Helpers;
@@ -28,6 +27,7 @@ namespace WaCollaborative.Backend.Controllers
 
         #region Attributes
 
+        private readonly IGenericUnitOfWork<DemandType> _unitOfWork;
         private readonly DataContext _context;
 
         #endregion Attributes
@@ -36,6 +36,7 @@ namespace WaCollaborative.Backend.Controllers
 
         public DemandTypesController(IGenericUnitOfWork<DemandType> unitOfWork, DataContext context) : base(unitOfWork, context)
         {
+            _unitOfWork = unitOfWork;
             _context = context;
         }
 

@@ -1,4 +1,5 @@
 ﻿@page "/measurementUnits/edit/{Id:int}"
+@attribute [Authorize(Roles = "Planner")]
 @inject NavigationManager navigationManager
 @inject IRepository repository
 @inject SweetAlertService sweetAlertService
@@ -18,6 +19,9 @@ else
 
     private MeasurementUnit? measurementUnit;    
     private MeasurementUnitsForm? measurementUnitsForm;
+
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; } = default!;
 
     [Parameter]
     public int Id { get; set; }
@@ -47,7 +51,10 @@ else
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
             return;
         }
+
+        await BlazoredModal.CloseAsync(ModalResult.Ok());
         Return();
+
         var toast = sweetAlertService.Mixin(new SweetAlertOptions
             {
                 Toast = true,

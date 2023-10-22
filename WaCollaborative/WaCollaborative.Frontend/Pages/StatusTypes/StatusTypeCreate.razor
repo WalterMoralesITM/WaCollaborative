@@ -1,24 +1,24 @@
-﻿@page "/distributionchannels/create"
+﻿@page "/statustypes/create"
 @attribute [Authorize(Roles = "Planner")]
 @inject NavigationManager navigationManager
 @inject IRepository repository
 @inject SweetAlertService sweetAlertService
 
-<h3>Nuevo Canal de Distribución</h3>
+<h3>Nuevo Categoría</h3>
 
-<DistributionChannelForm @ref="distributionChannelForm" DistributionChannel="distributionChannel" OnValidSubmit="CreateAsync" ReturnAction="Return" />
+<StatusTypeForm @ref="statusTypeForm" StatusType="statusType" OnValidSubmit="CreateAsync" ReturnAction="Return" />
 
 @code {
 
-    private DistributionChannel  distributionChannel = new();
-    private DistributionChannelForm? distributionChannelForm;
+    private StatusType statusType = new();
+    private StatusTypeForm? statusTypeForm;
 
     [CascadingParameter]
     BlazoredModalInstance BlazoredModal { get; set; } = default!;
 
     private async Task CreateAsync()
     {
-        var response = await repository.PostAsync("/api/DistributionChannels", distributionChannel);
+        var response = await repository.PostAsync("/api/statustypes", statusType);
         if (response.Error)
         {
             var message = await response.GetErrorMessageAsync();
@@ -41,8 +41,8 @@
 
     private void Return()
     {
-        distributionChannelForm!.FormPostedSuccessfully = true;
-        navigationManager.NavigateTo("/distributionchannels");
+        statusTypeForm!.FormPostedSuccessfully = true;
+        navigationManager.NavigateTo("/statustypes");
     }
 
 }

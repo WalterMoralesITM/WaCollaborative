@@ -5,14 +5,14 @@
 <EditForm EditContext="editContext" OnValidSubmit="OnValidSubmit">
     <DataAnnotationsValidator />
     <div class="mb-3">
-        <label>Unidad de Medida:</label>
+        <label>Tipo de Estado:</label>
         <div>
-            <InputText class="form-control" @bind-Value="@MeasurementUnit.Name" />
-            <ValidationMessage For="@(() => MeasurementUnit.Name)" />
+            <InputText class="form-control" @bind-Value="@StatusType.Name" />
+            <ValidationMessage For="@(() => StatusType.Name)" />
         </div>
     </div>
-    <button class="btn btn-primary btn-sm" type="submit">Guardar</button>
-    <button class="btn btn-success btn-sm" @onclick="ReturnAction">Regresar</button>
+    <button class="btn btn-primary" type="submit">Guardar</button>
+    <button class="btn btn-success" @onclick="ReturnAction">Regresar</button>
 </EditForm>
 
 @code {
@@ -21,12 +21,12 @@
 
     protected override void OnInitialized()
     {
-        editContext = new(MeasurementUnit);
+        editContext = new(StatusType);
     }
 
     [EditorRequired]
     [Parameter]
-    public MeasurementUnit MeasurementUnit { get; set; } = null!;
+    public StatusType StatusType { get; set; } = null!;
 
     [EditorRequired]
     [Parameter]

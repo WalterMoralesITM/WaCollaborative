@@ -22,6 +22,8 @@ namespace WaCollaborative.Shared.Entities
         [Required(ErrorMessage = "El campo {0} es obligatorio.")]
         public string Name { get; set; } = null!;
 
+        [Display(Name = "Tipo de Estado")]       
+        [Required(ErrorMessage = "El campo {0} es obligatorio.")]
         public int StatusTypeId { get; set; }
 
         public StatusType? StatusType { get; set; }

@@ -1,0 +1,121 @@
+﻿@page "/status/create"
+@attribute [Authorize(Roles = "Planner")]
+@inject IRepository repository
+@inject SweetAlertService sweetAlertService
+@inject NavigationManager navigationManager
+
+@if (loading)
+{
+    <Loading />
+}
+else
+{
+    <EditForm Model="status" OnValidSubmit="CreateAsync">
+        <DataAnnotationsValidator />
+         <div class="card">
+            <div class="card-header">
+                <span>
+                    <label> Registrar Nuevo Estado:</label>                    
+                    <button class="btn btn-sm btn-primary float-end" type="submit"><i class="oi oi-check" /> Registrar</button>                   
+                </span>               
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="mb-3">
+                            <label>Estado:</label>
+                            <div>
+                                <InputText class="form-control" @bind-Value="@status.Name" />
+                                <ValidationMessage For="@(() => status.Name)" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label>Tipo de Estado:</label>
+                            <div>
+                                <select class="form-select" @bind="status.StatusTypeId">
+                                    <option value="0">-- Seleccione un tipo de estado --</option>
+                                    @if (statusTypes is not null)
+                                    {
+                                        @foreach (var statusType in statusTypes)
+                                        {
+                                            <option value="@statusType.Id">@statusType.Name</option>
+                                        }
+                                    }
+                                </select>
+                                <ValidationMessage For="@(() => status.StatusTypeId)" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        <button class="btn btn-success" @onclick="Return">Regresar</button>
+                    </div>                    
+                </div>
+            </div>
+        </div>
+    </EditForm>
+}
+
+@code {
+    private Status status = new();
+    private List<StatusType>? statusTypes;
+    private bool loading;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStatusTypesAsync();
+    }
+
+    private async Task LoadStatusTypesAsync()
+    {
+        loading = true;
+        var responseHttp = await repository.GetAsync<List<StatusType>>("/api/statustype/combo");
+        if (responseHttp.Error)
+        {
+            loading = false;
+            var message = await responseHttp.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        statusTypes = responseHttp.Response;
+        loading = false;
+    }
+
+    private async Task CreateAsync()
+    {
+        if (status.StatusTypeId <= 0)
+        {
+            await sweetAlertService.FireAsync("Error", "Falta el tipo de Estado.", SweetAlertIcon.Error);
+            return;            
+        }
+        else
+        {
+            var response = await repository.PostAsync("/api/status", status);
+            if (response.Error)
+            {
+                var message = await response.GetErrorMessageAsync();
+                await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+                return;
+            }
+
+            Return();
+
+            var toast = sweetAlertService.Mixin(new SweetAlertOptions
+                {
+                    Toast = true,
+                    Position = SweetAlertPosition.BottomEnd,
+                    ShowConfirmButton = true,
+                    Timer = 3000
+                });
+            await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Registro creado con éxito.");
+        }
+    }
+
+    private void Return()
+    {        
+        navigationManager.NavigateTo("/status");
+    }
+
+}

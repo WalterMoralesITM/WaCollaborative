@@ -27,7 +27,7 @@ else
 
     protected override async Task OnParametersSetAsync()
     {
-        var response = await repository.GetAsync<StatusType>($"/api/statustypes/{StatustypeId}");
+        var response = await repository.GetAsync<StatusType>($"/api/statustype/{StatustypeId}");
         if (response.Error)
         {
             if (response.HttpResponseMessage.StatusCode == HttpStatusCode.NotFound)
@@ -43,7 +43,7 @@ else
 
     private async Task SaveAsync()
     {
-        var response = await repository.PutAsync($"/api/statustypes", statusType);
+        var response = await repository.PutAsync($"/api/statustype", statusType);
         if (response.Error)
         {
             var message = await response.GetErrorMessageAsync();

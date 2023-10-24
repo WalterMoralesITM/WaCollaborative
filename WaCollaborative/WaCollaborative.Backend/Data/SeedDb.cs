@@ -50,6 +50,8 @@ namespace WaCollaborative.Backend.Data
             await CheckStatusType();
             await CheckStatus();
             await CheckMeasurementUnits();
+            await CheckEventTypes();
+            await CheckDemandTypes();
             await CheckCountriesAsync();
             await CheckRolesAsync();
             await CheckUserAsync("1010", "Efrain", "Trujillo", "truji@yopmail.com", "322 111 2222", "Avenida siempre viva 123", "EfrainTrujillo.jpeg", UserType.Planner);
@@ -180,6 +182,26 @@ namespace WaCollaborative.Backend.Data
                 _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Lote" });
                 _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Metro Cúbico" });
                 _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Litro" });
+
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        private async Task CheckEventTypes()
+        {
+            if (!_context.EventTypes.Any())
+            {
+                _context.EventTypes.Add(new EventType { Name = "Lanzamiento" });
+              
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        private async Task CheckDemandTypes()
+        {
+            if (!_context.DemandTypes.Any())
+            {
+                _context.DemandTypes.Add(new DemandType { Name = "Demanda Extraordinaria", EventTypeId = 1 });
 
                 await _context.SaveChangesAsync();
             }

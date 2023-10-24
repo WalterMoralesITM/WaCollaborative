@@ -431,7 +431,7 @@ namespace WaCollaborative.UnitTest.Controllers
             var user = new User
             {
                 Email = "some@yopmail.com",
-                UserType = UserType.Collaborator,
+                UserType = UserType.Planner,
                 Document = "123",
                 FirstName = "John",
                 LastName = "Doe",

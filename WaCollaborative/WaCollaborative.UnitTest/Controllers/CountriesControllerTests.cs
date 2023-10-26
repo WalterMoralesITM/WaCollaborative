@@ -58,6 +58,7 @@ namespace WaCollaborative.UnitTest.Controllers
 
             /// Clean up (if needed)
             context.Database.EnsureDeleted();
+            context.Dispose();
         }
 
         [TestMethod]
@@ -77,6 +78,7 @@ namespace WaCollaborative.UnitTest.Controllers
 
             /// Clean up (if needed)
             context.Database.EnsureDeleted();
+            context.Dispose();
         }
 
         [TestMethod]
@@ -96,6 +98,7 @@ namespace WaCollaborative.UnitTest.Controllers
 
             /// Clean up (if needed)
             context.Database.EnsureDeleted();
+            context.Dispose();
         }
 
         [TestMethod]
@@ -114,8 +117,8 @@ namespace WaCollaborative.UnitTest.Controllers
 
             /// Clean up (if needed)
             context.Database.EnsureDeleted();
+            context.Dispose();
         }
-
 
         [TestMethod]
         public async Task GetAsync_ReturnsOkWhenCountryFound()
@@ -136,6 +139,7 @@ namespace WaCollaborative.UnitTest.Controllers
 
             /// Clean up (if needed)
             context.Database.EnsureDeleted();
+            context.Dispose();
         }
 
         #endregion Methods

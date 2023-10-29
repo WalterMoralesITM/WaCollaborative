@@ -56,6 +56,7 @@ namespace WaCollaborative.Backend.Data
             await CheckRolesAsync();
             await CheckUserAsync("1010", "Efrain", "Trujillo", "truji@yopmail.com", "322 111 2222", "Avenida siempre viva 123", "EfrainTrujillo.jpeg", UserType.Planner);
             await CheckUserAsync("1020", "Jose", "Daza", "josedaza@yopmail.com", "313 644 9685", "Calle 5", "JoseDaza.jpeg", UserType.Planner);
+            await CheckUserAsync("71469531", "Walter", "Morales", "wmorales@yopmail.com", "3053699685", "Calle 52 36 98", "Walter.jpeg", UserType.Planner);
         }
 
         private async Task<User> CheckUserAsync(string document, string firstName, string lastName, string email, string phone, string address, string image, UserType userType)

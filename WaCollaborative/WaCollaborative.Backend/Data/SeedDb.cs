@@ -47,9 +47,11 @@ namespace WaCollaborative.Backend.Data
         {
             await _context.Database.EnsureCreatedAsync();
             await CheckCategoriesAsync();
+            await CheckSegmentsAsync();
             await CheckStatusType();
             await CheckStatus();
             await CheckMeasurementUnits();
+            await CheckDistributionChannels();
             await CheckEventTypes();
             await CheckDemandTypes();
             await CheckCountriesAsync();
@@ -57,6 +59,25 @@ namespace WaCollaborative.Backend.Data
             await CheckUserAsync("1010", "Efrain", "Trujillo", "truji@yopmail.com", "322 111 2222", "Avenida siempre viva 123", "EfrainTrujillo.jpeg", UserType.Planner);
             await CheckUserAsync("1020", "Jose", "Daza", "josedaza@yopmail.com", "313 644 9685", "Calle 5", "JoseDaza.jpeg", UserType.Planner);
             await CheckUserAsync("71469531", "Walter", "Morales", "wmorales@yopmail.com", "3053699685", "Calle 52 36 98", "Walter.jpeg", UserType.Planner);
+        }
+
+        private async Task CheckDistributionChannels()
+        {
+            if (!_context.DistributionChannels.Any())
+            {
+                _context.DistributionChannels.Add(new DistributionChannel { Name = "DISTRIBUIDORES" });
+                _context.DistributionChannels.Add(new DistributionChannel { Name = "CONSUMO INTERNO" });
+                _context.DistributionChannels.Add(new DistributionChannel { Name = "PRESTADOR SERVICIOS PUBLICOS" });
+                _context.DistributionChannels.Add(new DistributionChannel { Name = "INSTITUCIONAL" });
+                _context.DistributionChannels.Add(new DistributionChannel { Name = "FORMATO DESCUENTOS" });
+                _context.DistributionChannels.Add(new DistributionChannel { Name = "TRADICIONAL" });
+                _context.DistributionChannels.Add(new DistributionChannel { Name = "INDUSTRIAL" });
+                _context.DistributionChannels.Add(new DistributionChannel { Name = "MODERNO" });
+                _context.DistributionChannels.Add(new DistributionChannel { Name = "CANAL ALTERNATIVO" });
+                _context.DistributionChannels.Add(new DistributionChannel { Name = "GRANDES SUPERFICIES" });
+
+                await _context.SaveChangesAsync();
+            }
         }
 
         private async Task<User> CheckUserAsync(string document, string firstName, string lastName, string email, string phone, string address, string image, UserType userType)
@@ -117,28 +138,35 @@ namespace WaCollaborative.Backend.Data
         {
             if (!_context.Categories.Any())
             {
-                _context.Categories.Add(new Category { Name = "Apple" });
-                _context.Categories.Add(new Category { Name = "Autos" });
-                _context.Categories.Add(new Category { Name = "Belleza" });
-                _context.Categories.Add(new Category { Name = "Calzado" });
-                _context.Categories.Add(new Category { Name = "Comida" });
-                _context.Categories.Add(new Category { Name = "Cosmeticos" });
-                _context.Categories.Add(new Category { Name = "Deportes" });
-                _context.Categories.Add(new Category { Name = "Erótica" });
-                _context.Categories.Add(new Category { Name = "Ferreteria" });
-                _context.Categories.Add(new Category { Name = "Gamer" });
-                _context.Categories.Add(new Category { Name = "Hogar" });
-                _context.Categories.Add(new Category { Name = "Jardín" });
-                _context.Categories.Add(new Category { Name = "Jugetes" });
-                _context.Categories.Add(new Category { Name = "Lenceria" });
-                _context.Categories.Add(new Category { Name = "Mascotas" });
-                _context.Categories.Add(new Category { Name = "Nutrición" });
-                _context.Categories.Add(new Category { Name = "Ropa" });
-                _context.Categories.Add(new Category { Name = "Tecnología" });
+                _context.Categories.Add(new Category { Name = "PRODUCTOS ALIMENTICIOS" });
+                _context.Categories.Add(new Category { Name = "PRODUCTOS DE ASEO" });
+                _context.Categories.Add(new Category { Name = "QUIMICOS" });
+                _context.Categories.Add(new Category { Name = "SALES" });
+                _context.Categories.Add(new Category { Name = "ASEO" });
+                _context.Categories.Add(new Category { Name = "CONDIMENTOS" });
+                _context.Categories.Add(new Category { Name = "SAL" });
+                _context.Categories.Add(new Category { Name = "SERVICIOS" });                
                 await _context.SaveChangesAsync();
             }
         }
 
+        private async Task CheckSegmentsAsync()
+        {
+            if (!_context.Segments.Any())
+            {
+                _context.Segments.Add(new Segment { Name = "ACIDO CLORHIDRICO" });
+                _context.Segments.Add(new Segment { Name = "ACIDO SULFONICO" });
+                _context.Segments.Add(new Segment { Name = "BLANQUEADORES" });
+                _context.Segments.Add(new Segment { Name = "BOLSA ALTA PUREZA" });
+                _context.Segments.Add(new Segment { Name = "ASEO" });
+                _context.Segments.Add(new Segment { Name = "CONDIMENTOS" });
+                _context.Segments.Add(new Segment { Name = "SAL" });
+                _context.Segments.Add(new Segment { Name = "DESENGRASANTES" });
+                _context.Segments.Add(new Segment { Name = "DESMANCHADOR" });
+                _context.Segments.Add(new Segment { Name = "GOURMET" });
+                await _context.SaveChangesAsync();
+            }
+        }
         private async Task CheckStatusType() 
         {
             if (!_context.StatusType.Any()) 
@@ -174,15 +202,16 @@ namespace WaCollaborative.Backend.Data
             {
                 _context.MeasurementUnits.Add(new MeasurementUnit {Name = "Tonelada"});
                 _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Kilogramo" });
-                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Libra" });
-                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Gramo" });
-                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Onza" });
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Libra" });                                
                 _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Caja" });
-                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Bulto" });
-                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Estiba" });
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Bulto" });                
                 _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Lote" });
                 _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Metro Cúbico" });
-                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Litro" });
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "SACO 50 KG" });
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "SACO 40 KG" });
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "SACO 25 KG" });
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "BIG BAG" });
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "GRANEL" });
 
                 await _context.SaveChangesAsync();
             }
@@ -192,8 +221,14 @@ namespace WaCollaborative.Backend.Data
         {
             if (!_context.EventTypes.Any())
             {
-                _context.EventTypes.Add(new EventType { Name = "Lanzamiento" });
-              
+                _context.EventTypes.Add(new EventType { Name = "Demada Regular" });
+                _context.EventTypes.Add(new EventType { Name = "Lanzamiento" });                
+                _context.EventTypes.Add(new EventType { Name = "Descuentos" });
+                _context.EventTypes.Add(new EventType { Name = "Licitaciones" });
+                _context.EventTypes.Add(new EventType { Name = "2x1" });
+                _context.EventTypes.Add(new EventType { Name = "Madrugón" });
+                _context.EventTypes.Add(new EventType { Name = "Trasnochón" });
+
                 await _context.SaveChangesAsync();
             }
         }
@@ -203,6 +238,7 @@ namespace WaCollaborative.Backend.Data
             if (!_context.DemandTypes.Any())
             {
                 _context.DemandTypes.Add(new DemandType { Name = "Demanda Extraordinaria", EventTypeId = 1 });
+                _context.DemandTypes.Add(new DemandType { Name = "Demanda Regular", EventTypeId = 1 });
 
                 await _context.SaveChangesAsync();
             }

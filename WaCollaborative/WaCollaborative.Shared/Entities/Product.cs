@@ -40,6 +40,8 @@ namespace WaCollaborative.Shared.Entities
         public Segment? Segment { get; set; }
 
         public int SegmentId { get; set; }
+        public Status? Status { get; set; }
+        public int StatusId { get; set; }
 
         #endregion
     }

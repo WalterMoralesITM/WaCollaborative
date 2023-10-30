@@ -27,14 +27,13 @@ namespace WaCollaborative.Backend.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<City> Cities { get; set; }
         public DbSet<Country> Countries { get; set; }
-
+        public DbSet<Customer> Customers { get; set; }
         public DbSet<DemandType> DemandTypes { get; set; }
-
         public DbSet<DistributionChannel> DistributionChannels { get; set; }
         public DbSet<EventType> EventTypes { get; set; }
         public DbSet<MeasurementUnit> MeasurementUnits { get; set; }
         public DbSet<Product> Products { get; set; }
-
+        public DbSet<ShippingPoint> ShippingPoints { get; set; }
         public DbSet<State> States { get; set; }
         public DbSet<Status> Status { get; set; }
 
@@ -58,8 +57,9 @@ namespace WaCollaborative.Backend.Data
             modelBuilder.Entity<Segment>().HasIndex(s => s.Name).IsUnique();
             modelBuilder.Entity<DistributionChannel>().HasIndex(d => d.Name).IsUnique();
             modelBuilder.Entity<EventType>().HasIndex(s => s.Name).IsUnique();
-            modelBuilder.Entity<DemandType>().HasIndex(s => new { s.Name, s.EventTypeId }).IsUnique();
-            modelBuilder.Entity<Product>().HasIndex(p => new { p.Name, p.CategoryId,p.MeasurementUnitId,p.SegmentId }).IsUnique();
+            modelBuilder.Entity<DemandType>().HasIndex(s => new { s.Name }).IsUnique();
+            modelBuilder.Entity<Product>().HasIndex(p => new { p.Name, p.CategoryId, p.MeasurementUnitId, p.SegmentId }).IsUnique();
+            modelBuilder.Entity<Customer>().HasIndex(c => new { c.Name,c.DistributionChannelId }).IsUnique();
         }
 
         #endregion Methods

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WaCollaborative.Backend.Data;
 
@@ -11,9 +12,11 @@ using WaCollaborative.Backend.Data;
 namespace WaCollaborative.Backend.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20231030113606_RemoveEventTypeFromDemandTypes")]
+    partial class RemoveEventTypeFromDemandTypes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -223,37 +226,6 @@ namespace WaCollaborative.Backend.Migrations
                     b.ToTable("Countries");
                 });
 
-            modelBuilder.Entity("WaCollaborative.Shared.Entities.Customer", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("DistributionChannelId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DistributionChannelId");
-
-                    b.HasIndex("Name", "DistributionChannelId")
-                        .IsUnique();
-
-                    b.ToTable("Customers");
-                });
-
             modelBuilder.Entity("WaCollaborative.Shared.Entities.DemandType", b =>
                 {
                     b.Property<int>("Id")
@@ -368,9 +340,6 @@ namespace WaCollaborative.Backend.Migrations
                     b.Property<int>("SegmentId")
                         .HasColumnType("int");
 
-                    b.Property<int>("StatusId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
@@ -378,8 +347,6 @@ namespace WaCollaborative.Backend.Migrations
                     b.HasIndex("MeasurementUnitId");
 
                     b.HasIndex("SegmentId");
-
-                    b.HasIndex("StatusId");
 
                     b.HasIndex("Name", "CategoryId", "MeasurementUnitId", "SegmentId")
                         .IsUnique();
@@ -406,39 +373,6 @@ namespace WaCollaborative.Backend.Migrations
                         .IsUnique();
 
                     b.ToTable("Segments");
-                });
-
-            modelBuilder.Entity("WaCollaborative.Shared.Entities.ShippingPoint", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CityId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("StatusId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CityId");
-
-                    b.HasIndex("CustomerId");
-
-                    b.HasIndex("StatusId");
-
-                    b.ToTable("ShippingPoints");
                 });
 
             modelBuilder.Entity("WaCollaborative.Shared.Entities.State", b =>
@@ -672,17 +606,6 @@ namespace WaCollaborative.Backend.Migrations
                     b.Navigation("State");
                 });
 
-            modelBuilder.Entity("WaCollaborative.Shared.Entities.Customer", b =>
-                {
-                    b.HasOne("WaCollaborative.Shared.Entities.DistributionChannel", "DistributionChannel")
-                        .WithMany("Customers")
-                        .HasForeignKey("DistributionChannelId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("DistributionChannel");
-                });
-
             modelBuilder.Entity("WaCollaborative.Shared.Entities.Product", b =>
                 {
                     b.HasOne("WaCollaborative.Shared.Entities.Category", "Category")
@@ -703,46 +626,11 @@ namespace WaCollaborative.Backend.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WaCollaborative.Shared.Entities.Status", "Status")
-                        .WithMany()
-                        .HasForeignKey("StatusId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Category");
 
                     b.Navigation("MeasurementUnit");
 
                     b.Navigation("Segment");
-
-                    b.Navigation("Status");
-                });
-
-            modelBuilder.Entity("WaCollaborative.Shared.Entities.ShippingPoint", b =>
-                {
-                    b.HasOne("WaCollaborative.Shared.Entities.City", "City")
-                        .WithMany()
-                        .HasForeignKey("CityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WaCollaborative.Shared.Entities.Customer", "Customer")
-                        .WithMany("ShippingPoint")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WaCollaborative.Shared.Entities.Status", "Status")
-                        .WithMany()
-                        .HasForeignKey("StatusId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("City");
-
-                    b.Navigation("Customer");
-
-                    b.Navigation("Status");
                 });
 
             modelBuilder.Entity("WaCollaborative.Shared.Entities.State", b =>
@@ -791,16 +679,6 @@ namespace WaCollaborative.Backend.Migrations
             modelBuilder.Entity("WaCollaborative.Shared.Entities.Country", b =>
                 {
                     b.Navigation("States");
-                });
-
-            modelBuilder.Entity("WaCollaborative.Shared.Entities.Customer", b =>
-                {
-                    b.Navigation("ShippingPoint");
-                });
-
-            modelBuilder.Entity("WaCollaborative.Shared.Entities.DistributionChannel", b =>
-                {
-                    b.Navigation("Customers");
                 });
 
             modelBuilder.Entity("WaCollaborative.Shared.Entities.MeasurementUnit", b =>

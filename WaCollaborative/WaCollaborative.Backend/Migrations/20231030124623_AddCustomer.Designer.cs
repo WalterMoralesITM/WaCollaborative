@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WaCollaborative.Backend.Data;
 
@@ -11,9 +12,11 @@ using WaCollaborative.Backend.Data;
 namespace WaCollaborative.Backend.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20231030124623_AddCustomer")]
+    partial class AddCustomer
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -368,9 +371,6 @@ namespace WaCollaborative.Backend.Migrations
                     b.Property<int>("SegmentId")
                         .HasColumnType("int");
 
-                    b.Property<int>("StatusId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
@@ -378,8 +378,6 @@ namespace WaCollaborative.Backend.Migrations
                     b.HasIndex("MeasurementUnitId");
 
                     b.HasIndex("SegmentId");
-
-                    b.HasIndex("StatusId");
 
                     b.HasIndex("Name", "CategoryId", "MeasurementUnitId", "SegmentId")
                         .IsUnique();
@@ -427,16 +425,11 @@ namespace WaCollaborative.Backend.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("StatusId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CityId");
 
                     b.HasIndex("CustomerId");
-
-                    b.HasIndex("StatusId");
 
                     b.ToTable("ShippingPoints");
                 });
@@ -703,19 +696,11 @@ namespace WaCollaborative.Backend.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WaCollaborative.Shared.Entities.Status", "Status")
-                        .WithMany()
-                        .HasForeignKey("StatusId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Category");
 
                     b.Navigation("MeasurementUnit");
 
                     b.Navigation("Segment");
-
-                    b.Navigation("Status");
                 });
 
             modelBuilder.Entity("WaCollaborative.Shared.Entities.ShippingPoint", b =>
@@ -732,17 +717,9 @@ namespace WaCollaborative.Backend.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WaCollaborative.Shared.Entities.Status", "Status")
-                        .WithMany()
-                        .HasForeignKey("StatusId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("City");
 
                     b.Navigation("Customer");
-
-                    b.Navigation("Status");
                 });
 
             modelBuilder.Entity("WaCollaborative.Shared.Entities.State", b =>

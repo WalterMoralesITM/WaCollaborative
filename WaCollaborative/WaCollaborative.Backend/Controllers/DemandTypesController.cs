@@ -48,8 +48,7 @@ namespace WaCollaborative.Backend.Controllers
         [HttpGet("combo/{eventTypeId:int}")]
         public async Task<ActionResult> GetComboAsync(int eventTypeId)
         {
-            return Ok(await _context.DemandTypes
-                .Where(s => s.EventTypeId == eventTypeId)
+            return Ok(await _context.DemandTypes                
                 .OrderBy(s => s.Name)
                 .ToListAsync());
         }
@@ -57,8 +56,7 @@ namespace WaCollaborative.Backend.Controllers
         [HttpGet]
         public override async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
         {
-            var queryable = _context.DemandTypes
-                .Include(x => x.EventType)
+            var queryable = _context.DemandTypes                
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(pagination.Filter))
@@ -90,8 +88,7 @@ namespace WaCollaborative.Backend.Controllers
         [HttpGet("{id}")]
         public override async Task<IActionResult> GetAsync(int id)
         {
-            var demandType = await _context.DemandTypes
-                .Include(s => s.EventType)
+            var demandType = await _context.DemandTypes                
                 .FirstOrDefaultAsync(s => s.Id == id);
             if (demandType == null)
             {

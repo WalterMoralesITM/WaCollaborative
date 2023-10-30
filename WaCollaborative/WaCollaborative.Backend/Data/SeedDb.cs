@@ -237,8 +237,8 @@ namespace WaCollaborative.Backend.Data
         {
             if (!_context.DemandTypes.Any())
             {
-                _context.DemandTypes.Add(new DemandType { Name = "Demanda Extraordinaria", EventTypeId = 1 });
-                _context.DemandTypes.Add(new DemandType { Name = "Demanda Regular", EventTypeId = 1 });
+                _context.DemandTypes.Add(new DemandType { Name = "Demanda Extraordinaria"});
+                _context.DemandTypes.Add(new DemandType { Name = "Demanda Regular"});
 
                 await _context.SaveChangesAsync();
             }

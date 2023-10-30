@@ -42,8 +42,7 @@
                         @foreach (var demandType in demandTypes!)
                         {
                             <tr>
-                                <td>@demandType.Name</td>
-                                <td>@demandType.EventType!.Name</td>
+                                <td>@demandType.Name</td>                                
                                 <td>
                                     <a class="btn btn-warning btn-sm" @onclick=@(() => ShowModalAsync(demandType.Id, true))><i class="oi oi-pencil" /> Editar</a>
                                     @* <button class="btn btn-danger btn-sm" @onclick=@(() => DeleteAsync(demandType))><i class="oi oi-trash" /> Borrar</button> *@

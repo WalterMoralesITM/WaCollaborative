@@ -28,23 +28,7 @@ else
                                 <InputText class="form-control" @bind-Value="@demandType.Name" />
                                 <ValidationMessage For="@(() => demandType.Name)" />
                             </div>
-                        </div>
-                        <div class="mb-3">
-                            <label>Tipo de Evento:</label>
-                            <div>
-                                <select class="form-select" @bind="demandType.EventTypeId">
-                                    <option value="0">-- Seleccione un tipo de evento --</option>
-                                    @if (eventTypes is not null)
-                                    {
-                                        @foreach (var eventType in eventTypes)
-                                        {
-                                            <option value="@eventType.Id">@eventType.Name</option>
-                                        }
-                                    }
-                                </select>
-                                <ValidationMessage For="@(() => demandType.EventTypeId)" />
-                            </div>
-                        </div>
+                        </div>                        
                     </div>
                 </div>
                 <div class="row">
@@ -61,37 +45,12 @@ else
     private DemandType demandType = new();
     private List<EventType>? eventTypes;
     private bool loading;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadEventTypesAsync();
-    }
-
-    private async Task LoadEventTypesAsync()
-    {
-        loading = true;
-        var responseHttp = await repository.GetAsync<List<EventType>>("/api/eventtypes/combo");
-        if (responseHttp.Error)
-        {
-            loading = false;
-            var message = await responseHttp.GetErrorMessageAsync();
-            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
-            return;
-        }
-
-        eventTypes = responseHttp.Response;
-        loading = false;
-    }
-
+  
+    
     private async Task CreateAsync()
     {
-        if (demandType.EventTypeId <= 0)
-        {
-            await sweetAlertService.FireAsync("Error", "Falta El tipo de Evento.", SweetAlertIcon.Error);
-            return;
-        }
-        else
-        {
+        
+       
             var response = await repository.PostAsync("/api/demandtypes", demandType);
             if (response.Error)
             {
@@ -110,7 +69,7 @@ else
                     Timer = 3000
                 });
             await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Registro creado con éxito.");
-        }
+        
     }
 
     private void Return()

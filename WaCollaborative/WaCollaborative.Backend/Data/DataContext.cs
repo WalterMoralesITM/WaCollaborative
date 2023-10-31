@@ -26,6 +26,8 @@ namespace WaCollaborative.Backend.Data
 
         public DbSet<Category> Categories { get; set; }
         public DbSet<City> Cities { get; set; }
+        public DbSet<CollaborativeDemand> CollaborativeDemand { get; set; }
+        public DbSet<CollaborativeDemand> CollaborativeDemandComponentsDetail { get; set; }
         public DbSet<Country> Countries { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<DemandType> DemandTypes { get; set; }
@@ -60,6 +62,18 @@ namespace WaCollaborative.Backend.Data
             modelBuilder.Entity<DemandType>().HasIndex(s => new { s.Name }).IsUnique();
             modelBuilder.Entity<Product>().HasIndex(p => new { p.Name, p.CategoryId, p.MeasurementUnitId, p.SegmentId }).IsUnique();
             modelBuilder.Entity<Customer>().HasIndex(c => new { c.Name,c.DistributionChannelId }).IsUnique();
+            modelBuilder.Entity<CollaborativeDemand>()
+                .HasOne(cd => cd.ShippingPoint).WithMany()
+                .HasForeignKey(cd => cd.ShippingPointId)
+                .OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<CollaborativeDemand>()
+                .HasOne(cd => cd.Status)
+                .WithMany()
+                .HasForeignKey(cd => cd.StatusId)
+                .OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<CollaborativeDemand>().HasIndex(c => new { c.DemandTypeId, c.EventTypeId,c.ProductId, c.ShippingPointId }).IsUnique();
+            modelBuilder.Entity<CollaborativeDemandComponentsDetail>().HasIndex(c => new { c.YearMonth,c.CollaborativeDemandId,c.UserId }).IsUnique();
+            
         }
 
         #endregion Methods

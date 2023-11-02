@@ -64,6 +64,7 @@ namespace WaCollaborative.Backend.Controllers
                         CityName = cd.ShippingPoint.City!.Name, 
                         ProductName = cd.Product!.Name,
                         ProductCode = cd.Product.Code,
+                        
                         CollaborativeDemandComponentsDetails = cd.CollaborativeDemandComponentsDetails!
                             .Select(detail => new
                             {

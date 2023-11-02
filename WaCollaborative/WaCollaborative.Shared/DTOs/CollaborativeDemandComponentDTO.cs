@@ -11,5 +11,6 @@ namespace WaCollaborative.Shared.DTOs
         public decimal Quantity { get; set; }
         public string UserEmail { get; set; }
         public string UserId { get; set; }
+        public int YearMonth { get; set; }
     }
 }

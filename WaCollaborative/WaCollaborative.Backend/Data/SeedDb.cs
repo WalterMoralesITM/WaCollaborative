@@ -200,18 +200,19 @@ namespace WaCollaborative.Backend.Data
         {
             if (!_context.MeasurementUnits.Any())
             {
-                _context.MeasurementUnits.Add(new MeasurementUnit {Name = "Tonelada"});
-                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Kilogramo" });
-                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Libra" });                                
-                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Caja" });
-                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Bulto" });                
-                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Lote" });
-                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "Metro Cúbico" });
+                _context.MeasurementUnits.Add(new MeasurementUnit {Name = "BANDEJA" });
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "BIG BAG" });
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "BOLSA" });
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "BULTO" });                                                
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "CILINDRO" });                
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "DISPLAY" });
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "DOYPACK" });
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "GRANEL" });
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "MULTIPACK" });
                 _context.MeasurementUnits.Add(new MeasurementUnit { Name = "SACO 50 KG" });
                 _context.MeasurementUnits.Add(new MeasurementUnit { Name = "SACO 40 KG" });
                 _context.MeasurementUnits.Add(new MeasurementUnit { Name = "SACO 25 KG" });
-                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "BIG BAG" });
-                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "GRANEL" });
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "TERMOENCOGIBLE" });                                
 
                 await _context.SaveChangesAsync();
             }

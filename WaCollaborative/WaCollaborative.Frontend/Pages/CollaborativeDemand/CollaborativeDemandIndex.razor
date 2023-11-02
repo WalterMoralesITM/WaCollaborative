@@ -1,30 +1,59 @@
 ﻿@page "/collaboration"
+@inject IRepository repository
+@inject NavigationManager navigationManager
+@inject SweetAlertService sweetAlertService
+@using System.Collections.Generic
 
+@attribute [Authorize(Roles = "Planner,Collaborator")]
 
-<MudDataGrid T="Element" MultiSelection="true" Items="@Elements" SortMode="SortMode.Multiple" Filterable="true" QuickFilter="@_quickFilter"
-             Hideable="true" RowClick="@RowClicked" SelectedItemsChanged="@SelectedItemsChanged">
+@if (CollaborativeDemands is null)
+{
+    <Loading />
+}
+else
+{
+<MudDataGrid T="CollaborativeDemandDTO" MultiSelection="true" Items="@CollaborativeDemands" SortMode="SortMode.Multiple" Filterable="true"
+                 ReadOnly="@_isReadOnly" EditMode="@DataGridEditMode.Cell" Hideable="true">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Periodic Elements</MudText>
         <MudSpacer />
-        <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
+        <MudTextField  Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
     </ToolBarContent>
     <Columns>
-        <SelectColumn T="Element" />
-        <PropertyColumn Property="x => x.Number" Title="Nr" Sortable="false" Filterable="false" />
-        <PropertyColumn Property="x => x.Producto" />
-        <PropertyColumn Property="x => x.Cliente" SortBy="@_sortBy" />        
-        <PropertyColumn Property="x => x.CanalDistribucion" Title="Canal de Distribución" />
-        <PropertyColumn Property="x => x.Categoria" Title="Category" />
-        
+        <HierarchyColumn T="CollaborativeDemandDTO" />
+        <SelectColumn T="CollaborativeDemandDTO" />
+        <PropertyColumn Property="x => x.CollaborativeDemandId" />
+        <PropertyColumn Property="x => x.CustomerCode" Title="Codigo Cliente" Sortable="false" Filterable="false" />
+        <PropertyColumn Property="x => x.CustomerName" />
+        <PropertyColumn Property="x => x.CityName" />
+        <PropertyColumn Property="x => x.DistributionChannel" />
+        <PropertyColumn Property="x => x.ShippingPointName" />
+        <PropertyColumn Property="x => x.ProductCode" />
+        <PropertyColumn Property="x => x.ProductName" />
+
+            @*<PropertyColumn Property="x => x.CollaborativeDemandComponentsDetails" />*@
     </Columns>
+        <ChildRowContent>
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">@context.Item.Product</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudText>This element is number @context.Item.CustomerName</MudText>
+                    
+                </MudCardContent>
+            </MudCard>
+        </ChildRowContent>
     <PagerContent>
-        <MudDataGridPager T="Element" />
+        <MudDataGridPager T="CollaborativeDemandDTO" />
     </PagerContent>
 </MudDataGrid>
 
 <div class="d-flex flex-wrap mt-4">
-    <MudSwitch @bind-Checked="@_sortNameByLength" Color="Color.Primary">Sort Name Column By Length</MudSwitch>
+        <MudSwitch T="bool" @bind-Checked="@_isReadOnly" Color="Color.Primary">Sort Name Column By Length</MudSwitch>
 </div>
 
 <MudExpansionPanels Style="flex:1">
@@ -37,73 +66,123 @@
         {
             <div class="d-flex">
                 <MudSpacer />
-                <MudButton Class="mt-3" ButtonType="ButtonType.Button" Variant="Variant.Filled" OnClick="@(() => _events.Clear())">Clear</MudButton>
+                <MudButton  Class="mt-3" ButtonType="ButtonType.Button" Variant="Variant.Filled" OnClick="@(() => _events.Clear())">Clear</MudButton>
             </div>
         }
     </MudExpansionPanel>
 </MudExpansionPanels>
+    
+}
+
 
 
 @code {
-
-    private IEnumerable<Element> Elements = new List<Element>();
+  
+    private int currentPage = 1;
+    private int totalPages;
     private string? _searchString;
     private bool _sortNameByLength;
+    private bool _isReadOnly = true;
     private List<string> _events = new();
 
-    private Func<Element, object> _sortBy => x =>
+    public List<CollaborativeDemandDTO>? CollaborativeDemands { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string Page { get; set; } = "";
+
+    protected async override Task OnInitializedAsync()
     {
-        if (_sortNameByLength)
-            return x.Cliente!.Length;
-        else
-            return x.Cliente!;
-    };
-
-    private Func<Element, bool> _quickFilter => x =>
-    {
-        if (string.IsNullOrWhiteSpace(_searchString))
-            return true;
-
-        if (x.Producto!.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-
-        if (x.Cliente!.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-
-        // if ($"{x.Number} {x.Position} {x.CanalDistribucion}".Contains(_searchString))
-        //     return true;
-
-        return false;
-    };
-    protected override async Task OnInitializedAsync()
-    {        
-         Elements =  new List<Element>
-        {
-            new Element { Number = 1, Producto = "Lava Loza",Cliente = "Éxito",Position = 0,CanalDistribucion = "Mayorista",Categoria = "Aseo Hogar" },
-            new Element { Number = 2, Producto = "Detergente",Cliente = "Éxito",Position = 17,CanalDistribucion = "Mayorista",Categoria = "Aseo Hogar" }
-            
-        };
+        await LoadAsync();
     }
 
-    void RowClicked(DataGridRowClickEventArgs<Element> args)
+    private async Task SelectedPageAsync(int page)
+    {
+        currentPage = page;
+        await LoadAsync(page);
+    }
+
+    private async Task LoadAsync(int page = 1)
+    {
+        if (!string.IsNullOrWhiteSpace(Page))
+        {
+            page = Convert.ToInt32(Page);
+        }
+
+        var ok = await LoadListAsync(page);
+        if (ok)
+        {
+            await LoadPagesAsync();
+        }
+    }
+
+    private async Task<bool> LoadListAsync(int page)
+    {
+        var url = $"api/CollaborativeDemand?page={page}";
+        var response = await repository.GetAsync<List<CollaborativeDemandDTO>>(url);
+        if (response.Error)
+        {
+            var message = await response.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return false;
+        }
+        CollaborativeDemands = response.Response;
+        return true;
+    }
+
+    private async Task LoadPagesAsync()
+    {
+        var url = $"api/CollaborativeDemand/totalPages";
+        var response = await repository.GetAsync<int>(url);
+        if (response.Error)
+        {
+            var message = await response.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+        totalPages = response.Response;
+    }    
+
+    // private Func<CollaborativeDemand, object> _sortBy => x =>
+    // {
+    //     if (_sortNameByLength)
+    //         return x.ProductId!.Length;
+    //     else
+    //         return x.Cliente!;
+    // };
+
+    // private Func<CollaborativeDemand, bool> _quickFilter => x =>
+    // {
+    //     if (string.IsNullOrWhiteSpace(_searchString))
+    //         return true;
+
+    //     // if (x.Producto!.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+    //     //     return true;
+
+    //     // if (x.Cliente!.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+    //     //     return true;
+
+    //     // if ($"{x.Number} {x.Position} {x.CanalDistribucion}".Contains(_searchString))
+    //     //     return true;
+
+    //     return false;
+    // };
+
+    void RowClicked(DataGridRowClickEventArgs<CollaborativeDemandDTO> args)
     {
         _events.Insert(0, $"Event = RowClick, Index = {args.RowIndex}, Data = {System.Text.Json.JsonSerializer.Serialize(args.Item)}");
     }
 
-    void SelectedItemsChanged(HashSet<Element> items)
-    {
-        _events.Insert(0, $"Event = SelectedItemsChanged, Data = {System.Text.Json.JsonSerializer.Serialize(items)}");
-    }
+    // public class StringColumn : Column<string>
+    // {
+    //     public StringColumn(string field) : base(field)
+    //     {
+    //     }
 
-    private class Element
-    {
-        public int Number { get; set; }
-        public string? Producto { get; set; }
-        public string? Cliente { get; set; }
-        public int Position { get; set; }
-        public string? CanalDistribucion { get; set; }
-        public string? Categoria { get; set; }
-
-    }
+    //     public override Func<TItem, string> PropertyFunc<TItem>()
+    //     {
+    //         return (item) => item.Field;
+    //     }
+    // }
 }
 

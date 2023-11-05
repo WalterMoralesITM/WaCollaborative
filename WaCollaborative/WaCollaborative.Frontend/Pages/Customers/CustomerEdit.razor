@@ -1,21 +1,21 @@
-﻿@page "/status/edit/{StatusId:int}"
+﻿@page "/customers/edit/{CustomerId:int}"
 @attribute [Authorize(Roles = "Planner")]
 @inject NavigationManager navigationManager
 @inject IRepository repository
 @inject SweetAlertService sweetAlertService
 
-@if (status is null)
+@if (customer is null)
 {
     <Loading />
 }
 else
 {
-    <EditForm Model="status" OnValidSubmit="UpdateAsync">
+    <EditForm Model="customer" OnValidSubmit="UpdateAsync">
         <DataAnnotationsValidator />
         <div class="card">
             <div class="card-header">
                 <span>
-                    <label> Actualizar Estado:</label>
+                    <label> Actualizar Cliente:</label>
                     <button class="btn btn-sm btn-primary float-end" type="submit"><i class="oi oi-check" /> Actualizar</button>
                 </span>
             </div>
@@ -23,26 +23,33 @@ else
                 <div class="row">
                     <div class="col-6">
                         <div class="mb-3">
-                            <label>Estado:</label>
+                            <label>Cliente:</label>
                             <div>
-                                <InputText class="form-control" @bind-Value="@status.Name" />
-                                <ValidationMessage For="@(() => status.Name)" />
+                                <InputText class="form-control" @bind-Value="@customer.Name" />
+                                <ValidationMessage For="@(() => customer.Name)" />
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label>Tipo de Estado:</label>
+                            <label>Código:</label>
                             <div>
-                                <select class="form-select" @bind="status.StatusTypeId">
-                                    <option value="0">-- Seleccione un tipo de estado --</option>
-                                    @if (statusTypes is not null)
+                                <InputText class="form-control" @bind-Value="@customer.Code" />
+                                <ValidationMessage For="@(() => customer.Code)" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label>Canal de Distribución:</label>
+                            <div>
+                                <select class="form-select" @bind="customer.DistributionChannelId">
+                                    <option value="0">-- Seleccione un canal de distribución --</option>
+                                    @if (distributionChannels is not null)
                                     {
-                                        @foreach (var statusType in statusTypes)
+                                        @foreach (var distributionChannel in distributionChannels)
                                         {
-                                            <option value="@statusType.Id">@statusType.Name</option>
+                                            <option value="@distributionChannel.Id">@distributionChannel.Name</option>
                                         }
                                     }
                                 </select>
-                                <ValidationMessage For="@(() => status.StatusTypeId)" />
+                                <ValidationMessage For="@(() => customer.DistributionChannelId)" />
                             </div>
                         </div>
                     </div>
@@ -58,22 +65,22 @@ else
 }
 
 @code {
-    private Status? status;
-    private List<StatusType>? statusTypes;
+    private Customer? customer;
+    private List<DistributionChannel>? distributionChannels;
     private bool loading;
 
     [Parameter]
-    public int StatusId { get; set; }
+    public int CustomerId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadStatusAsync();
-        await LoadStatusTypesAsync();
+        await LoadCustomerAsync();
+        await LoadDistributionChannelsAsync();
     }
 
-    private async Task LoadStatusAsync()
+    private async Task LoadCustomerAsync()
     {
-        var response = await repository.GetAsync<Status>($"/api/status/{StatusId}");
+        var response = await repository.GetAsync<Customer>($"/api/customers/{CustomerId}");
         if (response.Error)
         {
             if (response.HttpResponseMessage.StatusCode == HttpStatusCode.NotFound)
@@ -84,13 +91,13 @@ else
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
             return;
         }
-        status = response.Response;
+        customer = response.Response;
     }
 
-    private async Task LoadStatusTypesAsync()
+    private async Task LoadDistributionChannelsAsync()
     {
         loading = true;
-        var responseHttp = await repository.GetAsync<List<StatusType>>("/api/statustype/combo");
+        var responseHttp = await repository.GetAsync<List<DistributionChannel>>("/api/DistributionChannels/combo");
         if (responseHttp.Error)
         {
             loading = false;
@@ -99,26 +106,26 @@ else
             return;
         }
 
-        statusTypes = responseHttp.Response;
+        distributionChannels = responseHttp.Response;
         loading = false;
     }
 
     private async Task UpdateAsync()
     {
-        if (status!.Id <= 0)
+        if (customer!.Id <= 0)
         {
-            await sweetAlertService.FireAsync("Error", "Falta el Id de Estado.", SweetAlertIcon.Error);
+            await sweetAlertService.FireAsync("Error", "Falta el Id de Cliente.", SweetAlertIcon.Error);
             return;
         }
-        else if (status!.StatusTypeId <= 0)
+        else if (customer!.DistributionChannelId <= 0)
         {
-            await sweetAlertService.FireAsync("Error", "Falta el tipo de Estado.", SweetAlertIcon.Error);
+            await sweetAlertService.FireAsync("Error", "Falta el Canal de Distribución.", SweetAlertIcon.Error);
             return;
         }
         else
         {
-            status.StatusType = null;
-            var response = await repository.PutAsync($"/api/status", status);            
+            customer.DistributionChannel = null;
+            var response = await repository.PutAsync($"/api/customers", customer);
             if (response.Error)
             {
                 var message = await response.GetErrorMessageAsync();
@@ -140,8 +147,8 @@ else
     }
 
     private void Return()
-    {       
-        navigationManager.NavigateTo("/status");
+    {
+        navigationManager.NavigateTo("/customers");
     }
 
 }

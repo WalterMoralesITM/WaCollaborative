@@ -102,7 +102,7 @@ namespace WaCollaborative.Backend.Data
                 }
 
                 var fileBytes = File.ReadAllBytes(filePath);
-                var imagePath = await _fileStorage.SaveFileAsync(fileBytes, "jpg", "users");
+                //var imagePath = await _fileStorage.SaveFileAsync(fileBytes, "jpg", "users");
 
                 user = new User
                 {
@@ -114,8 +114,8 @@ namespace WaCollaborative.Backend.Data
                     Address = address,
                     Document = document,
                     City = city,
-                    UserType = userType,
-                    Photo = imagePath,
+                    UserType = userType//,
+                    //Photo = imagePath,
                 };
 
                 await _userHelper.AddUserAsync(user, "123456");
@@ -212,8 +212,7 @@ namespace WaCollaborative.Backend.Data
                 _context.MeasurementUnits.Add(new MeasurementUnit { Name = "SACO 50 KG" });
                 _context.MeasurementUnits.Add(new MeasurementUnit { Name = "SACO 40 KG" });
                 _context.MeasurementUnits.Add(new MeasurementUnit { Name = "SACO 25 KG" });
-                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "TERMOENCOGIBLE" });                                
-
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "TERMOENCOGIBLE" });                          
                 await _context.SaveChangesAsync();
             }
         }

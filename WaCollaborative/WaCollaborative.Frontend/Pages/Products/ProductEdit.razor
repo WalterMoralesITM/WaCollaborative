@@ -1,0 +1,268 @@
+﻿@page "/products/edit/{ProductId:int}"
+@attribute [Authorize(Roles = "Planner")]
+@inject NavigationManager navigationManager
+@inject IRepository repository
+@inject SweetAlertService sweetAlertService
+
+@if (product is null)
+{
+    <Loading />
+}
+else
+{
+    <EditForm Model="product" OnValidSubmit="UpdateAsync">
+        <DataAnnotationsValidator />
+        <div class="card">
+            <div class="card-header">
+                <span>
+                    <label> Actualizar Producto:</label>
+                    <button class="btn btn-sm btn-primary float-end" type="submit"><i class="oi oi-check" /> Actualizar</button>
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="mb-3">
+                            <label>Producto:</label>
+                            <div>
+                                <InputText class="form-control" @bind-Value="@product.Name" />
+                                <ValidationMessage For="@(() => product.Name)" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label>Código:</label>
+                            <div>
+                                <InputText class="form-control" @bind-Value="@product.Code" />
+                                <ValidationMessage For="@(() => product.Code)" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label>Factor Conversión:</label>
+                            <div>
+                                <InputNumber class="form-control" @bind-Value="product.ConversionFactor" @bind-Value:format="F2" />
+                                <ValidationMessage For="@(() => product.ConversionFactor)" />
+                            </div>
+                        </div>                        
+                    </div>
+                    <div class="col-6">
+                        <div class="mb-3">
+                            <label>Categoría:</label>
+                            <div>
+                                <select class="form-select" @bind="product.CategoryId">
+                                    <option value="0">-- Seleccione un categoría --</option>
+                                    @if (categories is not null)
+                                    {
+                                        @foreach (var category in categories)
+                                        {
+                                            <option value="@category.Id">@category.Name</option>
+                                        }
+                                    }
+                                </select>
+                                <ValidationMessage For="@(() => product.CategoryId)" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label>Unidad de Medida:</label>
+                            <div>
+                                <select class="form-select" @bind="product.MeasurementUnitId">
+                                    <option value="0">-- Seleccione una unidad de medida --</option>
+                                    @if (measurementUnits is not null)
+                                    {
+                                        @foreach (var measurementUnit in measurementUnits)
+                                        {
+                                            <option value="@measurementUnit.Id">@measurementUnit.Name</option>
+                                        }
+                                    }
+                                </select>
+                                <ValidationMessage For="@(() => product.MeasurementUnitId)" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label>Segmento:</label>
+                            <div>
+                                <select class="form-select" @bind="product.SegmentId">
+                                    <option value="0">-- Seleccione un segmento --</option>
+                                    @if (segments is not null)
+                                    {
+                                        @foreach (var segment in segments)
+                                        {
+                                            <option value="@segment.Id">@segment.Name</option>
+                                        }
+                                    }
+                                </select>
+                                <ValidationMessage For="@(() => product.SegmentId)" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label>Estado:</label>
+                            <div>
+                                <select class="form-select" @bind="product.StatusId">
+                                    <option value="0">-- Seleccione un estado --</option>
+                                    @if (status is not null)
+                                    {
+                                        @foreach (var item in status)
+                                        {
+                                            <option value="@item.Id">@item.Name</option>
+                                        }
+                                    }
+                                </select>
+                                <ValidationMessage For="@(() => product.StatusId)" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        <button class="btn btn-success" @onclick="Return">Regresar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+}
+
+@code {
+    private Product? product;
+    private List<Category>? categories;
+    private List<MeasurementUnit>? measurementUnits;
+    private List<Segment>? segments;
+    private List<Status>? status;
+    private bool loading;
+
+    [Parameter]
+    public int ProductId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProductAsync();
+        await LoadCategoriesAsync();
+        await LoadMeasurementUnitsAsync();
+        await LoadSegmentsAsync();
+        await LoadStatusAsync();
+    }
+
+    private async Task LoadProductAsync()
+    {
+        var response = await repository.GetAsync<Product>($"/api/products/{ProductId}");
+        if (response.Error)
+        {
+            if (response.HttpResponseMessage.StatusCode == HttpStatusCode.NotFound)
+            {
+                Return();
+            }
+            var message = await response.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+        product = response.Response;
+    }
+
+    private async Task LoadCategoriesAsync()
+    {
+        loading = true;
+        var responseHttp = await repository.GetAsync<List<Category>>("/api/categories/combo");
+        if (responseHttp.Error)
+        {
+            loading = false;
+            var message = await responseHttp.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        categories = responseHttp.Response;
+        loading = false;
+    }
+
+    private async Task LoadMeasurementUnitsAsync()
+    {
+        loading = true;
+        var responseHttp = await repository.GetAsync<List<MeasurementUnit>>("/api/measurementUnits/combo");
+        if (responseHttp.Error)
+        {
+            loading = false;
+            var message = await responseHttp.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        measurementUnits = responseHttp.Response;
+        loading = false;
+    }
+
+    private async Task LoadSegmentsAsync()
+    {
+        loading = true;
+        var responseHttp = await repository.GetAsync<List<Segment>>("/api/segments/combo");
+        if (responseHttp.Error)
+        {
+            loading = false;
+            var message = await responseHttp.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        segments = responseHttp.Response;
+        loading = false;
+    }
+
+    private async Task LoadStatusAsync()
+    {
+        loading = true;
+        var responseHttp = await repository.GetAsync<List<Status>>("/api/status/combo");
+        if (responseHttp.Error)
+        {
+            loading = false;
+            var message = await responseHttp.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        status = responseHttp.Response;
+        loading = false;
+    }
+
+    private async Task UpdateAsync()
+    {
+        if (product!.Id <= 0)
+        {
+            await sweetAlertService.FireAsync("Error", "Falta el Id del Producto.", SweetAlertIcon.Error);
+            return;
+        }
+        else if (product.CategoryId <= 0 || product.MeasurementUnitId <= 0 || product.SegmentId <= 0 || product.StatusId <= 0)
+        {
+            await sweetAlertService.FireAsync("Error", "Falta la Categoría / Unidad de Medida / Segemento / Estado.", SweetAlertIcon.Error);
+            return;
+        }
+        else
+        {
+            product.Category = null;
+            product.MeasurementUnit = null;
+            product.Segment = null;
+            product.Status = null;
+            var response = await repository.PutAsync($"/api/products", product);
+            if (response.Error)
+            {
+                var message = await response.GetErrorMessageAsync();
+                await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+                return;
+            }
+
+            Return();
+
+            var toast = sweetAlertService.Mixin(new SweetAlertOptions
+                {
+                    Toast = true,
+                    Position = SweetAlertPosition.BottomEnd,
+                    ShowConfirmButton = true,
+                    Timer = 3000
+                });
+            await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Registro actualizado con éxito.");
+        }
+    }
+
+    private void Return()
+    {
+        navigationManager.NavigateTo("/products");
+    }
+
+}

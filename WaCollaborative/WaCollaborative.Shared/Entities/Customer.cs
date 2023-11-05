@@ -1,15 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
+﻿#region Using
+
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+#endregion Using
 
 namespace WaCollaborative.Shared.Entities
 {
+
+    /// <summary>
+    /// The class entity Customer
+    /// </summary>
+
     public class Customer
     {
+
         #region Attributes
+
         public int Id { get; set; }
 
         [Display(Name = "Nombre")]
@@ -20,10 +26,16 @@ namespace WaCollaborative.Shared.Entities
         [Display(Name = "Código")]
         [MaxLength(50, ErrorMessage = "El campo {0} debe tener máximo {1} caractéres.")]
         public string Code { get; set; } = null!;
+
         public DistributionChannel? DistributionChannel { get; set; }
+
+        [Display(Name = "Canal de Distribución")]
+        [Required(ErrorMessage = "El campo {0} es obligatorio.")]
         public int DistributionChannelId { get; set; }
+
         public ICollection<ShippingPoint>? ShippingPoint { get; set; }
         
         #endregion
+
     }
 }

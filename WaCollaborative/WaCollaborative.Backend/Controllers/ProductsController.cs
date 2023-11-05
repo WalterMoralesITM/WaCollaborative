@@ -15,13 +15,13 @@ using WaCollaborative.Backend.Interfaces;
 namespace WaCollaborative.Backend.Controllers
 {
     /// <summary>
-    /// The Controller CategoriesController
+    /// The Controller ProductsController
     /// </summary>
 
     [ApiController]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
-    public class CategoriesController : GenericController<Category>
+    public class ProductsController : GenericController<Product>
     {
 
         #region Attributes
@@ -32,7 +32,7 @@ namespace WaCollaborative.Backend.Controllers
 
         #region Constructor
 
-        public CategoriesController(IGenericUnitOfWork<Category> unitOfWork, DataContext context) : base(unitOfWork, context)
+        public ProductsController(IGenericUnitOfWork<Product> unitOfWork, DataContext context) : base(unitOfWork, context)
         {
             _context = context;
         }
@@ -45,22 +45,28 @@ namespace WaCollaborative.Backend.Controllers
         [HttpGet("combo")]
         public async Task<ActionResult> GetComboAsync()
         {
-            return Ok(await _context.Categories
-                .OrderBy(c => c.Name)
+            return Ok(await _context.Products
+                .OrderBy(p => p.Name)
                 .ToListAsync());
         }
 
         [HttpGet]
         public override async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
         {
-            var queryable = _context.Categories.AsQueryable();
+            var queryable = _context.Products
+                 .Include(x => x.Category)
+                 .Include(x => x.MeasurementUnit)
+                 .Include(x => x.Segment)
+                 .Include(x => x.Status)
+                 .AsQueryable();
+
             if (!string.IsNullOrWhiteSpace(pagination.Filter))
             {
                 queryable = queryable.Where(x => x.Name.ToLower().Contains(pagination.Filter.ToLower()));
             }
 
             return Ok(await queryable
-                .OrderBy(x => x.Name)
+                .OrderBy(p => p.Name)
                 .Paginate(pagination)
                 .ToListAsync());
         }
@@ -68,7 +74,8 @@ namespace WaCollaborative.Backend.Controllers
         [HttpGet("totalPages")]
         public override async Task<ActionResult> GetPagesAsync([FromQuery] PaginationDTO pagination)
         {
-            var queryable = _context.Categories.AsQueryable();
+            var queryable = _context.Products.AsQueryable();
+
             if (!string.IsNullOrWhiteSpace(pagination.Filter))
             {
                 queryable = queryable.Where(x => x.Name.ToLower().Contains(pagination.Filter.ToLower()));
@@ -77,6 +84,22 @@ namespace WaCollaborative.Backend.Controllers
             double count = await queryable.CountAsync();
             double totalPages = Math.Ceiling(count / pagination.RecordsNumber);
             return Ok(totalPages);
+        }
+
+        [HttpGet("{id}")]
+        public override async Task<IActionResult> GetAsync(int id)
+        {
+            var product = await _context.Products
+                 .Include(x => x.Category)
+                 .Include(x => x.MeasurementUnit)
+                 .Include(x => x.Segment)
+                 .Include(x => x.Status)
+                 .FirstOrDefaultAsync(p => p.Id == id);
+            if (product == null)
+            {
+                return NotFound();
+            }
+            return Ok(product);
         }
 
         #endregion Methods

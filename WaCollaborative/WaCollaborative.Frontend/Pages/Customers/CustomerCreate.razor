@@ -1,0 +1,127 @@
+﻿@page "/customers/create"
+@attribute [Authorize(Roles = "Planner")]
+@inject IRepository repository
+@inject SweetAlertService sweetAlertService
+@inject NavigationManager navigationManager
+
+@if (loading)
+{
+    <Loading />
+}
+else
+{
+    <EditForm Model="customer" OnValidSubmit="CreateAsync">
+        <DataAnnotationsValidator />
+        <div class="card">
+            <div class="card-header">
+                <span>
+                    <label> Registrar Nuevo Cliente:</label>
+                    <button class="btn btn-sm btn-primary float-end" type="submit"><i class="oi oi-check" /> Registrar</button>
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="mb-3">
+                            <label>Cliente:</label>
+                            <div>
+                                <InputText class="form-control" @bind-Value="@customer.Name" />
+                                <ValidationMessage For="@(() => customer.Name)" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label>Código:</label>
+                            <div>
+                                <InputText class="form-control" @bind-Value="@customer.Code" />
+                                <ValidationMessage For="@(() => customer.Code)" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label>Canal de Distribución:</label>
+                            <div>
+                                <select class="form-select" @bind="customer.DistributionChannelId">
+                                    <option value="0">-- Seleccione un canal de distribución --</option>
+                                    @if (distributionChannels is not null)
+                                    {
+                                        @foreach (var distributionChannel in distributionChannels)
+                                        {
+                                            <option value="@distributionChannel.Id">@distributionChannel.Name</option>
+                                        }
+                                    }
+                                </select>
+                                <ValidationMessage For="@(() => customer.DistributionChannelId)" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        <button class="btn btn-success" @onclick="Return">Regresar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+}
+
+@code {
+    private Customer customer = new();
+    private List<DistributionChannel>? distributionChannels;
+    private bool loading;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDistributionChannelsAsync();
+    }
+
+    private async Task LoadDistributionChannelsAsync()
+    {
+        loading = true;
+        var responseHttp = await repository.GetAsync<List<DistributionChannel>>("/api/distributionchannels/combo");
+        if (responseHttp.Error)
+        {
+            loading = false;
+            var message = await responseHttp.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        distributionChannels = responseHttp.Response;
+        loading = false;
+    }
+
+    private async Task CreateAsync()
+    {
+        if (customer.DistributionChannelId <= 0)
+        {
+            await sweetAlertService.FireAsync("Error", "Falta el Canal de Distribución.", SweetAlertIcon.Error);
+            return;
+        }
+        else
+        {
+            var response = await repository.PostAsync("/api/customers", customer);
+            if (response.Error)
+            {
+                var message = await response.GetErrorMessageAsync();
+                await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+                return;
+            }
+
+            Return();
+
+            var toast = sweetAlertService.Mixin(new SweetAlertOptions
+                {
+                    Toast = true,
+                    Position = SweetAlertPosition.BottomEnd,
+                    ShowConfirmButton = true,
+                    Timer = 3000
+                });
+            await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Registro creado con éxito.");
+        }
+    }
+
+    private void Return()
+    {
+        navigationManager.NavigateTo("/customers");
+    }
+}

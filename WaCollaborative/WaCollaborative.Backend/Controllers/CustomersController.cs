@@ -15,13 +15,13 @@ using WaCollaborative.Backend.Interfaces;
 namespace WaCollaborative.Backend.Controllers
 {
     /// <summary>
-    /// The Controller CategoriesController
+    /// The Controller CustomersController
     /// </summary>
 
     [ApiController]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
-    public class CategoriesController : GenericController<Category>
+    public class CustomersController : GenericController<Customer>
     {
 
         #region Attributes
@@ -32,7 +32,7 @@ namespace WaCollaborative.Backend.Controllers
 
         #region Constructor
 
-        public CategoriesController(IGenericUnitOfWork<Category> unitOfWork, DataContext context) : base(unitOfWork, context)
+        public CustomersController(IGenericUnitOfWork<Customer> unitOfWork, DataContext context) : base(unitOfWork, context)
         {
             _context = context;
         }
@@ -45,7 +45,7 @@ namespace WaCollaborative.Backend.Controllers
         [HttpGet("combo")]
         public async Task<ActionResult> GetComboAsync()
         {
-            return Ok(await _context.Categories
+            return Ok(await _context.Customers
                 .OrderBy(c => c.Name)
                 .ToListAsync());
         }
@@ -53,14 +53,17 @@ namespace WaCollaborative.Backend.Controllers
         [HttpGet]
         public override async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
         {
-            var queryable = _context.Categories.AsQueryable();
+            var queryable = _context.Customers
+                .Include(x => x.DistributionChannel)
+                .AsQueryable();
+
             if (!string.IsNullOrWhiteSpace(pagination.Filter))
             {
                 queryable = queryable.Where(x => x.Name.ToLower().Contains(pagination.Filter.ToLower()));
             }
 
             return Ok(await queryable
-                .OrderBy(x => x.Name)
+                .OrderBy(c => c.Name)
                 .Paginate(pagination)
                 .ToListAsync());
         }
@@ -68,7 +71,8 @@ namespace WaCollaborative.Backend.Controllers
         [HttpGet("totalPages")]
         public override async Task<ActionResult> GetPagesAsync([FromQuery] PaginationDTO pagination)
         {
-            var queryable = _context.Categories.AsQueryable();
+            var queryable = _context.Customers.AsQueryable();
+
             if (!string.IsNullOrWhiteSpace(pagination.Filter))
             {
                 queryable = queryable.Where(x => x.Name.ToLower().Contains(pagination.Filter.ToLower()));
@@ -77,6 +81,19 @@ namespace WaCollaborative.Backend.Controllers
             double count = await queryable.CountAsync();
             double totalPages = Math.Ceiling(count / pagination.RecordsNumber);
             return Ok(totalPages);
+        }
+
+        [HttpGet("{id}")]
+        public override async Task<IActionResult> GetAsync(int id)
+        {
+            var customer = await _context.Customers
+               .Include(x => x.DistributionChannel)
+               .FirstOrDefaultAsync(c => c.Id == id);
+            if (customer == null)
+            {
+                return NotFound();
+            }
+            return Ok(customer);
         }
 
         #endregion Methods

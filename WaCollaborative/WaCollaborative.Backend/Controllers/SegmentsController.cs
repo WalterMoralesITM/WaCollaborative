@@ -41,6 +41,15 @@ namespace WaCollaborative.Backend.Controllers
 
         #region Methods
 
+        [AllowAnonymous]
+        [HttpGet("combo")]
+        public async Task<ActionResult> GetComboAsync()
+        {
+            return Ok(await _context.Segments
+                .OrderBy(s => s.Name)
+                .ToListAsync());
+        }
+
         [HttpGet]
         public override async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
         {

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WaCollaborative.Backend.Data;
 using WaCollaborative.Backend.Helpers.Interfaces;
+using WaCollaborative.Backend.Interfaces;
 using WaCollaborative.Shared.DTOs;
 using WaCollaborative.Shared.Entities;
 using WaCollaborative.Shared.Enums;
@@ -22,7 +23,7 @@ namespace WaCollaborative.Backend.Controllers
     {
         private readonly DataContext _context;
         private readonly IUserHelper _userHelper;
-
+      
         public CollaborativeDemandController(DataContext context, IUserHelper userHelper)
         {
             _context = context;
@@ -46,11 +47,11 @@ namespace WaCollaborative.Backend.Controllers
                 var queryable = _context.CollaborativeDemand
                 .Include(cd => cd.Product)
                 .Include(cd => cd.ShippingPoint)
-                    .ThenInclude(sp => sp!.City) 
+                    .ThenInclude(sp => sp!.City)
                 .Include(cd => cd.ShippingPoint)
                     .ThenInclude(sp => sp!.Customer)
-                        .ThenInclude(c => c!.DistributionChannel)                    
-                .Include(cd => cd.CollaborativeDemandComponentsDetails)                   
+                        .ThenInclude(c => c!.DistributionChannel)
+                .Include(cd => cd.CollaborativeDemandComponentsDetails)
                 .AsQueryable();
 
                 var result = await queryable
@@ -59,32 +60,34 @@ namespace WaCollaborative.Backend.Controllers
                         CollaborativeDemandId = cd.Id,
                         CustomerName = cd.ShippingPoint!.Customer!.Name,
                         CustomerCode = cd.ShippingPoint!.Customer!.Code,
-                        DistributionChannel = cd.ShippingPoint!.Customer!.DistributionChannel!.Name,                                                
+                        DistributionChannel = cd.ShippingPoint!.Customer!.DistributionChannel!.Name,
                         ShippingPointName = cd.ShippingPoint!.Name,
-                        CityName = cd.ShippingPoint.City!.Name, 
+                        CityName = cd.ShippingPoint.City!.Name,
                         ProductName = cd.Product!.Name,
                         ProductCode = cd.Product.Code,
-                        
+                        UserEmail = "waltermorales",
+                        UserId = "1",
                         CollaborativeDemandComponentsDetails = cd.CollaborativeDemandComponentsDetails!
                             .Select(detail => new
                             {
                                 Quantity = detail.Quantity,
                                 YearMonth = detail.YearMonth,
-                                UserEmail = detail.User != null ? detail.User.Email : null,
-                                UserId = detail.User != null ? detail.User.Id : null,
+                                User = detail.User
+                                //UserEmail = detail.User != null ? detail.User.Email : null,
+                                //UserId = detail.User != null ? detail.User.Id : null,
                             })
                     .ToList()
 
 
                     })
-                    .Skip((page - 1) * pageSize) 
-                    .Take(pageSize) 
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
                     .ToListAsync();
 
                 var isAdmin = await _userHelper.IsUserInRoleAsync(user, UserType.Collaborator.ToString());
                 if (!isAdmin)
                 {
-                    result = result.Where(s => s.CollaborativeDemandComponentsDetails.Any(detail => detail.UserEmail == User.Identity!.Name.ToString())).ToList();
+                    result = result.Where(s => s.CollaborativeDemandComponentsDetails.Any(detail => detail.User.Email == User.Identity!.Name.ToString())).ToList();
                 }
                 return Ok(result);
 
@@ -93,6 +96,21 @@ namespace WaCollaborative.Backend.Controllers
             {
                 throw new Exception(ex.Message);
             }
+        }
+
+        [AllowAnonymous]
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetAsync(int id)
+        {
+            var collaborativeDemand = await _context.CollaborativeDemand
+                .Include(cd => cd.CollaborativeDemandComponentsDetails)
+                .FirstOrDefaultAsync(x => x.Id == id);
+            if (collaborativeDemand == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(collaborativeDemand);
         }
 
         [HttpGet("totalPages")]
@@ -116,6 +134,7 @@ namespace WaCollaborative.Backend.Controllers
                             CollaborativeDemandComponentsDetails = cd.CollaborativeDemandComponentsDetails!
                                 .Select(detail => new
                                 {
+                                    CollaborativeDemandId = cd.Id,
                                     UserEmail = detail.User != null ? detail.User.Email : null,
                                     UserId = detail.User != null ? detail.User.Id : null,
                                 })

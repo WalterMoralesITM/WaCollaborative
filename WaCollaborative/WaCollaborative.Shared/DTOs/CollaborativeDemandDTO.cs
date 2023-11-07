@@ -17,7 +17,11 @@ namespace WaCollaborative.Shared.DTOs
         public string? ProductCode { get; set; }
         public string? ProductName { get; set; }
         public string? ShippingPointName { get; set; }
-       public List<CollaborativeDemandComponentDTO> CollaborativeDemandComponentsDetails { get; set; }
+        public decimal Quantity { get; set; }
+        public string UserEmail { get; set; }
+        public string UserId { get; set; }
+        public int YearMonth { get; set; }
+        public List<CollaborativeDemandComponentDTO> CollaborativeDemandComponentsDetailsDTO { get; set; }
 
 
 

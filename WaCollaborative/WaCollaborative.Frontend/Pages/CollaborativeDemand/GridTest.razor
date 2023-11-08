@@ -1,4 +1,4 @@
-﻿ @* @page "/collaborationTest"  *@
+﻿ @page "/collaborationTest"  
 @inject IRepository repository
 @inject NavigationManager navigationManager
 @inject SweetAlertService sweetAlertService
@@ -33,6 +33,29 @@ else
             <PropertyColumn Property="x => x.ShippingPointName" />
             <PropertyColumn Property="x => x.ProductCode" />
             <PropertyColumn Property="x => x.ProductName" />
+            <SelectColumn T="CollaborativeDemandComponentDTO" />
+
+            @foreach (var PInfo in typeof(CollaborativeDemandComponentDTO).GetProperties())
+            {
+
+                if (PInfo.PropertyType == typeof(int))
+                {
+
+                    <PropertyColumn Property="@(GetStringPropertyLambdaExpressionInt(PInfo))" />
+                }
+
+
+            }
+           @*  <PropertyColumn Property="x => x.CollaborativeDemandComponentsDetailsDTO[0].Quantity" Title="Nov-2024" /> *@
+
+         @*    @foreach (var PInfo in typeof(CollaborativeDemandDTO).GetProperties())
+            {
+                if (PInfo.PropertyType == typeof(string))
+                {
+                     <PropertyColumn Property="@($"x => x.{PInfo.Name}")" Title="@PInfo.Name" /> 
+
+                }
+            } *@
             <TemplateColumn CellClass="d-flex justify-end">
                 <CellTemplate>
                     <MudStack Row>                     
@@ -79,6 +102,19 @@ else
 
         return lambdaExpression;
     }
+
+
+    private Expression<Func<CollaborativeDemandComponentDTO, int>> GetStringPropertyLambdaExpressionInt(System.Reflection.PropertyInfo propertyInfo)
+    {
+        ParameterExpression param = Expression.Parameter(typeof(CollaborativeDemandComponentDTO), "x");
+
+        Expression propertyAccess = Expression.Property(param, propertyInfo);
+
+        Expression<Func<CollaborativeDemandComponentDTO, int>> lambdaExpression = Expression.Lambda<Func<CollaborativeDemandComponentDTO, int>>(propertyAccess, param);
+
+        return lambdaExpression;
+    }
+
 
     private async Task SelectedPageAsync(int page)
     {

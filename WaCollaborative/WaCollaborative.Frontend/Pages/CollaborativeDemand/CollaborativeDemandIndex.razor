@@ -31,6 +31,8 @@ else
             <PropertyColumn Property="x => x.ShippingPointName" />
             <PropertyColumn Property="x => x.ProductCode" />
             <PropertyColumn Property="x => x.ProductName" />
+            <PropertyColumn Property="x => x.YearMonth" />
+            <PropertyColumn Property="x => x.Quantity" />
             <TemplateColumn CellClass="d-flex justify-end">
                 <CellTemplate>
                     <MudStack Row>
@@ -78,7 +80,6 @@ else
     </MudExpansionPanels>
 
 }
-
 @code {
 
     private int currentPage = 1;
@@ -90,7 +91,7 @@ else
 
     public List<CollaborativeDemandDTO>? CollaborativeDemands { get; set; }
 
-    public List<CollaborativeDemandComponentsDetail>? CollaborativeDemandComponentsDetailsDTO { get; set; }
+    public List<CollaborativeDemandComponentsDetail>? ComponentDetails { get; set; }
 
     [Parameter]
     [SupplyParameterFromQuery]
@@ -131,9 +132,7 @@ else
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
             return false;
         }
-        CollaborativeDemands = response.Response;
-
-        //LoadComponentDetailsAsync();
+         CollaborativeDemands = response.Response;        
 
         return true;
     }

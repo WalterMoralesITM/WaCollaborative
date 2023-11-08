@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Pqc.Crypto.Lms;
 using WaCollaborative.Backend.Data;
 using WaCollaborative.Backend.Helpers.Interfaces;
 using WaCollaborative.Backend.Interfaces;
@@ -32,6 +33,69 @@ namespace WaCollaborative.Backend.Controllers
 
         [AllowAnonymous]
         [HttpGet]
+        //public async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
+        //{
+        //    try
+        //    {
+        //        var page = 1;
+        //        var pageSize = 10;
+        //        var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == User.Identity!.Name);
+        //        if (user == null)
+        //        {
+        //            return BadRequest("User not valid.");
+        //        }
+
+        //        var queryable = _context.CollaborativeDemand
+        //        .Include(cd => cd.Product)
+        //        .Include(cd => cd.ShippingPoint)
+        //            .ThenInclude(sp => sp!.City)
+        //        .Include(cd => cd.ShippingPoint)
+        //            .ThenInclude(sp => sp!.Customer)
+        //                .ThenInclude(c => c!.DistributionChannel)
+        //        .Include(cd => cd.CollaborativeDemandComponentsDetails)
+        //        .AsQueryable();
+
+        //        var result = await queryable
+        //            .Select(cd => new
+        //            {
+        //                CollaborativeDemandId = cd.Id,
+        //                CustomerName = cd.ShippingPoint!.Customer!.Name,
+        //                CustomerCode = cd.ShippingPoint!.Customer!.Code,
+        //                DistributionChannel = cd.ShippingPoint!.Customer!.DistributionChannel!.Name,
+        //                ShippingPointName = cd.ShippingPoint!.Name,
+        //                CityName = cd.ShippingPoint.City!.Name,
+        //                ProductName = cd.Product!.Name,
+        //                ProductCode = cd.Product.Code,
+        //                UserEmail = "waltermorales",
+        //                UserId = "1",
+        //                CollaborativeDemandComponentsDetails = cd.CollaborativeDemandComponentsDetails!
+        //                    .Select(detail => new
+        //                    {
+        //                        Quantity = detail.Quantity,
+        //                        YearMonth = detail.YearMonth,
+        //                        User = detail.User
+        //                    })
+        //            .ToList()
+
+
+        //            })
+        //            .Skip((page - 1) * pageSize)
+        //            .Take(pageSize)
+        //            .ToListAsync();
+
+        //        var isAdmin = await _userHelper.IsUserInRoleAsync(user, UserType.Collaborator.ToString());
+        //        if (!isAdmin)
+        //        {
+        //            result = result.Where(s => s.CollaborativeDemandComponentsDetails.Any(detail => detail.User.Email == User.Identity!.Name.ToString())).ToList();
+        //        }
+        //        return Ok(result);
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception(ex.Message);
+        //    }
+        //}
         public async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
         {
             try
@@ -45,58 +109,116 @@ namespace WaCollaborative.Backend.Controllers
                 }
 
                 var queryable = _context.CollaborativeDemand
-                .Include(cd => cd.Product)
-                .Include(cd => cd.ShippingPoint)
+                    .Include(cd => cd.Product)
+                    .Include(cd => cd.ShippingPoint)
                     .ThenInclude(sp => sp!.City)
-                .Include(cd => cd.ShippingPoint)
+                    .Include(cd => cd.ShippingPoint)
                     .ThenInclude(sp => sp!.Customer)
-                        .ThenInclude(c => c!.DistributionChannel)
-                .Include(cd => cd.CollaborativeDemandComponentsDetails)
-                .AsQueryable();
+                    .ThenInclude(c => c!.DistributionChannel)
+                    .Include(cd => cd.CollaborativeDemandComponentsDetails)
+                    .AsQueryable();
 
-                var result = await queryable
-                    .Select(cd => new
-                    {
-                        CollaborativeDemandId = cd.Id,
-                        CustomerName = cd.ShippingPoint!.Customer!.Name,
-                        CustomerCode = cd.ShippingPoint!.Customer!.Code,
-                        DistributionChannel = cd.ShippingPoint!.Customer!.DistributionChannel!.Name,
-                        ShippingPointName = cd.ShippingPoint!.Name,
-                        CityName = cd.ShippingPoint.City!.Name,
-                        ProductName = cd.Product!.Name,
-                        ProductCode = cd.Product.Code,
-                        UserEmail = "waltermorales",
-                        UserId = "1",
-                        CollaborativeDemandComponentsDetails = cd.CollaborativeDemandComponentsDetails!
-                            .Select(detail => new
-                            {
-                                Quantity = detail.Quantity,
-                                YearMonth = detail.YearMonth,
-                                User = detail.User
-                                //UserEmail = detail.User != null ? detail.User.Email : null,
-                                //UserId = detail.User != null ? detail.User.Id : null,
-                            })
-                    .ToList()
+                var collaborativeDemands = await queryable.ToListAsync();
 
-
-                    })
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToListAsync();
+                var result = FlattenCollaborativeDemands(collaborativeDemands);
 
                 var isAdmin = await _userHelper.IsUserInRoleAsync(user, UserType.Collaborator.ToString());
                 if (!isAdmin)
                 {
-                    result = result.Where(s => s.CollaborativeDemandComponentsDetails.Any(detail => detail.User.Email == User.Identity!.Name.ToString())).ToList();
+                    result = result.Where(s => s.UserEmail == User.Identity!.Name.ToString()).ToList();
                 }
-                return Ok(result);
 
+                return Ok(result);
             }
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
         }
+
+        private List<CollaborativeDemandDTO> FlattenCollaborativeDemands(List<CollaborativeDemand> collaborativeDemands)
+        {
+            var result = new List<CollaborativeDemandDTO>();
+
+            foreach (var collaborativeDemand in collaborativeDemands)
+            {
+                foreach (var detail in collaborativeDemand.CollaborativeDemandComponentsDetails)
+                {
+                    var collaborativeDemandDTO = new CollaborativeDemandDTO
+                    {
+                        CollaborativeDemandId = collaborativeDemand.Id,
+                        CustomerName = collaborativeDemand.ShippingPoint!.Customer!.Name,
+                        CustomerCode = collaborativeDemand.ShippingPoint!.Customer!.Code,
+                        DistributionChannel = collaborativeDemand.ShippingPoint!.Customer!.DistributionChannel!.Name,
+                        ShippingPointName = collaborativeDemand.ShippingPoint!.Name,
+                        CityName = collaborativeDemand.ShippingPoint.City!.Name,
+                        ProductName = collaborativeDemand.Product!.Name,
+                        ProductCode = collaborativeDemand.Product.Code,
+                        UserEmail = "wmorales@yopmail.com",
+                        UserId = "1",
+                        YearMonth = detail.YearMonth, // Asignar YearMonth en cada fila
+                        Quantity = detail.Quantity // Asignar Quantity en cada fila
+                    };
+
+                    result.Add(collaborativeDemandDTO);
+                }
+            }
+
+            return result;
+        }
+        private List<CollaborativeDemandDTO> PivotCollaborativeDemands(List<CollaborativeDemand> collaborativeDemands)
+        {
+            var result = new List<CollaborativeDemandDTO>();
+
+            // Crear un diccionario para almacenar los valores de YearMonth y Quantity
+            var yearMonthQuantities = new Dictionary<int, decimal>();
+
+            foreach (var collaborativeDemand in collaborativeDemands)
+            {
+                foreach (var detail in collaborativeDemand.CollaborativeDemandComponentsDetails)
+                {
+                    // Actualizar el diccionario con los valores de YearMonth y Quantity
+                    if (yearMonthQuantities.ContainsKey(detail.YearMonth))
+                    {
+                        yearMonthQuantities[detail.YearMonth] += detail.Quantity;
+                    }
+                    else
+                    {
+                        yearMonthQuantities[detail.YearMonth] = detail.Quantity;
+                    }
+                }
+            }
+
+            foreach (var collaborativeDemand in collaborativeDemands)
+            {
+                var collaborativeDemandDTO = new CollaborativeDemandDTO
+                {
+                    CollaborativeDemandId = collaborativeDemand.Id,
+                    CustomerName = collaborativeDemand.ShippingPoint!.Customer!.Name,
+                    CustomerCode = collaborativeDemand.ShippingPoint!.Customer!.Code,
+                    DistributionChannel = collaborativeDemand.ShippingPoint!.Customer!.DistributionChannel!.Name,
+                    ShippingPointName = collaborativeDemand.ShippingPoint!.Name,
+                    CityName = collaborativeDemand.ShippingPoint.City!.Name,
+                    ProductName = collaborativeDemand.Product!.Name,
+                    ProductCode = collaborativeDemand.Product.Code,
+                    UserEmail = "waltermorales",
+                    UserId = "1"
+                };
+
+                // Asignar las cantidades del diccionario a las columnas YearMonth
+                foreach (var yearMonthQuantity in yearMonthQuantities)
+                {
+                    var yearMonthColumnName = "YM_" + yearMonthQuantity.Key;
+                    collaborativeDemandDTO.GetType().GetProperty(yearMonthColumnName)?.SetValue(collaborativeDemandDTO, yearMonthQuantity.Value);
+                }
+
+                result.Add(collaborativeDemandDTO);
+            }
+            return result;
+        }
+
+
+
 
         [AllowAnonymous]
         [HttpGet("{id:int}")]

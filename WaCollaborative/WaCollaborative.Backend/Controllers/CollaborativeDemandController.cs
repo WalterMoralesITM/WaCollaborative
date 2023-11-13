@@ -4,14 +4,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Pqc.Crypto.Lms;
 using WaCollaborative.Backend.Data;
 using WaCollaborative.Backend.Helpers.Interfaces;
 using WaCollaborative.Backend.Interfaces;
 using WaCollaborative.Shared.DTOs;
 using WaCollaborative.Shared.Entities;
 using WaCollaborative.Shared.Enums;
-using WaCollaborative.Shared.Helpers;
 
 #endregion using
 
@@ -20,88 +18,24 @@ namespace WaCollaborative.Backend.Controllers
     [ApiController]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("/api/[controller]")]
-    public class CollaborativeDemandController : ControllerBase
+    public class CollaborativeDemandController : GenericController<CollaborativeDemand>
     {
         private readonly DataContext _context;
         private readonly IUserHelper _userHelper;
-      
-        public CollaborativeDemandController(DataContext context, IUserHelper userHelper)
+
+        public CollaborativeDemandController(IGenericUnitOfWork<CollaborativeDemand> unitOfWork, DataContext context, IUserHelper userHelper) : base(unitOfWork, context)
         {
             _context = context;
             _userHelper = userHelper;
         }
+        
 
         [AllowAnonymous]
         [HttpGet]
-        //public async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
-        //{
-        //    try
-        //    {
-        //        var page = 1;
-        //        var pageSize = 10;
-        //        var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == User.Identity!.Name);
-        //        if (user == null)
-        //        {
-        //            return BadRequest("User not valid.");
-        //        }
-
-        //        var queryable = _context.CollaborativeDemand
-        //        .Include(cd => cd.Product)
-        //        .Include(cd => cd.ShippingPoint)
-        //            .ThenInclude(sp => sp!.City)
-        //        .Include(cd => cd.ShippingPoint)
-        //            .ThenInclude(sp => sp!.Customer)
-        //                .ThenInclude(c => c!.DistributionChannel)
-        //        .Include(cd => cd.CollaborativeDemandComponentsDetails)
-        //        .AsQueryable();
-
-        //        var result = await queryable
-        //            .Select(cd => new
-        //            {
-        //                CollaborativeDemandId = cd.Id,
-        //                CustomerName = cd.ShippingPoint!.Customer!.Name,
-        //                CustomerCode = cd.ShippingPoint!.Customer!.Code,
-        //                DistributionChannel = cd.ShippingPoint!.Customer!.DistributionChannel!.Name,
-        //                ShippingPointName = cd.ShippingPoint!.Name,
-        //                CityName = cd.ShippingPoint.City!.Name,
-        //                ProductName = cd.Product!.Name,
-        //                ProductCode = cd.Product.Code,
-        //                UserEmail = "waltermorales",
-        //                UserId = "1",
-        //                CollaborativeDemandComponentsDetails = cd.CollaborativeDemandComponentsDetails!
-        //                    .Select(detail => new
-        //                    {
-        //                        Quantity = detail.Quantity,
-        //                        YearMonth = detail.YearMonth,
-        //                        User = detail.User
-        //                    })
-        //            .ToList()
-
-
-        //            })
-        //            .Skip((page - 1) * pageSize)
-        //            .Take(pageSize)
-        //            .ToListAsync();
-
-        //        var isAdmin = await _userHelper.IsUserInRoleAsync(user, UserType.Collaborator.ToString());
-        //        if (!isAdmin)
-        //        {
-        //            result = result.Where(s => s.CollaborativeDemandComponentsDetails.Any(detail => detail.User.Email == User.Identity!.Name.ToString())).ToList();
-        //        }
-        //        return Ok(result);
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
-        public async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
+        public override async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
         {
             try
             {
-                var page = 1;
-                var pageSize = 10;
                 var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == User.Identity!.Name);
                 if (user == null)
                 {
@@ -125,7 +59,7 @@ namespace WaCollaborative.Backend.Controllers
                 var isAdmin = await _userHelper.IsUserInRoleAsync(user, UserType.Collaborator.ToString());
                 if (!isAdmin)
                 {
-                    result = result.Where(s => s.UserEmail == User.Identity!.Name.ToString()).ToList();
+                    result = result.Where(s => s.UserEmail == User.Identity!.Name!.ToString()).ToList();
                 }
 
                 return Ok(result);
@@ -142,7 +76,7 @@ namespace WaCollaborative.Backend.Controllers
 
             foreach (var collaborativeDemand in collaborativeDemands)
             {
-                foreach (var detail in collaborativeDemand.CollaborativeDemandComponentsDetails)
+                foreach (var detail in collaborativeDemand.CollaborativeDemandComponentsDetails!)
                 {
                     var collaborativeDemandDTO = new CollaborativeDemandDTO
                     {
@@ -156,8 +90,9 @@ namespace WaCollaborative.Backend.Controllers
                         ProductCode = collaborativeDemand.Product.Code,
                         UserEmail = "wmorales@yopmail.com",
                         UserId = "1",
-                        YearMonth = detail.YearMonth, // Asignar YearMonth en cada fila
-                        Quantity = detail.Quantity // Asignar Quantity en cada fila
+                        CollaborativeDemandDetailId = detail.Id,
+                        YearMonth = detail.YearMonth, 
+                        Quantity = detail.Quantity 
                     };
 
                     result.Add(collaborativeDemandDTO);
@@ -166,6 +101,7 @@ namespace WaCollaborative.Backend.Controllers
 
             return result;
         }
+
         private List<CollaborativeDemandDTO> PivotCollaborativeDemands(List<CollaborativeDemand> collaborativeDemands)
         {
             var result = new List<CollaborativeDemandDTO>();
@@ -217,12 +153,9 @@ namespace WaCollaborative.Backend.Controllers
             return result;
         }
 
-
-
-
         [AllowAnonymous]
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetAsync(int id)
+        public override async Task<IActionResult> GetAsync(int id)
         {
             var collaborativeDemand = await _context.CollaborativeDemand
                 .Include(cd => cd.CollaborativeDemandComponentsDetails)
@@ -236,7 +169,7 @@ namespace WaCollaborative.Backend.Controllers
         }
 
         [HttpGet("totalPages")]
-        public async Task<IActionResult> GetPagesAsync([FromQuery] PaginationDTO pagination)
+        public override async Task<ActionResult> GetPagesAsync([FromQuery] PaginationDTO pagination)
         {
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == User.Identity!.Name);
             if (user == null)

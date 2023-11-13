@@ -10,6 +10,7 @@ namespace WaCollaborative.Shared.DTOs
     public class CollaborativeDemandDTO : CollaborativeDemand
     {
         public int CollaborativeDemandId { get; set; }
+        public int CollaborativeDemandDetailId { get; set; }
         public string? CustomerCode { get; set; }
         public string? CustomerName { get; set; }        
         public string? CityName { get; set; }

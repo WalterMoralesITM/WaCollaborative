@@ -21,7 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Pages\CollaborativeCalendars\" />
     <Folder Include="wwwroot\images\" />
   </ItemGroup>
 

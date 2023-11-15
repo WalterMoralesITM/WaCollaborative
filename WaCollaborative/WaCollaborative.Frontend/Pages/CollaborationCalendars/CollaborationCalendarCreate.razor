@@ -1,4 +1,4 @@
-﻿@page "/internalroles/create"
+﻿@page "/collaborationCalendars/create"
 @attribute [Authorize(Roles = "Planner")]
 @inject IRepository repository
 @inject SweetAlertService sweetAlertService
@@ -10,13 +10,13 @@
 }
 else
 {
-    <InternalRoleForm @ref="internalRoleForm" InternalRole="internalRole" OnValidSubmit="CreateAsync" ReturnAction="Return" Title="@title" />
+    <CollaborationCalendarForm @ref="collaborationCalendarForm" CollaborationCalendar="collaborationCalendar" OnValidSubmit="CreateAsync" ReturnAction="Return" Title="@title" />
 }
 
 @code {
-    private InternalRole internalRole = new();
-    private InternalRoleForm? internalRoleForm;
-    private string title = "Guardar Nuevo Rol";
+    private CollaborationCalendar collaborationCalendar= new();
+    private CollaborationCalendarForm? collaborationCalendarForm;
+    private string title = "Guardar Nuevo Calendario de Colaboración";
     private bool loading;
 
     [CascadingParameter]
@@ -25,7 +25,7 @@ else
     private async Task CreateAsync()
     {
 
-        var response = await repository.PostAsync("/api/internalroles", internalRole);
+        var response = await repository.PostAsync("/api/collaborationCalendars", collaborationCalendar);
         if (response.Error)
         {
             var message = await response.GetErrorMessageAsync();
@@ -49,8 +49,8 @@ else
 
     private void Return()
     {
-        internalRoleForm!.FormPostedSuccessfully = true;
-        navigationManager.NavigateTo("/internalroles");
+        collaborationCalendarForm!.FormPostedSuccessfully = true;
+        navigationManager.NavigateTo("/collaborationCalendars");
     }
 
 }

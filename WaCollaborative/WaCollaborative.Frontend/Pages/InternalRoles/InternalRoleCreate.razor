@@ -1,0 +1,88 @@
+﻿@page "/internalroles/create"
+@attribute [Authorize(Roles = "Planner")]
+@inject IRepository repository
+@inject SweetAlertService sweetAlertService
+@inject NavigationManager navigationManager
+
+@if (loading)
+{
+    <Loading />
+}
+else
+{
+    <InternalRoleForm @ref="internalRoleForm" InternalRole="internalRole" OnValidSubmit="CreateAsync" ReturnAction="Return" Title="@title" />
+    @* <EditForm Model="internalRole" OnValidSubmit="CreateAsync">
+        <DataAnnotationsValidator />
+        <div class="card">
+            <div class="card-header">
+                <span>
+                    <label> Registrar Nuevo Rol:</label>
+                    <button class="btn btn-sm btn-primary float-end" type="submit"><i class="oi oi-check" /> Registrar</button>
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="mb-3">
+                            <label>Rol:</label>
+                            <div>
+                                <InputText class="form-control" @bind-Value="@internalRole.Name" />
+                                <ValidationMessage For="@(() => internalRole.Name)" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        <button class="btn btn-success" @onclick="Return">Regresar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm> *@
+}
+
+@code {
+    private InternalRole internalRole = new();
+    private InternalRoleForm? internalRoleForm;
+    private string title = "Guardar Nuevo Rol";
+    private bool loading;
+
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; } = default!;
+
+    private async Task CreateAsync()
+    {
+
+        var response = await repository.PostAsync("/api/internalroles", internalRole);
+        if (response.Error)
+        {
+            var message = await response.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        await BlazoredModal.CloseAsync(ModalResult.Ok());
+        Return();
+
+        var toast = sweetAlertService.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                Position = SweetAlertPosition.BottomEnd,
+                ShowConfirmButton = true,
+                Timer = 3000
+            });
+        await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Registro creado con éxito.");
+
+    }
+
+    private void Return()
+    {
+        internalRoleForm!.FormPostedSuccessfully = true;
+        navigationManager.NavigateTo("/internalroles");
+    }
+
+}

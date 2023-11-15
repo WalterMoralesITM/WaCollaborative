@@ -1,0 +1,218 @@
+﻿@page "/internalroles"
+@attribute [Authorize(Roles = "Planner")]
+@inject IRepository repository
+@inject SweetAlertService sweetAlertService
+
+<div class="card">
+    <div class="card-header">
+        <span>
+            <i class="oi oi-list"></i> Roles
+            <a class="btn btn-sm btn-primary float-end" @onclick=@(() => ShowModalAsync())><i class="oi oi-plus"></i>Adicionar Rol</a>
+        </span>
+    </div>
+    <div class="card-body">
+        <div class="mb-2" style="display: flex; flex-wrap:wrap; align-items: center;">
+            <div>
+                <input style="width: 400px;" type="text" class="form-control" id="titulo" placeholder="Buscar rol..." @bind-value="Filter" />
+            </div>
+            <div class="mx-1">
+                <button type="button" class="btn btn-outline-primary" @onclick="ApplyFilterAsync"><i class="oi oi-layers" /> Filtrar</button>
+                <button type="button" class="btn btn-outline-danger" @onclick="CleanFilterAsync"><i class="oi oi-ban" /> Limpiar</button>
+            </div>
+        </div>
+
+        <GenericList List="roles">
+            <NoRecords>
+                <p>Aun no hay roles registrados.</p>
+            </NoRecords>
+            <Body>
+                <Pagination CurrentPage="currentPage"
+                            TotalPages="totalPages"
+                            SelectedPage="SelectedPageAsync" />
+
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Nombre</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var role in roles!)
+                        {
+                            <tr>
+                                <td>@role.Id</td>
+                                <td>@role.Name</td>
+                                <td>
+                                    <a class="btn btn-warning btn-sm" @onclick=@(() => ShowModalAsync(role.Id, true))><i class="oi oi-pencil" /> 
+                                        Editar
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </Body>
+        </GenericList>
+    </div>
+</div>
+
+@code {
+    private List<InternalRole>? roles;
+
+    private int currentPage = 1;
+    private int totalPages;
+
+    [CascadingParameter]
+    IModalService Modal { get; set; } = default!;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string Page { get; set; } = string.Empty;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string Filter { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task ShowModalAsync(int id = 0, bool isEdit = false)
+    {
+        IModalReference modalReference;
+
+        if (isEdit)
+        {
+            modalReference = Modal.Show<InternalRoleEdit>(string.Empty, new ModalParameters().Add("InternalRoleId", id));
+        }
+        else
+        {
+            modalReference = Modal.Show<InternalRoleCreate>();
+        }
+
+        var result = await modalReference.Result;
+        if (result.Confirmed)
+        {
+            await LoadAsync();
+        }
+    }
+
+    private async Task SelectedPageAsync(int page)
+    {
+        currentPage = page;
+        await LoadAsync(page);
+    }
+
+    private async Task LoadAsync(int page = 1)
+    {
+        if (!string.IsNullOrWhiteSpace(Page))
+        {
+            page = Convert.ToInt32(Page);
+        }
+
+        var ok = await LoadListAsync(page);
+        if (ok)
+        {
+            await LoadPagesAsync();
+        }
+    }
+
+    private async Task<bool> LoadPagesAsync()
+    {
+        var url = string.Empty;
+        if (string.IsNullOrEmpty(Filter))
+        {
+            url = $"api/internalroles/totalPages";
+        }
+        else
+        {
+            url = $"api/internalroles/totalPages?filter={Filter}";
+        }
+
+        var response = await repository.GetAsync<int>(url);
+        if (response.Error)
+        {
+            var message = await response.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return false;
+        }
+        totalPages = response.Response;
+        return true;
+    }
+
+    private async Task<bool> LoadListAsync(int page)
+    {
+        var url = string.Empty;
+        if (string.IsNullOrEmpty(Filter))
+        {
+            url = $"api/internalroles?page={page}";
+        }
+        else
+        {
+            url = $"api/internalroles?page={page}&filter={Filter}";
+        }
+
+        var response = await repository.GetAsync<List<InternalRole>>(url);
+        if (response.Error)
+        {
+            var message = await response.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return false;
+        }
+
+        roles = response.Response;
+        return true;
+    }
+
+    private async Task CleanFilterAsync()
+    {
+        Filter = string.Empty;
+        await ApplyFilterAsync();
+    }
+
+    private async Task ApplyFilterAsync()
+    {
+        int page = 1;
+        await LoadAsync(page);
+        await SelectedPageAsync(page);
+    }
+
+    private async Task DeleteAsync(InternalRole role)
+    {
+        var result = await sweetAlertService.FireAsync(new SweetAlertOptions
+            {
+                Title = "Confirmación",
+                Text = $"¿Esta seguro que quieres borrar el rol: {role.Name}?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true
+            });
+
+        var confirm = string.IsNullOrEmpty(result.Value);
+        if (confirm)
+        {
+            return;
+        }
+
+        var response = await repository.DeleteAsync($"api/internalroles/{role.Id}");
+        if (response.Error)
+        {
+            var message = await response.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        await LoadAsync();
+
+        var toast = sweetAlertService.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                Position = SweetAlertPosition.BottomEnd,
+                ShowConfirmButton = true,
+                Timer = 3000
+            });
+        await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Registro borrado con éxito.");
+    }
+
+}

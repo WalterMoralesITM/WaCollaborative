@@ -23,7 +23,7 @@ namespace WaCollaborative.Backend.Data
         #endregion Constructor
 
         #region Entities
-
+        public DbSet<InternalRole> InternalRoles { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<City> Cities { get; set; }
         public DbSet<CollaborativeDemand> CollaborativeDemand { get; set; }
@@ -38,9 +38,10 @@ namespace WaCollaborative.Backend.Data
         public DbSet<ShippingPoint> ShippingPoints { get; set; }
         public DbSet<State> States { get; set; }
         public DbSet<Status> Status { get; set; }
-
         public DbSet<StatusType> StatusType { get; set; }
         public DbSet<Segment> Segments { get; set; }
+        public DbSet<CollaborationCalendar> CollaborationCalendars { get; set; }
+
 
         #endregion Entities
 
@@ -73,7 +74,9 @@ namespace WaCollaborative.Backend.Data
                 .OnDelete(DeleteBehavior.NoAction);
             modelBuilder.Entity<CollaborativeDemand>().HasIndex(c => new { c.DemandTypeId, c.EventTypeId,c.ProductId, c.ShippingPointId }).IsUnique();
             modelBuilder.Entity<CollaborativeDemandComponentsDetail>().HasIndex(c => new { c.YearMonth,c.CollaborativeDemandId,c.UserId }).IsUnique();
-            
+            modelBuilder.Entity<InternalRole>().HasIndex(c => new { c.Name }).IsUnique();
+            modelBuilder.Entity<CollaborationCalendar>();
+
         }
 
         #endregion Methods

@@ -44,6 +44,12 @@ namespace WaCollaborative.Shared.Entities
 
         [Display(Name = "Usuario")]
         public string FullName => $"{FirstName} {LastName}";
-               
+
+        public InternalRole? InternalRole { get; set; }
+
+        [Display(Name = "Rol")]
+        [Range(1, int.MaxValue, ErrorMessage = "Debes seleccionar una {0}.")]
+        public int? InternalRoleId { get; set; }
+
     }
 }

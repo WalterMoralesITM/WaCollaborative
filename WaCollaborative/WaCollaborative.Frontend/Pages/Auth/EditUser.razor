@@ -62,6 +62,22 @@ else
                     </div>
                     <div class="col-6">
                         <div class="mb-3">
+                            <label>Rol:</label>
+                            <div>
+                                <select class="form-select" @bind="user.InternalRoleId">
+                                    <option value="0">-- Seleccione un rol --</option>
+                                    @if (internalRoles is not null)
+                                    {
+                                        @foreach (var role in internalRoles)
+                                        {
+                                            <option value="@role.Id">@role.Name</option>
+                                        }
+                                    }
+                                </select>
+                                <ValidationMessage For="@(() => user.InternalRoleId)" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
                             <label>País:</label>
                             <div>
                                 <select class="form-select" @onchange="CountryChangedAsync">
@@ -122,7 +138,9 @@ else
     private List<Country>? countries;
     private List<State>? states;
     private List<City>? cities;
+    private List<InternalRole>? internalRoles;
     private string? imageUrl;
+    private bool loading;
 
     [CascadingParameter]
     IModalService Modal { get; set; } = default!;
@@ -133,6 +151,7 @@ else
         await LoadCountriesAsync();
         await LoadStatesAsyn(user!.City!.State!.Country!.Id);
         await LoadCitiesAsyn(user!.City!.State!.Id);
+        await LoadInternalRolesAsync();
 
         if (!string.IsNullOrEmpty(user!.Photo))
         {
@@ -238,5 +257,21 @@ else
 
         await loginService.LoginAsync(responseHttp.Response!.Token);
         navigationManager.NavigateTo("/");
+    }
+
+    private async Task LoadInternalRolesAsync()
+    {
+        loading = true;
+        var responseHttp = await repository.GetAsync<List<InternalRole>>("/api/internalroles/combo");
+        if (responseHttp.Error)
+        {
+            loading = false;
+            var message = await responseHttp.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        internalRoles = responseHttp.Response;
+        loading = false;
     }
 }

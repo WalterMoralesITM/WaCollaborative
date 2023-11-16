@@ -1,10 +1,6 @@
-﻿#region Using
-
+﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Identity;
 using WaCollaborative.Shared.Enums;
-
-#endregion Using
 
 namespace WaCollaborative.Shared.Entities
 {
@@ -50,6 +46,5 @@ namespace WaCollaborative.Shared.Entities
         [Display(Name = "Rol")]
         [Range(1, int.MaxValue, ErrorMessage = "Debes seleccionar una {0}.")]
         public int? InternalRoleId { get; set; }
-
     }
 }

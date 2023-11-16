@@ -41,6 +41,9 @@ namespace WaCollaborative.Backend.Data
         public DbSet<StatusType> StatusType { get; set; }
         public DbSet<Segment> Segments { get; set; }
         public DbSet<CollaborationCalendar> CollaborationCalendars { get; set; }
+        public DbSet<Portfolio> Portfolios { get; set; }
+        public DbSet<PortfolioCustomer> PortfolioCustomers { get; set; }
+        public DbSet<PortfolioCustomerProduct> PortfolioCustomerProducts { get; set; }
 
 
         #endregion Entities
@@ -76,6 +79,9 @@ namespace WaCollaborative.Backend.Data
             modelBuilder.Entity<CollaborativeDemandComponentsDetail>().HasIndex(c => new { c.YearMonth,c.CollaborativeDemandId,c.UserId }).IsUnique();
             modelBuilder.Entity<InternalRole>().HasIndex(c => new { c.Name }).IsUnique();
             modelBuilder.Entity<CollaborationCalendar>();
+            modelBuilder.Entity<Portfolio>().HasIndex(c => new { c.Name }).IsUnique();
+            modelBuilder.Entity<PortfolioCustomer>().HasIndex(c => new { c.PortfolioId, c.CustomerId }).IsUnique();
+            modelBuilder.Entity<PortfolioCustomerProduct>().HasIndex(c => new { c.PortfolioCustomerId, c.ProductId }).IsUnique();
 
         }
 

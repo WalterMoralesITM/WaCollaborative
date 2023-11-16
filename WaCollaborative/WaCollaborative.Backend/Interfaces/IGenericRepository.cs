@@ -31,6 +31,10 @@ namespace WaCollaborative.Backend.Interfaces
 
         public Task<State> GetStateAsync(int id);
 
+        public Task<Portfolio> GetPortfolioAsync(int id);
+
+        public Task<PortfolioCustomer> GetPortfolioCustomerAsync(int id);
+
         #endregion Methods
 
     }

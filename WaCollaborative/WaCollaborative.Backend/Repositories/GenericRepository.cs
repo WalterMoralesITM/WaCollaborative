@@ -156,6 +156,23 @@ namespace WaCollaborative.Backend.Repositories
             return state!;
         }
 
+        public async Task<Portfolio> GetPortfolioAsync(int id)
+        {
+            var portfolio = await _context.Portfolios
+                   .Include(c => c.PortfolioCustomers!)
+                   .ThenInclude(s => s.PortfolioCustomerProducts)
+                   .FirstOrDefaultAsync(c => c.Id == id);
+            return portfolio!;
+        }
+
+        public async Task<PortfolioCustomer> GetPortfolioCustomerAsync(int id)
+        {
+            var portfoliosCustomer = await _context.PortfolioCustomers
+                    .Include(s => s.PortfolioCustomerProducts)
+                    .FirstOrDefaultAsync(c => c.Id == id);
+            return portfoliosCustomer!;
+        }
+
         #endregion Methods
 
     }

@@ -1,0 +1,100 @@
+﻿@inject SweetAlertService sweetAlertService
+@inject IRepository repository
+
+<NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigationAsync"></NavigationLock>
+
+<EditForm EditContext="editContext" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <div class="mb-3">
+        <label>Producto:</label>
+        <div>
+            <select class="form-select" @bind="PortfolioCustomerProduct.ProductId">
+                <option value="0">-- Seleccione un producto --</option>
+                @if (products is not null)
+                {
+                    @foreach (var product in products)
+                    {
+                        <option value="@product.Id">@product.Name</option>
+                    }
+                }
+            </select>
+            <ValidationMessage For="@(() => PortfolioCustomerProduct.ProductId)" />
+        </div>
+    </div>
+    <button class="btn btn-primary" type="submit">Guardar</button>
+    <button class="btn btn-success" @onclick="ReturnAction">Regresar</button>
+</EditForm>
+
+@code {
+    private EditContext editContext = null!;
+    private List<Product>? products;
+    private bool loading;
+
+    protected override async Task OnInitializedAsync()
+    {
+        editContext = new(PortfolioCustomerProduct);
+        await LoadProductsAsync();
+    }
+
+    [EditorRequired]
+    [Parameter]
+    public PortfolioCustomerProduct PortfolioCustomerProduct{ get; set; } = null!;
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback OnValidSubmit { get; set; }
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback ReturnAction { get; set; }
+
+    public bool FormPostedSuccessfully { get; set; }
+
+    private async Task OnBeforeInternalNavigationAsync(LocationChangingContext context)
+    {
+        var formWasEdited = editContext.IsModified();
+
+        if (!formWasEdited)
+        {
+            return;
+        }
+
+        if (FormPostedSuccessfully)
+        {
+            return;
+        }
+
+        var result = await sweetAlertService.FireAsync(new SweetAlertOptions
+            {
+                Title = "Confirmación",
+                Text = "¿Deseas abandonar la página y perder los cambios?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true
+            });
+
+        var confirm = !string.IsNullOrEmpty(result.Value);
+
+        if (confirm)
+        {
+            return;
+        }
+
+        context.PreventNavigation();
+    }
+
+    private async Task LoadProductsAsync()
+    {
+        loading = true;
+        var responseHttp = await repository.GetAsync<List<Product>>("/api/products/combo");
+        if (responseHttp.Error)
+        {
+            loading = false;
+            var message = await responseHttp.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        products = responseHttp.Response;
+        loading = false;
+    }
+}

@@ -47,6 +47,10 @@ namespace WaCollaborative.Backend.UnitsOfWork
 
         public async Task<State> GetStateAsync(int id) => await _repository.GetStateAsync(id);
 
+        public async Task<Portfolio> GetPortfolioAsync(int id) => await _repository.GetPortfolioAsync(id);
+
+        public async Task<PortfolioCustomer> GetPortfolioCustomerAsync(int id) => await _repository.GetPortfolioCustomerAsync(id);
+
         #endregion Methods
 
     }

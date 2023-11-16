@@ -1,0 +1,254 @@
+﻿@page "/portfolios/details/{PortfolioId:int}"
+@attribute [Authorize(Roles = "Planner")]
+@inject IRepository repository
+@inject NavigationManager navigationManager
+@inject SweetAlertService sweetAlertService
+
+@if (portfolio is null)
+{
+    <Loading />
+}
+else
+{
+    <div class="card">
+        <div class="card-header">
+            <span>
+                <i class="oi oi-globe"></i>Portafolio: @portfolio.Name
+                <a class="btn btn-sm btn-primary float-end mx-1" @onclick=@(() => ShowModalAsync())><i class="oi oi-plus"></i> Adicionar Cliente</a>
+                <a class="btn btn-sm btn-success float-end" href="/portfolios"><i class="oi oi-arrow-thick-left" /> Regresar</a>
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="mb-2" style="display: flex; flex-wrap:wrap; align-items: center;">
+                <div>
+                    <input style="width: 400px;" type="text" class="form-control" id="titulo" placeholder="Buscar cliente" @bind-value="Filter" />
+                </div>
+                <div class="mx-1">
+                    <button type="button" class="btn btn-outline-primary" @onclick="ApplyFilterAsync"><i class="oi oi-layers" /> Filtrar</button>
+                    <button type="button" class="btn btn-outline-danger" @onclick="CleanFilterAsync"><i class="oi oi-ban" /> Limpiar</button>
+                </div>
+            </div>
+
+            <Pagination CurrentPage="currentPage"
+                        TotalPages="totalPages"
+                        SelectedPage="SelectedPageAsync" />
+
+            <br>
+            <h5>Clientes</h5>
+            <hr>
+            <GenericList List="portfolioCustomers!">
+                <Body>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th style="width:90px">Productos</th>
+                                <th style="width:168px"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var portfolioCustomer in portfolioCustomers!)
+                            {
+                                <tr>
+                                    <td><a href="/portfolioCustomers/details/@portfolioCustomer.Id">@portfolioCustomer.Customer!.Name</a></td>
+                                    <td> @portfolioCustomer.ProductsNumber</td>
+                                    <td>
+                                        <a class="btn btn-warning btn-sm" @onclick=@(() => ShowModalAsync(portfolioCustomer.Id, true))><i class="oi oi-pencil" /> Editar</a>
+                                        <button class="btn btn-danger btn-sm" @onclick=@(() => DeleteAsync(portfolioCustomer))><i class="oi oi-trash" /> Borrar</button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </Body>
+            </GenericList>
+        </div>
+    </div>
+}
+
+@code {
+    private Portfolio? portfolio;
+    private List<PortfolioCustomer>? portfolioCustomers;
+    private int currentPage = 1;
+    private int totalPages;
+
+    [CascadingParameter]
+    IModalService Modal { get; set; } = default!;
+
+    [Parameter]
+    public int PortfolioId { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string Page { get; set; } = string.Empty;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string Filter { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task ShowModalAsync(int id = 0, bool isEdit = false)
+    {
+        IModalReference modalReference;
+
+        if (isEdit)
+        {
+            modalReference = Modal.Show<PortfolioCustomerEdit>(string.Empty, new ModalParameters().Add("PortfolioCustomerId", id));
+        }
+        else
+        {
+            modalReference = Modal.Show<PortfolioCustomerCreate>(string.Empty, new ModalParameters().Add("PortfolioId", PortfolioId));
+        }
+
+        var result = await modalReference.Result;
+        if (result.Confirmed)
+        {
+            await LoadAsync();
+        }
+    }
+
+    private async Task SelectedPageAsync(int page)
+    {
+        currentPage = page;
+        await LoadAsync(page);
+    }
+
+    private async Task LoadAsync(int page = 1)
+    {
+        if (!string.IsNullOrWhiteSpace(Page))
+        {
+            page = Convert.ToInt32(Page);
+        }
+
+        var ok = await LoadPortfolioAsync();
+        if (ok)
+        {
+            ok = await LoadPortfolioCustomersAsync(page);
+            if (ok)
+            {
+                await LoadPagesAsync();
+            }
+        }
+    }
+
+    private async Task LoadPagesAsync()
+    {
+        var url = string.Empty;
+        if (string.IsNullOrEmpty(Filter))
+        {
+            url = $"api/portfolioCustomers/totalPages?id={PortfolioId}";
+        }
+        else
+        {
+            url = $"api/portfolioCustomers/totalPages?id={PortfolioId}&filter={Filter}";
+        }
+
+        var response = await repository.GetAsync<int>(url);
+        if (response.Error)
+        {
+            var message = await response.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+        totalPages = response.Response;
+    }
+
+    private async Task<bool> LoadPortfolioCustomersAsync(int page)
+    {
+        var url = string.Empty;
+        if (string.IsNullOrEmpty(Filter))
+        {
+            url = $"api/portfoliocustomers?id={PortfolioId}&page={page}";
+        }
+        else
+        {
+            url = $"api/portfoliocustomers?id={PortfolioId}&page={page}&filter={Filter}";
+        }
+
+        var response = await repository.GetAsync<List<PortfolioCustomer>>(url);
+        if (response.Error)
+        {
+            var message = await response.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return false;
+        }
+        portfolioCustomers = response.Response;
+        return true;
+    }
+
+    private async Task<bool> LoadPortfolioAsync()
+    {
+        var response = await repository.GetAsync<Portfolio>($"/api/portfolios/{PortfolioId}");
+        if (response.Error)
+        {
+            if (response.HttpResponseMessage.StatusCode == HttpStatusCode.NotFound)
+            {
+                navigationManager.NavigateTo("/portfolios");
+                return false;
+            }
+
+            var message = await response.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return false;
+        }
+        portfolio = response.Response;
+        return true;
+    }
+
+    private async Task CleanFilterAsync()
+    {
+        Filter = string.Empty;
+        await ApplyFilterAsync();
+    }
+
+    private async Task ApplyFilterAsync()
+    {
+        int page = 1;
+        await LoadAsync(page);
+        await SelectedPageAsync(page);
+    }
+
+    private async Task DeleteAsync(PortfolioCustomer portfolioCustomer)
+    {
+        var result = await sweetAlertService.FireAsync(new SweetAlertOptions
+            {
+                Title = "Confirmación",
+                Text = $"¿Realmente deseas eliminar el cliente? {portfolioCustomer.Customer!.Name}",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true,
+                CancelButtonText = "No",
+                ConfirmButtonText = "Si"
+            });
+
+        var confirm = string.IsNullOrEmpty(result.Value);
+        if (confirm)
+        {
+            return;
+        }
+
+        var responseHttp = await repository.DeleteAsync($"/api/portfolioCustomers/{portfolioCustomer.Id}");
+        if (responseHttp.Error)
+        {
+            if (responseHttp.HttpResponseMessage.StatusCode != HttpStatusCode.NotFound)
+            {
+                var message = await responseHttp.GetErrorMessageAsync();
+                await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+                return;
+            }
+        }
+
+        await LoadAsync();
+        var toast = sweetAlertService.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                Position = SweetAlertPosition.BottomEnd,
+                ShowConfirmButton = true,
+                Timer = 3000
+            });
+        await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Registro borrado con éxito.");
+    }
+}

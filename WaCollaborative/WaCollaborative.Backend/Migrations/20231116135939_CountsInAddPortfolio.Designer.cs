@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WaCollaborative.Backend.Data;
 
@@ -11,9 +12,11 @@ using WaCollaborative.Backend.Data;
 namespace WaCollaborative.Backend.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20231116135939_CountsInAddPortfolio")]
+    partial class CountsInAddPortfolio
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -497,9 +500,7 @@ namespace WaCollaborative.Backend.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.HasIndex("PortfolioId", "CustomerId")
-                        .IsUnique()
-                        .HasFilter("[PortfolioId] IS NOT NULL AND [CustomerId] IS NOT NULL");
+                    b.HasIndex("PortfolioId");
 
                     b.ToTable("PortfolioCustomers");
                 });
@@ -520,11 +521,9 @@ namespace WaCollaborative.Backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("PortfolioCustomerId");
 
-                    b.HasIndex("PortfolioCustomerId", "ProductId")
-                        .IsUnique()
-                        .HasFilter("[PortfolioCustomerId] IS NOT NULL AND [ProductId] IS NOT NULL");
+                    b.HasIndex("ProductId");
 
                     b.ToTable("PortfolioCustomerProducts");
                 });

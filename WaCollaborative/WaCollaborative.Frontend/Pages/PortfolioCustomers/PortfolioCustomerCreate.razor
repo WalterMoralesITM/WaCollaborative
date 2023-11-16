@@ -1,0 +1,50 @@
+﻿@page "/portfoliocustomers/create/{PortfolioId:int}"
+@attribute [Authorize(Roles = "Planner")]
+@inject NavigationManager navigationManager
+@inject IRepository repository
+@inject SweetAlertService sweetAlertService
+
+<h3>Nuevo Cliente</h3>
+
+<PortfolioCustomerForm @ref="portfolioCustomerForm" PortfolioCustomer="portfolioCustomer" OnValidSubmit="CreateAsync" ReturnAction="Return" />
+
+@code {
+    private PortfolioCustomer portfolioCustomer = new();
+    private PortfolioCustomerForm? portfolioCustomerForm;
+
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; } = default!;
+
+    [Parameter]
+    public int PortfolioId { get; set; }
+
+    private async Task CreateAsync()
+    {
+        portfolioCustomer.PortfolioId = PortfolioId;
+        var response = await repository.PostAsync("/api/portfoliocustomers", portfolioCustomer);
+        if (response.Error)
+        {
+            var message = await response.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        await BlazoredModal.CloseAsync(ModalResult.Ok());
+        Return();
+
+        var toast = sweetAlertService.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                Position = SweetAlertPosition.BottomEnd,
+                ShowConfirmButton = true,
+                Timer = 3000
+            });
+        await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Registro creado con éxito.");
+    }
+
+    private void Return()
+    {
+        portfolioCustomerForm!.FormPostedSuccessfully = true;
+        navigationManager.NavigateTo($"/portfolios/details/{PortfolioId}");
+    }
+}

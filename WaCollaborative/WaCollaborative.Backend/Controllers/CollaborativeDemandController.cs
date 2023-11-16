@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
 using WaCollaborative.Backend.Data;
 using WaCollaborative.Backend.Helpers.Interfaces;
 using WaCollaborative.Backend.Interfaces;
@@ -209,6 +210,77 @@ namespace WaCollaborative.Backend.Controllers
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpGet("ExcelGenerate")]
+        public async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination, [FromServices] IWebHostEnvironment webHostEnvironment)
+        {
+            try
+            {
+                var queryable = _context.CollaborativeDemand
+                    .Include(cd => cd.Product)
+                    .Include(cd => cd.ShippingPoint)
+                    .ThenInclude(sp => sp!.City)
+                    .Include(cd => cd.ShippingPoint)
+                    .ThenInclude(sp => sp!.Customer)
+                    .ThenInclude(c => c!.DistributionChannel)
+                    .Include(cd => cd.CollaborativeDemandComponentsDetails)
+                    .AsQueryable();
+
+                var collaborativeDemands = await queryable.ToListAsync();
+
+                var result = FlattenCollaborativeDemands(collaborativeDemands);
+
+                // Ruta donde se almacenará el archivo Excel dentro del proyecto
+                var fileDownloadName = $"CollaborativeDemands{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+
+                var excelFilePath = Path.Combine(webHostEnvironment.ContentRootPath, "ExcelFiles", fileDownloadName);
+                //var excelFilePath = Path.Combine(webHostEnvironment.ContentRootPath, "ExcelFiles", "CollaborativeDemands.xlsx");
+
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+                // Crear el archivo Excel
+                using (var package = new ExcelPackage())
+                {
+                    // Crear la hoja de trabajo
+                    var worksheet = package.Workbook.Worksheets.Add("CollaborativeDemands");
+
+                    // Encabezados de columna
+                    var headers = new string[]  { "CollaborativeDemandId", "CustomerName", "DistributionChannel", "YearMonth", "Quantity" };
+
+                    for (var i = 0; i < headers.Length; i++)
+                    {
+                        worksheet.Cells[1, i + 1].Value = headers[i];
+                        worksheet.Cells[1, i + 1].Style.Font.Bold = true;
+                    }
+
+                    // Llenar los datos
+                    for (var i = 0; i < result.Count; i++)
+                    {
+                        var rowData = result[i];
+                        worksheet.Cells[i + 2, 1].Value = rowData.CollaborativeDemandId;
+                        worksheet.Cells[i + 2, 2].Value = rowData.CustomerName;
+                        worksheet.Cells[i + 2, 3].Value = rowData.DistributionChannel;
+                        worksheet.Cells[i + 2, 4].Value = rowData.YearMonth;
+                        worksheet.Cells[i + 2, 5].Value = rowData.Quantity;
+                    }
+
+                    // Guardar el archivo                    
+                    FileInfo excelFile = new FileInfo(excelFilePath);
+                    package.SaveAs(excelFile);
+                }
+
+                // Devolver el enlace al frontend
+                
+
+                var downloadLink = Path.Combine("ExcelFiles", excelFilePath);
+
+                return Ok(new { ExcelLink = downloadLink });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { ErrorMessage = ex.Message });
             }
         }
     }

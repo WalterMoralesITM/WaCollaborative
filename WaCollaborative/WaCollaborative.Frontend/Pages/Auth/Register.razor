@@ -65,6 +65,22 @@ else
                                 <ValidationMessage For="@(() => userDTO.Email)" />
                             </div>
                         </div>
+                        <div class="mb-3">
+                            <label>Rol:</label>
+                            <div>
+                                <select class="form-select" @bind="userDTO.InternalRoleId">
+                                    <option value="0">-- Seleccione un rol --</option>
+                                    @if (internalRoles is not null)
+                                    {
+                                        @foreach (var role in internalRoles)
+                                        {
+                                            <option value="@role.Id">@role.Name</option>
+                                        }
+                                    }
+                                </select>
+                                <ValidationMessage For="@(() => userDTO.InternalRoleId)" />
+                            </div>
+                        </div>
                     </div>
                     <div class="col-6">
                         <div class="mb-3">
@@ -142,6 +158,7 @@ else
     private List<Country>? countries;
     private List<State>? states;
     private List<City>? cities;
+    private List<InternalRole>? internalRoles;
     private string? imageUrl;
     private bool loading;
 
@@ -152,6 +169,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         await LoadCountriesAsync();
+        await LoadInternalRolesAsync();
 
         if (!string.IsNullOrEmpty(userDTO.Photo))
         {
@@ -164,6 +182,22 @@ else
     {
         userDTO.Photo = imagenBase64;
         imageUrl = null;
+    }
+
+    private async Task LoadInternalRolesAsync()
+    {
+        loading = true;
+        var responseHttp = await repository.GetAsync<List<InternalRole>>("/api/internalroles/combo");
+        if (responseHttp.Error)
+        {
+            loading = false;
+            var message = await responseHttp.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        internalRoles = responseHttp.Response;
+        loading = false;
     }
 
     private async Task LoadCountriesAsync()

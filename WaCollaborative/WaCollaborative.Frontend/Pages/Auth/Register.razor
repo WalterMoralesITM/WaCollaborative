@@ -84,6 +84,22 @@ else
                     </div>
                     <div class="col-6">
                         <div class="mb-3">
+                            <label>Portafolio:</label>
+                            <div>
+                                <select class="form-select" @bind="userDTO.PortfolioId">
+                                    <option value="0">-- Seleccione un portafolio --</option>
+                                    @if (portfolios is not null)
+                                    {
+                                        @foreach (var portfolio in portfolios)
+                                        {
+                                            <option value="@portfolio.Id">@portfolio.Name</option>
+                                        }
+                                    }
+                                </select>
+                                <ValidationMessage For="@(() => userDTO.PortfolioId)" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
                             <label>País:</label>
                             <div>
                                 <select class="form-select" @onchange="CountryChangedAsync">
@@ -159,6 +175,7 @@ else
     private List<State>? states;
     private List<City>? cities;
     private List<InternalRole>? internalRoles;
+    private List<Portfolio>? portfolios;
     private string? imageUrl;
     private bool loading;
 
@@ -170,6 +187,7 @@ else
     {
         await LoadCountriesAsync();
         await LoadInternalRolesAsync();
+        await LoadPortfoliosAsync();
 
         if (!string.IsNullOrEmpty(userDTO.Photo))
         {
@@ -255,6 +273,19 @@ else
         }
 
         cities = responseHttp.Response;
+    }
+
+    private async Task LoadPortfoliosAsync()
+    {
+        var responseHttp = await repository.GetAsync<List<Portfolio>>($"/api/portfolios/combo");
+        if (responseHttp.Error)
+        {
+            var message = await responseHttp.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        portfolios = responseHttp.Response;
     }
 
     private async Task CreteUserAsync()

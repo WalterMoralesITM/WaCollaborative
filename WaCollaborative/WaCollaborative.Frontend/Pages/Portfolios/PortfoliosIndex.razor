@@ -35,6 +35,7 @@
                         <tr>
                             <th>Portafolio</th>
                             <th style="width:210px">Clientes</th>
+                            <th style="width:210px">Productos</th>
                             <th style="width:168px"></th>
                         </tr>
                     </thead>
@@ -42,8 +43,9 @@
                         @foreach (var portfolio in portfolios!)
                         {
                             <tr>
-                                <td><a href="/portfolios/details/@portfolio.Id"> @portfolio.Name</a></td>
-                                <td>@portfolio.CustomersNumber</td>
+                                <td>@portfolio.Name</td>
+                                <td><a href="/portfolios/customerdetails/@portfolio.Id">Ver @portfolio.CustomersNumber clientes</a></td>
+                                <td><a href="/portfolios/productdetails/@portfolio.Id">Ver @portfolio.ProductsNumber productos</a></td>
                                 <td>
                                     <a class="btn btn-warning btn-sm" @onclick=@(() => ShowModalAsync(portfolio.Id, true))><i class="oi oi-pencil" /> Editar</a>
                                     <button class="btn btn-danger btn-sm" @onclick=@(() => DeleteAsync(portfolio))><i class="oi oi-trash" /> Borrar</button>

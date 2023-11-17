@@ -43,7 +43,7 @@ namespace WaCollaborative.Backend.Data
         public DbSet<CollaborationCalendar> CollaborationCalendars { get; set; }
         public DbSet<Portfolio> Portfolios { get; set; }
         public DbSet<PortfolioCustomer> PortfolioCustomers { get; set; }
-        public DbSet<PortfolioCustomerProduct> PortfolioCustomerProducts { get; set; }
+        public DbSet<PortfolioProduct> PortfolioProducts { get; set; }
 
 
         #endregion Entities
@@ -81,7 +81,7 @@ namespace WaCollaborative.Backend.Data
             modelBuilder.Entity<CollaborationCalendar>();
             modelBuilder.Entity<Portfolio>().HasIndex(c => new { c.Name }).IsUnique();
             modelBuilder.Entity<PortfolioCustomer>().HasIndex(c => new { c.PortfolioId, c.CustomerId }).IsUnique();
-            modelBuilder.Entity<PortfolioCustomerProduct>().HasIndex(c => new { c.PortfolioCustomerId, c.ProductId }).IsUnique();
+            modelBuilder.Entity<PortfolioProduct>().HasIndex(c => new { c.PortfolioId, c.ProductId }).IsUnique();
 
         }
 

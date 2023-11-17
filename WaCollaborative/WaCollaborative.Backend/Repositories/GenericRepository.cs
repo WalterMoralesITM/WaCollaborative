@@ -160,7 +160,6 @@ namespace WaCollaborative.Backend.Repositories
         {
             var portfolio = await _context.Portfolios
                    .Include(c => c.PortfolioCustomers!)
-                   .ThenInclude(s => s.PortfolioCustomerProducts)
                    .FirstOrDefaultAsync(c => c.Id == id);
             return portfolio!;
         }
@@ -168,7 +167,6 @@ namespace WaCollaborative.Backend.Repositories
         public async Task<PortfolioCustomer> GetPortfolioCustomerAsync(int id)
         {
             var portfoliosCustomer = await _context.PortfolioCustomers
-                    .Include(s => s.PortfolioCustomerProducts)
                     .FirstOrDefaultAsync(c => c.Id == id);
             return portfoliosCustomer!;
         }

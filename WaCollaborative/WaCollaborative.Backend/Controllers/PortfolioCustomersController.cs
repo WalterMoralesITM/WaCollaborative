@@ -40,7 +40,6 @@ namespace WaCollaborative.Backend.Controllers
         {
             var queryable = _context.PortfolioCustomers
                 .Include(p => p.Customer)
-                .Include(x => x.PortfolioCustomerProducts)
                 .Where(x => x.Portfolio!.Id == pagination.Id)
                 .AsQueryable();
 

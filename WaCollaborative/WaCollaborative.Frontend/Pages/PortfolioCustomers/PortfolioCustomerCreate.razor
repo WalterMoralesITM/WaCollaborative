@@ -4,7 +4,7 @@
 @inject IRepository repository
 @inject SweetAlertService sweetAlertService
 
-<h3>Nuevo Cliente</h3>
+<h4>Agregar cliente al portafolio</h4>
 
 <PortfolioCustomerForm @ref="portfolioCustomerForm" PortfolioCustomer="portfolioCustomer" OnValidSubmit="CreateAsync" ReturnAction="Return" />
 
@@ -45,6 +45,6 @@
     private void Return()
     {
         portfolioCustomerForm!.FormPostedSuccessfully = true;
-        navigationManager.NavigateTo($"/portfolios/details/{PortfolioId}");
+        navigationManager.NavigateTo($"/portfolios/customerdetails/{PortfolioId}");
     }
 }

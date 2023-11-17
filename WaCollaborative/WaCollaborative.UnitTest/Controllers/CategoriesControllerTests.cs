@@ -20,7 +20,6 @@ namespace WaCollaborative.UnitTest.Controllers
     [TestClass]
     public class CategoriesControllerTests
     {
-
         #region Attributes
 
         private readonly DbContextOptions<DataContext> _options;
@@ -82,7 +81,25 @@ namespace WaCollaborative.UnitTest.Controllers
             context.Dispose();
         }
 
-        #endregion Methods
+        [TestMethod]
+        public async Task GetComboAsync_ReturnsOkResult()
+        {
+            /// Arrange
+            using var context = new DataContext(_options);
+            var controller = new CategoriesController(_unitOfWorkMock.Object, context);
 
+            /// Act
+            var result = await controller.GetComboAsync() as OkObjectResult;
+
+            /// Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(200, result.StatusCode);
+
+            /// Clean up (if needed)
+            context.Database.EnsureDeleted();
+            context.Dispose();
+        }
+
+        #endregion Methods
     }
 }

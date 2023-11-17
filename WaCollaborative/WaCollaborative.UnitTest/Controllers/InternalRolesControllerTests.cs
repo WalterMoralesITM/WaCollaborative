@@ -1,6 +1,4 @@
-﻿#region Using
-
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using WaCollaborative.Backend.Controllers;
@@ -9,48 +7,31 @@ using WaCollaborative.Backend.Interfaces;
 using WaCollaborative.Shared.DTOs;
 using WaCollaborative.Shared.Entities;
 
-#endregion Using
-
 namespace WaCollaborative.UnitTest.Controllers
 {
-    /// <summary>
-    /// The class CitiesControllerTests
-    /// </summary>
-
     [TestClass]
-    public class CitiesControllerTests
+    public class InternalRolesControllerTests
     {
-        #region Attributes
-
         private readonly DbContextOptions<DataContext> _options;
-        private readonly Mock<IGenericUnitOfWork<City>> _unitOfWorkMock;
+        private readonly Mock<IGenericUnitOfWork<InternalRole>> _unitOfWorkMock;
 
-        #endregion Attributes
-
-        #region Constructor
-
-        public CitiesControllerTests()
+        public InternalRolesControllerTests()
         {
             _options = new DbContextOptionsBuilder<DataContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
                 .Options;
-            _unitOfWorkMock = new Mock<IGenericUnitOfWork<City>>();
+            _unitOfWorkMock = new Mock<IGenericUnitOfWork<InternalRole>>();
         }
-
-        #endregion Constructor
-
-        #region Methods
 
         [TestMethod]
         public async Task GetComboAsync_ReturnsOkResult()
         {
             /// Arrange
             using var context = new DataContext(_options);
-            var controller = new CitiesController(_unitOfWorkMock.Object, context);
-            var stateId = 1;
+            var controller = new InternalRolesController(_unitOfWorkMock.Object, context);
 
             /// Act
-            var result = await controller.GetComboAsync(stateId) as OkObjectResult;
+            var result = await controller.GetComboAsync() as OkObjectResult;
 
             /// Assert
             Assert.IsNotNull(result);
@@ -65,7 +46,7 @@ namespace WaCollaborative.UnitTest.Controllers
         {
             /// Arrange
             using var context = new DataContext(_options);
-            var controller = new CitiesController(_unitOfWorkMock.Object, context);
+            var controller = new InternalRolesController(_unitOfWorkMock.Object, context);
             var pagination = new PaginationDTO { Id = 1, Filter = "Some" };
 
             /// Act
@@ -84,7 +65,7 @@ namespace WaCollaborative.UnitTest.Controllers
         {
             /// Arrange
             using var context = new DataContext(_options);
-            var controller = new CitiesController(_unitOfWorkMock.Object, context);
+            var controller = new InternalRolesController(_unitOfWorkMock.Object, context);
             var pagination = new PaginationDTO { Id = 1, Filter = "Some" };
 
             /// Act
@@ -103,10 +84,10 @@ namespace WaCollaborative.UnitTest.Controllers
         {
             /// Arrange
             using var context = new DataContext(_options);
-            context.Cities.Add(new City { Id = 1, Name = "colombia" });
+            context.InternalRoles.Add(new InternalRole { Id = 1, Name = "Asesor" });
             context.SaveChanges();
 
-            var controller = new CitiesController(_unitOfWorkMock.Object, context);
+            var controller = new InternalRolesController(_unitOfWorkMock.Object, context);
             int id = 2;
 
             /// Act
@@ -124,25 +105,23 @@ namespace WaCollaborative.UnitTest.Controllers
         {
             /// Arrange
             using var context = new DataContext(_options);
-            context.Cities.Add(new City { Id = 1, Name = "colombia" });
+            context.InternalRoles.Add(new InternalRole { Id = 1, Name = "Asesor" });
             context.SaveChanges();
 
-            var controller = new CitiesController(_unitOfWorkMock.Object, context);
+            var controller = new InternalRolesController(_unitOfWorkMock.Object, context);
             int id = 1;
 
             /// Act
             var result = await controller.GetAsync(id) as OkObjectResult;
-            City resultCity = (City)result!.Value!;
+            InternalRole resultInternalRole = (InternalRole)result!.Value!;
 
             /// Assert
             Assert.IsNotNull(result);
             Assert.AreEqual(200, result.StatusCode);
-            Assert.AreEqual(resultCity.Name, "colombia");
+            Assert.AreEqual(resultInternalRole.Name, "Asesor");
 
             /// Clean up (if needed)
             context.Database.EnsureDeleted();
         }
-
-        #endregion Methods
     }
 }

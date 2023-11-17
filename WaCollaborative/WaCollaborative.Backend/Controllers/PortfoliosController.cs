@@ -39,6 +39,7 @@ namespace WaCollaborative.Backend.Controllers
         {
             var queryable = _context.Portfolios
                 .Include(c => c.PortfolioCustomers)
+                .Include(c => c.PortfolioProducts)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(pagination.Filter))

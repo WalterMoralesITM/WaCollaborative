@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WaCollaborative.Backend.Data;
 
@@ -11,9 +12,11 @@ using WaCollaborative.Backend.Data;
 namespace WaCollaborative.Backend.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20231117142403_AddPortfolioProduct-ProductNotNull")]
+    partial class AddPortfolioProductProductNotNull
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -487,7 +490,7 @@ namespace WaCollaborative.Backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CustomerId")
+                    b.Property<int?>("CustomerId")
                         .HasColumnType("int");
 
                     b.Property<int?>("PortfolioId")
@@ -499,7 +502,7 @@ namespace WaCollaborative.Backend.Migrations
 
                     b.HasIndex("PortfolioId", "CustomerId")
                         .IsUnique()
-                        .HasFilter("[PortfolioId] IS NOT NULL");
+                        .HasFilter("[PortfolioId] IS NOT NULL AND [CustomerId] IS NOT NULL");
 
                     b.ToTable("PortfolioCustomers");
                 });
@@ -952,9 +955,7 @@ namespace WaCollaborative.Backend.Migrations
                 {
                     b.HasOne("WaCollaborative.Shared.Entities.Customer", "Customer")
                         .WithMany()
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CustomerId");
 
                     b.HasOne("WaCollaborative.Shared.Entities.Portfolio", "Portfolio")
                         .WithMany("PortfolioCustomers")

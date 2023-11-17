@@ -1,4 +1,4 @@
-﻿@page "/portfolios/details/{PortfolioId:int}"
+﻿@page "/portfolios/customerdetails/{PortfolioId:int}"
 @attribute [Authorize(Roles = "Planner")]
 @inject IRepository repository
 @inject NavigationManager navigationManager
@@ -42,7 +42,6 @@ else
                         <thead>
                             <tr>
                                 <th>Cliente</th>
-                                <th style="width:90px">Productos</th>
                                 <th style="width:168px"></th>
                             </tr>
                         </thead>
@@ -50,8 +49,7 @@ else
                             @foreach (var portfolioCustomer in portfolioCustomers!)
                             {
                                 <tr>
-                                    <td><a href="/portfolioCustomers/details/@portfolioCustomer.Id">@portfolioCustomer.Customer!.Name</a></td>
-                                    <td> @portfolioCustomer.ProductsNumber</td>
+                                    <td>@portfolioCustomer.Customer!.Name</td>
                                     <td>
                                         <a class="btn btn-warning btn-sm" @onclick=@(() => ShowModalAsync(portfolioCustomer.Id, true))><i class="oi oi-pencil" /> Editar</a>
                                         <button class="btn btn-danger btn-sm" @onclick=@(() => DeleteAsync(portfolioCustomer))><i class="oi oi-trash" /> Borrar</button>

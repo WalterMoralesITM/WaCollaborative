@@ -4,7 +4,7 @@
 @inject IRepository repository
 @inject SweetAlertService sweetAlertService
 
-<h3>Editar Cliente</h3>
+<h4>Cambiar cliente del portafolio</h4>
 
 @if (portfolioCustomer is null)
 {
@@ -67,6 +67,6 @@ else
     private void Return()
     {
         portfolioCustomerForm!.FormPostedSuccessfully = true;
-        navigationManager.NavigateTo($"/portfolios/details/{portfolioCustomer!.PortfolioId}");
+        navigationManager.NavigateTo($"/portfolios/customerdetails/{portfolioCustomer!.PortfolioId}");
     }
 }

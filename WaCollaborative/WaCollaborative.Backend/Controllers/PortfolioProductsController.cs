@@ -13,32 +13,35 @@ namespace WaCollaborative.Backend.Controllers
     [ApiController]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
-    public class PortfolioCustomerProductsController : GenericController<PortfolioCustomerProduct>
+    public class PortfolioProductsController : GenericController<PortfolioProduct>
     {
+        private readonly IGenericUnitOfWork<PortfolioProduct> _unitOfWork;
         private readonly DataContext _context;
 
-        public PortfolioCustomerProductsController(IGenericUnitOfWork<PortfolioCustomerProduct> unitOfWork, DataContext context) : base(unitOfWork, context)
+        public PortfolioProductsController(IGenericUnitOfWork<PortfolioProduct> unitOfWork, DataContext context) 
+            : base(unitOfWork, context)
         {
+            _unitOfWork = unitOfWork;
             _context = context;
         }
 
         [AllowAnonymous]
-        [HttpGet("combo/{portfolioCustomerId:int}")]
-        public async Task<ActionResult> GetComboAsync(int portfolioCustomerId)
+        [HttpGet("combo/{portfolioId:int}")]
+        public async Task<ActionResult> GetComboAsync(int portfolioId)
         {
-            return Ok(await _context.PortfolioCustomerProducts
+            return Ok(await _context.PortfolioProducts
                 .Include(p => p.Product)
-                .Where(c => c.PortfolioCustomerId == portfolioCustomerId)
-                .OrderBy(c => c.Product!.Name)
+                .Where(s => s.PortfolioId == portfolioId)
+                .OrderBy(s => s.Product!.Name)
                 .ToListAsync());
         }
 
         [HttpGet]
         public override async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
         {
-            var queryable = _context.PortfolioCustomerProducts
+            var queryable = _context.PortfolioProducts
                 .Include(p => p.Product)
-                .Where(x => x.PortfolioCustomer!.Id == pagination.Id)
+                .Where(x => x.Portfolio!.Id == pagination.Id)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(pagination.Filter))
@@ -56,14 +59,13 @@ namespace WaCollaborative.Backend.Controllers
         [HttpGet("totalPages")]
         public override async Task<ActionResult> GetPagesAsync([FromQuery] PaginationDTO pagination)
         {
-            var queryable = _context.PortfolioCustomerProducts
-                .Include(p => p.Product)
-                .Where(x => x.PortfolioCustomer!.Id == pagination.Id)
+            var queryable = _context.PortfolioProducts
+                .Where(x => x.Portfolio!.Id == pagination.Id)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(pagination.Filter))
             {
-                queryable = queryable.Where(x => x.Product! .Name.ToLower().Contains(pagination.Filter.ToLower()));
+                queryable = queryable.Where(x => x.Product!.Name.ToLower().Contains(pagination.Filter.ToLower()));
             }
 
             double count = await queryable.CountAsync();
@@ -74,16 +76,15 @@ namespace WaCollaborative.Backend.Controllers
         [HttpGet("{id}")]
         public override async Task<IActionResult> GetAsync(int id)
         {
-            PortfolioCustomerProduct? portfolioCustomerProduct = await _context.PortfolioCustomerProducts
+            var state = await _context.PortfolioProducts
                 .Include(p => p.Product)
-                .FirstOrDefaultAsync(c => c.Id == id);
-
-            if (portfolioCustomerProduct == null)
+                .Include(s => s.Portfolio)
+                .FirstOrDefaultAsync(s => s.Id == id);
+            if (state == null)
             {
                 return NotFound();
             }
-
-            return Ok(portfolioCustomerProduct);
+            return Ok(state);
         }
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WaCollaborative.Backend.Data;
 
@@ -11,9 +12,11 @@ using WaCollaborative.Backend.Data;
 namespace WaCollaborative.Backend.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20231117125548_RemovePortfolioCustomerProduct")]
+    partial class RemovePortfolioCustomerProduct
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -487,7 +490,7 @@ namespace WaCollaborative.Backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CustomerId")
+                    b.Property<int?>("CustomerId")
                         .HasColumnType("int");
 
                     b.Property<int?>("PortfolioId")
@@ -499,34 +502,9 @@ namespace WaCollaborative.Backend.Migrations
 
                     b.HasIndex("PortfolioId", "CustomerId")
                         .IsUnique()
-                        .HasFilter("[PortfolioId] IS NOT NULL");
+                        .HasFilter("[PortfolioId] IS NOT NULL AND [CustomerId] IS NOT NULL");
 
                     b.ToTable("PortfolioCustomers");
-                });
-
-            modelBuilder.Entity("WaCollaborative.Shared.Entities.PortfolioProduct", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("PortfolioId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.HasIndex("PortfolioId", "ProductId")
-                        .IsUnique()
-                        .HasFilter("[PortfolioId] IS NOT NULL");
-
-                    b.ToTable("PortfolioProducts");
                 });
 
             modelBuilder.Entity("WaCollaborative.Shared.Entities.Product", b =>
@@ -952,9 +930,7 @@ namespace WaCollaborative.Backend.Migrations
                 {
                     b.HasOne("WaCollaborative.Shared.Entities.Customer", "Customer")
                         .WithMany()
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CustomerId");
 
                     b.HasOne("WaCollaborative.Shared.Entities.Portfolio", "Portfolio")
                         .WithMany("PortfolioCustomers")
@@ -963,23 +939,6 @@ namespace WaCollaborative.Backend.Migrations
                     b.Navigation("Customer");
 
                     b.Navigation("Portfolio");
-                });
-
-            modelBuilder.Entity("WaCollaborative.Shared.Entities.PortfolioProduct", b =>
-                {
-                    b.HasOne("WaCollaborative.Shared.Entities.Portfolio", "Portfolio")
-                        .WithMany("PortfolioProducts")
-                        .HasForeignKey("PortfolioId");
-
-                    b.HasOne("WaCollaborative.Shared.Entities.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Portfolio");
-
-                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("WaCollaborative.Shared.Entities.Product", b =>
@@ -1133,8 +1092,6 @@ namespace WaCollaborative.Backend.Migrations
             modelBuilder.Entity("WaCollaborative.Shared.Entities.Portfolio", b =>
                 {
                     b.Navigation("PortfolioCustomers");
-
-                    b.Navigation("PortfolioProducts");
                 });
 
             modelBuilder.Entity("WaCollaborative.Shared.Entities.Segment", b =>

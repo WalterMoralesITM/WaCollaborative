@@ -8,8 +8,8 @@
     <div class="mb-3">
         <label>Producto:</label>
         <div>
-            <select class="form-select" @bind="PortfolioCustomerProduct.ProductId">
-                <option value="0">-- Seleccione un producto --</option>
+            <select class="form-select" @bind="PortfolioProduct.ProductId">
+                <option value="0">-- Seleccione un Producto --</option>
                 @if (products is not null)
                 {
                     @foreach (var product in products)
@@ -18,7 +18,7 @@
                     }
                 }
             </select>
-            <ValidationMessage For="@(() => PortfolioCustomerProduct.ProductId)" />
+            <ValidationMessage For="@(() => PortfolioProduct.ProductId)" />
         </div>
     </div>
     <button class="btn btn-primary" type="submit">Guardar</button>
@@ -32,13 +32,13 @@
 
     protected override async Task OnInitializedAsync()
     {
-        editContext = new(PortfolioCustomerProduct);
+        editContext = new(PortfolioProduct);
         await LoadProductsAsync();
     }
 
     [EditorRequired]
     [Parameter]
-    public PortfolioCustomerProduct PortfolioCustomerProduct{ get; set; } = null!;
+    public PortfolioProduct PortfolioProduct{ get; set; } = null!;
 
     [EditorRequired]
     [Parameter]

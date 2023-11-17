@@ -1,10 +1,10 @@
-﻿@page "/portfoliocustomers/details/{PortfolioCustomerId:int}"
+﻿@page "/portfolios/productdetails/{PortfolioId:int}"
 @attribute [Authorize(Roles = "Planner")]
 @inject IRepository repository
 @inject NavigationManager navigationManager
 @inject SweetAlertService sweetAlertService
 
-@if (portfolioCustomer is null)
+@if (portfolio is null)
 {
     <Loading />
 }
@@ -13,15 +13,15 @@ else
     <div class="card">
         <div class="card-header">
             <span>
-                <i class="oi oi-globe"></i>Cliente: @portfolioCustomer.Customer!.Name
+                <i class="oi oi-globe"></i>Portafolio: @portfolio.Name
                 <a class="btn btn-sm btn-primary float-end mx-1" @onclick=@(() => ShowModalAsync())><i class="oi oi-plus"></i> Adicionar Producto</a>
-                <a class="btn btn-sm btn-success float-end" href="/portfolios/details/@portfolioCustomer.PortfolioId"><i class="oi oi-arrow-thick-left" /> Regresar</a>
+                <a class="btn btn-sm btn-success float-end" href="/portfolios"><i class="oi oi-arrow-thick-left" /> Regresar</a>
             </span>
         </div>
         <div class="card-body">
             <div class="mb-2" style="display: flex; flex-wrap:wrap; align-items: center;">
                 <div>
-                    <input style="width: 400px;" type="text" class="form-control" id="titulo" placeholder="Buscar producto..." @bind-value="Filter" />
+                    <input style="width: 400px;" type="text" class="form-control" id="titulo" placeholder="Buscar cliente" @bind-value="Filter" />
                 </div>
                 <div class="mx-1">
                     <button type="button" class="btn btn-outline-primary" @onclick="ApplyFilterAsync"><i class="oi oi-layers" /> Filtrar</button>
@@ -36,7 +36,7 @@ else
             <br>
             <h5>Productos</h5>
             <hr>
-            <GenericList List="portfolioCustomerProducts!">
+            <GenericList List="portfolioProducts!">
                 <Body>
                     <table class="table table-striped">
                         <thead>
@@ -46,15 +46,13 @@ else
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var portfolioCustomerProduct in portfolioCustomerProducts!)
+                            @foreach (var portfolioProduct in portfolioProducts!)
                             {
                                 <tr>
+                                    <td>@portfolioProduct.Product!.Name</td>
                                     <td>
-                                        @portfolioCustomerProduct.Product!.Name
-                                    </td>
-                                    <td>
-                                        <a class="btn btn-warning btn-sm" @onclick=@(() => ShowModalAsync(portfolioCustomerProduct.Id, true))><i class="oi oi-pencil" /> Editar</a>
-                                        <button class="btn btn-danger btn-sm" @onclick=@(() => DeleteAsync(portfolioCustomerProduct))><i class="oi oi-trash" /> Borrar</button>
+                                        <a class="btn btn-warning btn-sm" @onclick=@(() => ShowModalAsync(portfolioProduct.Id, true))><i class="oi oi-pencil" /> Editar</a>
+                                        <button class="btn btn-danger btn-sm" @onclick=@(() => DeleteAsync(portfolioProduct))><i class="oi oi-trash" /> Borrar</button>
                                     </td>
                                 </tr>
                             }
@@ -67,8 +65,8 @@ else
 }
 
 @code {
-    private PortfolioCustomer? portfolioCustomer;
-    private List<PortfolioCustomerProduct>? portfolioCustomerProducts;
+    private Portfolio? portfolio;
+    private List<PortfolioProduct>? portfolioProducts;
     private int currentPage = 1;
     private int totalPages;
 
@@ -76,15 +74,15 @@ else
     IModalService Modal { get; set; } = default!;
 
     [Parameter]
-    public int PortfolioCustomerId { get; set; }
+    public int PortfolioId { get; set; }
 
     [Parameter]
     [SupplyParameterFromQuery]
-    public string Page { get; set; } = "";
+    public string Page { get; set; } = string.Empty;
 
     [Parameter]
     [SupplyParameterFromQuery]
-    public string Filter { get; set; } = "";
+    public string Filter { get; set; } = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -97,11 +95,11 @@ else
 
         if (isEdit)
         {
-            modalReference = Modal.Show<PortfolioCustomerProductEdit>(string.Empty, new ModalParameters().Add("PortfolioCustomerProductId", id));
+            modalReference = Modal.Show<PortfolioProductEdit>(string.Empty, new ModalParameters().Add("PortfolioProductId", id));
         }
         else
         {
-            modalReference = Modal.Show<PortfolioCustomerProductCreate>(string.Empty, new ModalParameters().Add("PortfolioCustomerId", PortfolioCustomerId));
+            modalReference = Modal.Show<PortfolioProductCreate>(string.Empty, new ModalParameters().Add("PortfolioId", PortfolioId));
         }
 
         var result = await modalReference.Result;
@@ -124,10 +122,10 @@ else
             page = Convert.ToInt32(Page);
         }
 
-        var ok = await LoadPortfolioCustomersAsync();
+        var ok = await LoadPortfolioAsync();
         if (ok)
         {
-            ok = await LoadPortfolioCustomerProductsAsync(page);
+            ok = await LoadPortfolioCustomersAsync(page);
             if (ok)
             {
                 await LoadPagesAsync();
@@ -140,11 +138,11 @@ else
         var url = string.Empty;
         if (string.IsNullOrEmpty(Filter))
         {
-            url = $"api/portfoliocustomerproducts/totalPages?id={PortfolioCustomerId}";
+            url = $"api/portfolioCustomers/totalPages?id={PortfolioId}";
         }
         else
         {
-            url = $"api/portfoliocustomerproducts/totalPages?id={PortfolioCustomerId}&filter={Filter}";
+            url = $"api/portfolioCustomers/totalPages?id={PortfolioId}&filter={Filter}";
         }
 
         var response = await repository.GetAsync<int>(url);
@@ -157,33 +155,32 @@ else
         totalPages = response.Response;
     }
 
-
-    private async Task<bool> LoadPortfolioCustomerProductsAsync(int page)
+    private async Task<bool> LoadPortfolioCustomersAsync(int page)
     {
         var url = string.Empty;
         if (string.IsNullOrEmpty(Filter))
         {
-            url = $"api/portfolioCustomerProducts?id={PortfolioCustomerId}&page={page}";
+            url = $"api/portfolioProducts?id={PortfolioId}&page={page}";
         }
         else
         {
-            url = $"api/portfolioCustomerProducts?id={PortfolioCustomerId}&page={page}&filter={Filter}";
+            url = $"api/portfolioProducts?id={PortfolioId}&page={page}&filter={Filter}";
         }
 
-        var response = await repository.GetAsync<List<PortfolioCustomerProduct>>(url);
+        var response = await repository.GetAsync<List<PortfolioProduct>>(url);
         if (response.Error)
         {
             var message = await response.GetErrorMessageAsync();
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
             return false;
         }
-        portfolioCustomerProducts = response.Response;
+        portfolioProducts = response.Response;
         return true;
     }
 
-    private async Task<bool> LoadPortfolioCustomersAsync()
+    private async Task<bool> LoadPortfolioAsync()
     {
-        var response = await repository.GetAsync<PortfolioCustomer>($"api/portfolioCustomers/{PortfolioCustomerId}");
+        var response = await repository.GetAsync<Portfolio>($"/api/portfolios/{PortfolioId}");
         if (response.Error)
         {
             if (response.HttpResponseMessage.StatusCode == HttpStatusCode.NotFound)
@@ -196,7 +193,7 @@ else
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
             return false;
         }
-        portfolioCustomer = response.Response;
+        portfolio = response.Response;
         return true;
     }
 
@@ -213,12 +210,12 @@ else
         await SelectedPageAsync(page);
     }
 
-    private async Task DeleteAsync(PortfolioCustomerProduct portfolioCustomerProduct)
+    private async Task DeleteAsync(PortfolioProduct portfolioProduct)
     {
         var result = await sweetAlertService.FireAsync(new SweetAlertOptions
             {
                 Title = "Confirmación",
-                Text = $"¿Realmente deseas eliminar el producto? {portfolioCustomerProduct.Product!.Name}",
+                Text = $"¿Realmente deseas eliminar el producto {portfolioProduct.Product!.Name} del portafolio?",
                 Icon = SweetAlertIcon.Question,
                 ShowCancelButton = true,
                 CancelButtonText = "No",
@@ -231,7 +228,7 @@ else
             return;
         }
 
-        var responseHttp = await repository.DeleteAsync($"/api/portfolioCustomerProducts/{portfolioCustomerProduct.Id}");
+        var responseHttp = await repository.DeleteAsync($"/api/portfolioProducts/{portfolioProduct.Id}");
         if (responseHttp.Error)
         {
             if (responseHttp.HttpResponseMessage.StatusCode != HttpStatusCode.NotFound)

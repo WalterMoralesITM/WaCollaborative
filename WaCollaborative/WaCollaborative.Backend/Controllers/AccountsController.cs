@@ -186,6 +186,7 @@ namespace WaCollaborative.Backend.Controllers
                 currentUser.Photo = !string.IsNullOrEmpty(user.Photo) && user.Photo != currentUser.Photo ? user.Photo : currentUser.Photo;
                 currentUser.CityId = user.CityId;
                 currentUser.InternalRoleId = user.InternalRoleId;
+                currentUser.PortfolioId = user.PortfolioId;
 
                 var result = await _userHelper.UpdateUserAsync(currentUser);
                 if (result.Succeeded)

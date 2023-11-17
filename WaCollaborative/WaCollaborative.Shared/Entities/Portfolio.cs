@@ -19,6 +19,8 @@ namespace WaCollaborative.Shared.Entities
 
         public ICollection<PortfolioProduct>? PortfolioProducts { get; set; }
 
+        public ICollection<User>? Users { get; set; }
+
         [Display(Name = "Clientes")]
         public int CustomersNumber => PortfolioCustomers == null ? 0 : PortfolioCustomers.Count;
 

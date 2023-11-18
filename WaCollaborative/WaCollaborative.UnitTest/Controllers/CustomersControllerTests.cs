@@ -105,7 +105,14 @@ namespace WaCollaborative.UnitTest.Controllers
         {
             /// Arrange
             using var context = new DataContext(_options);
-            context.Customers.Add(new Customer { Id = 1, Name = "Test", Code = "1", DistributionChannelId = 1 });
+            context.Customers.Add(new Customer
+            {
+                Id = 1,
+                Name = "Test",
+                Code = "1",
+                DistributionChannelId = 1,
+                DistributionChannel = new DistributionChannel { Id = 1, Name = "Test" }
+            });
             context.SaveChanges();
 
             var controller = new CustomersController(_unitOfWorkMock.Object, context);

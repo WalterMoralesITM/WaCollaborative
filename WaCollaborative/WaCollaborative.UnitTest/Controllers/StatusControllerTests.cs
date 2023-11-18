@@ -1,11 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using WaCollaborative.Backend.Controllers;
 using WaCollaborative.Backend.Data;
 using WaCollaborative.Backend.Interfaces;
@@ -136,7 +131,7 @@ namespace WaCollaborative.UnitTest.Controllers
         {
             /// Arrange
             using var context = new DataContext(_options);
-            context.Status.Add(new Status { Id = 1, Name = "Aprobado" });
+            context.Status.Add(new Status { Id = 1, Name = "Aprobado", StatusTypeId = 1, StatusType = new StatusType { Id = 1, Name = "test" } });
             context.SaveChanges();
 
             var controller = new StatusController(_unitOfWorkMock.Object, context);

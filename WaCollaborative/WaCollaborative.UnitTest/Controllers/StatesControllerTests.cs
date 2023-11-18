@@ -122,17 +122,22 @@ namespace WaCollaborative.UnitTest.Controllers
         {
             /// Arrange
             using var context = new DataContext(_options);
-            var state = new State { Id = 1, Name = "test" };
-            _unitOfWorkMock.Setup(x => x.GetStateAsync(state.Id)).ReturnsAsync(state);
+            List<City> cities = new List<City>();
+            cities.Add(new City { Id = 1, Name = "test",StateId = 1});
+            var state = new State { Id = 1, Name = "test", Cities = cities };
+            context.States.Add(state);
+            context.SaveChanges();
+
             var controller = new StatesController(_unitOfWorkMock.Object, context);
 
             /// Act
             var result = await controller.GetAsync(state.Id) as OkObjectResult;
+            State resultState = (State)result!.Value!;
 
             /// Assert
             Assert.IsNotNull(result);
             Assert.AreEqual(200, result.StatusCode);
-            _unitOfWorkMock.Verify(x => x.GetStateAsync(state.Id), Times.Once());
+            Assert.AreEqual(resultState.Name, "test");
 
             /// Clean up (if needed)
             context.Database.EnsureDeleted();

@@ -105,7 +105,23 @@ namespace WaCollaborative.UnitTest.Controllers
         {
             /// Arrange
             using var context = new DataContext(_options);
-            Product Product = new Product { Id = 1, Name = "Mouse" };
+            Product Product = new Product 
+            { 
+                Id = 1, 
+                Name = "Mouse",
+                Code = "1",
+                CategoryId = 1,
+                MeasurementUnitId = 1,
+                SegmentId = 1,
+                StatusId = 1,
+                Category = new Category { Id = 1, Name = "test"},
+                ConversionFactor = 1,
+                MeasurementUnit = new MeasurementUnit { Id = 1, Name = "test"},
+                Segment = new Segment { Id = 1, Name = "test" },
+                Status = new Status { Id = 1, Name = "test" }
+            };
+            context.Products.Add(Product);
+            context.SaveChanges();
 
             //_unitOfWorkMock.Setup(x => x.GetProductAsync(Product.Id)).ReturnsAsync(Product);
 

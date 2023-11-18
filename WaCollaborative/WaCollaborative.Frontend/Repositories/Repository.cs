@@ -2,6 +2,7 @@
 
 using System.Text;
 using System.Text.Json;
+using WaCollaborative.Frontend.Helpers;
 
 #endregion Using
 
@@ -42,11 +43,28 @@ namespace WaCollaborative.Frontend.Repositories
             var response = await responseHttp.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<T>(response, _jsonDefaultOptions)!;
         }
+        public async Task<HttpResponseWrapper<string>> GetExportAsync(string url)
+        {
+            var responseHTTP = await _httpClient.GetAsync(url);
 
+            if (responseHTTP.IsSuccessStatusCode)
+            {
+                var jsonResponse = await responseHTTP.Content.ReadAsStringAsync();
+                var responseObject = JsonSerializer.Deserialize<ExcelLinkResponse>(jsonResponse, _jsonDefaultOptions);
+
+                if (responseObject != null)
+                {
+                    return new HttpResponseWrapper<string>(responseObject.ExcelLink, false, responseHTTP);
+                }                
+            }
+
+            return new HttpResponseWrapper<string>(null, true, responseHTTP);
+        }
         public async Task<HttpResponseWrapper<object>> GetAsync(string url)
         {
             var responseHTTP = await _httpClient.GetAsync(url);
             return new HttpResponseWrapper<object>(null, !responseHTTP.IsSuccessStatusCode, responseHTTP);
+
         }
 
         public async Task<HttpResponseWrapper<T>> GetAsync<T>(string url)
@@ -110,6 +128,7 @@ namespace WaCollaborative.Frontend.Repositories
             var responseHttp = await _httpClient.DeleteAsync(url);
             return new HttpResponseWrapper<object>(null, !responseHttp.IsSuccessStatusCode, responseHttp);
         }
+        
 
         #endregion Methods
 

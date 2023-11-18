@@ -10,6 +10,7 @@
 
         #region Methods
 
+        public Task<HttpResponseWrapper<string>> GetExportAsync(string url);
         public Task<HttpResponseWrapper<object>> GetAsync(string url);
 
         public Task<HttpResponseWrapper<T>> GetAsync<T>(string url);

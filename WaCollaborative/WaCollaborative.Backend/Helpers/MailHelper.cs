@@ -56,6 +56,7 @@ namespace WaCollaborative.Backend.Helpers
 
                 using (var client = new SmtpClient())
                 {
+                    client.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;//TODO: verificar si esta línea es la solución óptima para el error de conexión
                     client.Connect(smtp, int.Parse(port!), false);
                     client.Authenticate(from, password);
                     client.Send(message);

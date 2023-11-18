@@ -29,7 +29,7 @@ else
                              Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditTrigger.OnRowClick : DataGridEditTrigger.Manual)"
                              Hideable="true">
                     <ToolBarContent>
-                        <MudButton OnClick="ExportarExcel">Exportar a Excel</MudButton>
+                        <MudButton OnClick="ExportarExcel" Class="mud-btn-outlined mud-btn-lg mud-btn-success">Exportar a Excel</MudButton>
                         @if (!string.IsNullOrEmpty(FileDownLoadName))
                         {
                             <a href="@navigationManager.ToAbsoluteUri($"Downloads/{FileDownLoadName}")" target="_blank" download>Descargar archivo</a>                            
@@ -50,8 +50,7 @@ else
                          <PropertyColumn Property="x => x.ShippingPointName" IsEditable="false" Title="Punto de Envío" Class="mud-col-lg-6 mud-col-md-8" />
                          <PropertyColumn Property="x => x.ProductName" IsEditable="false" Title="Producto" Class="mud-col-lg-6 mud-col-md-8" />
                          <PropertyColumn Property="x => x.YearMonth" IsEditable="false" Title="Año-Mes" Class="mud-col-lg-6 mud-col-md-8" />
-                         <PropertyColumn Property="x => x.Quantity" IsEditable="true" Title="Colaboración" Format="N2" Culture="@(new CultureInfo("en-US"))" Class="mud-col-lg-6 mud-col-md-8">
-                         </PropertyColumn> />
+                         <PropertyColumn Property="x => x.Quantity" IsEditable="true" Title="Colaboración" Format="N2" Culture="@(new CultureInfo("en-US"))" Class="mud-col-lg-6 mud-col-md-8"/>
                      </Columns>
                      <PagerContent>
                          <MudDataGridPager T="CollaborativeDemandDTO" />

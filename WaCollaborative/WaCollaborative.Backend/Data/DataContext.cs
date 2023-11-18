@@ -27,7 +27,7 @@ namespace WaCollaborative.Backend.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<City> Cities { get; set; }
         public DbSet<CollaborativeDemand> CollaborativeDemand { get; set; }
-        public DbSet<CollaborativeDemand> CollaborativeDemandComponentsDetail { get; set; }
+        public DbSet<CollaborativeDemandComponentsDetail> CollaborativeDemandComponentsDetail { get; set; }
         public DbSet<Country> Countries { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<DemandType> DemandTypes { get; set; }

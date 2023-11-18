@@ -1,0 +1,39 @@
+﻿@using System.Linq.Expressions;
+@typeparam T
+
+<MudDataGrid T="T" Items="@Items">
+    <Columns>
+        <SelectColumn T="T" />
+
+        @foreach (var PInfo in typeof(T).GetProperties())
+        {
+            if (PInfo.PropertyType == typeof(string))
+            {
+                <PropertyColumn Property="@(GetStringPropertyLambdaExpression(PInfo))" />
+            }
+        }
+    </Columns>
+</MudDataGrid>
+
+@code {
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public IEnumerable<T> Items { get; set; }
+
+    private Expression<Func<T, string>> GetStringPropertyLambdaExpression(System.Reflection.PropertyInfo propertyInfo)
+    {
+        // Define a parameter for the lambda expression
+        ParameterExpression param = Expression.Parameter(typeof(T), "x");
+
+        // Create an expression to access the property
+        Expression propertyAccess = Expression.Property(param, propertyInfo);
+
+
+        // Create a lambda expression that takes an AType parameter and returns its Name property
+        Expression<Func<T, string>> lambdaExpression = Expression.Lambda<Func<T, string>>(propertyAccess, param);
+
+        return lambdaExpression;
+    }
+}

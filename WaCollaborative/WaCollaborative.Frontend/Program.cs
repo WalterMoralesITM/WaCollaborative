@@ -3,9 +3,13 @@ using CurrieTechnologies.Razor.SweetAlert2;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.Extensions.Localization;
 using MudBlazor.Services;
+using OfficeOpenXml;
+
 using WaCollaborative.Frontend;
 using WaCollaborative.Frontend.Auth;
+using WaCollaborative.Frontend.Helpers;
 using WaCollaborative.Frontend.Repositories;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -22,5 +26,9 @@ builder.Services.AddScoped<AuthenticationStateProvider, AuthenticationProviderJW
 builder.Services.AddScoped<ILoginService, AuthenticationProviderJWT>(x => x.GetRequiredService<AuthenticationProviderJWT>());
 builder.Services.AddBlazoredModal();
 builder.Services.AddMudServices();
+builder.Services.AddLocalization();
+
+builder.Services.AddSingleton<ExcelExporter>();
+//builder.Services.AddHttpClient();
 
 await builder.Build().RunAsync();

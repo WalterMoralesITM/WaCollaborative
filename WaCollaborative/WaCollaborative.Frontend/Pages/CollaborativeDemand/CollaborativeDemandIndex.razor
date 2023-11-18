@@ -1,8 +1,10 @@
 ﻿@page "/collaboration"
+@using System.Globalization;
 @inject IRepository repository
 @inject NavigationManager navigationManager
 @inject SweetAlertService sweetAlertService
-@using System.Collections.Generic
+@inject IJSRuntime JSRuntime
+@inject ExcelExporter ExcelExporter
 
 @attribute [Authorize(Roles = "Planner,Collaborator")]
 
@@ -12,80 +14,95 @@
 }
 else
 {
-<MudDataGrid T="CollaborativeDemandDTO" MultiSelection="true" Items="@CollaborativeDemands" SortMode="SortMode.Multiple" Filterable="true"
-                 ReadOnly="@_isReadOnly" EditMode="@DataGridEditMode.Cell" Hideable="true">
-    <ToolBarContent>
-        <MudText Typo="Typo.h6">Periodic Elements</MudText>
-        <MudSpacer />
-        <MudTextField  Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
-                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-    </ToolBarContent>
-    <Columns>
-        <HierarchyColumn T="CollaborativeDemandDTO" />
-        <SelectColumn T="CollaborativeDemandDTO" />
-        <PropertyColumn Property="x => x.CollaborativeDemandId" />
-        <PropertyColumn Property="x => x.CustomerCode" Title="Codigo Cliente" Sortable="false" Filterable="false" />
-        <PropertyColumn Property="x => x.CustomerName" />
-        <PropertyColumn Property="x => x.CityName" />
-        <PropertyColumn Property="x => x.DistributionChannel" />
-        <PropertyColumn Property="x => x.ShippingPointName" />
-        <PropertyColumn Property="x => x.ProductCode" />
-        <PropertyColumn Property="x => x.ProductName" />
-
-            @*<PropertyColumn Property="x => x.CollaborativeDemandComponentsDetails" />*@
-    </Columns>
-        <ChildRowContent>
-            <MudCard>
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="Typo.h6">@context.Item.Product</MudText>
-                    </CardHeaderContent>
-                </MudCardHeader>
-                <MudCardContent>
-                    <MudText>This element is number @context.Item.CustomerName</MudText>
-                    
-                </MudCardContent>
-            </MudCard>
-        </ChildRowContent>
-    <PagerContent>
-        <MudDataGridPager T="CollaborativeDemandDTO" />
-    </PagerContent>
-</MudDataGrid>
-
-<div class="d-flex flex-wrap mt-4">
-        <MudSwitch T="bool" @bind-Checked="@_isReadOnly" Color="Color.Primary">Sort Name Column By Length</MudSwitch>
-</div>
-
-<MudExpansionPanels Style="flex:1">
-    <MudExpansionPanel Text="Show Events">
-        @foreach (var message in _events)
-        {
-            <MudText Typo="@Typo.body2">@message</MudText>
-        }
-        @if (_events.Count > 0)
-        {
-            <div class="d-flex">
-                <MudSpacer />
-                <MudButton  Class="mt-3" ButtonType="ButtonType.Button" Variant="Variant.Filled" OnClick="@(() => _events.Clear())">Clear</MudButton>
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <span>
+                    <i class="oi oi-people" /> Demanda Collaborativa
+                </span>
             </div>
-        }
-    </MudExpansionPanel>
-</MudExpansionPanels>
-    
+            <div class="card-body">
+                <MudDataGrid T="CollaborativeDemandDTO" MultiSelection="true" Items="@CollaborativeDemands"
+                             SortMode="SortMode.Multiple" Filterable="true"
+                             ReadOnly="@_isReadOnly" EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
+                             StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" CommittedItemChanges="@CommittedItemChanges"
+                             Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditTrigger.OnRowClick : DataGridEditTrigger.Manual)"
+                             Hideable="true">
+                    <ToolBarContent>
+                        <MudButton OnClick="ExportarExcel" Class="mud-btn-outlined mud-btn-lg mud-btn-success">Exportar a Excel</MudButton>
+                        @if (!string.IsNullOrEmpty(FileDownLoadName))
+                        {
+                            <a href="@navigationManager.ToAbsoluteUri($"Downloads/{FileDownLoadName}")" target="_blank" download>Descargar archivo</a>                            
+                            <p>Ruta generada: @FileDownloadUrl</p>
+
+                        }
+                        <MudSpacer />
+                        <MudTextField Placeholder="Buscar" Adornment="Adornment.Start" Immediate="true"
+                                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    </ToolBarContent>
+                    <Columns>
+                        <SelectColumn T="CollaborativeDemandDTO" />
+                        <PropertyColumn Property="x => x.CollaborativeDemandId" IsEditable="false" Hidden />
+                         <PropertyColumn Property="x => x.CollaborativeDemandDetailId" IsEditable="false" Hidden />
+                         <PropertyColumn Property="x => x.CustomerName" IsEditable="false" Title="Cliente" Class="mud-col-lg-6 mud-col-md-8" />
+                         <PropertyColumn Property="x => x.CityName" IsEditable="false" Title="Ciudad" Class="mud-col-lg-6 mud-col-md-8" />
+                         <PropertyColumn Property="x => x.DistributionChannel" IsEditable="false" Title="Canal Distribución" Class="mud-col-lg-6 mud-col-md-8" />
+                         <PropertyColumn Property="x => x.ShippingPointName" IsEditable="false" Title="Punto de Envío" Class="mud-col-lg-6 mud-col-md-8" />
+                         <PropertyColumn Property="x => x.ProductName" IsEditable="false" Title="Producto" Class="mud-col-lg-6 mud-col-md-8" />
+                         <PropertyColumn Property="x => x.YearMonth" IsEditable="false" Title="Año-Mes" Class="mud-col-lg-6 mud-col-md-8" />
+                         <PropertyColumn Property="x => x.Quantity" IsEditable="true" Title="Colaboración" Format="N2" Culture="@(new CultureInfo("en-US"))" Class="mud-col-lg-6 mud-col-md-8"/>
+                     </Columns>
+                     <PagerContent>
+                         <MudDataGridPager T="CollaborativeDemandDTO" />
+                     </PagerContent>
+                 </MudDataGrid>
+                 <div class="d-flex flex-wrap mt-4">
+                     <div class="d-flex justify-start align-center">
+
+                         <MudSwitch @bind-Checked="@_isCellEditMode">Cell</MudSwitch>
+                     </div>
+                     <div class="d-flex justify-start align-center">
+                         <p class="mud-typography mud-typography-body1 mud-inherit-text mr-2">Manual</p>
+                         <MudSwitch @bind-Checked="@_editTriggerRowClick">On Row Click</MudSwitch>
+                     </div>
+                 </div>
+                 <MudExpansionPanels Style="flex:1">
+                     <MudExpansionPanel Text="Show Events">
+                         @foreach (var message in _events)
+                        {
+                            <MudText Typo="@Typo.body2">@message</MudText>
+                        }
+                        @if (_events.Count > 0)
+                        {
+                            <div class="d-flex">
+                                <MudSpacer />
+                                <MudButton Class="mt-3" ButtonType="ButtonType.Button" Variant="Variant.Filled" OnClick="@(() => _events.Clear())">Clear</MudButton>
+                            </div>
+                        }
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </div>
+        </div>
+    </div>
 }
-
-
-
 @code {
-  
+
     private int currentPage = 1;
     private int totalPages;
     private string? _searchString;
     private bool _sortNameByLength;
-    private bool _isReadOnly = true;
+    //private bool _readOnly = false;
+    private bool _isReadOnly = false;
+    private bool _isCellEditMode = true;
+    private bool _editTriggerRowClick;
+    string FileDownLoadName = "";
+    string FileDownloadUrl;
+
     private List<string> _events = new();
 
     public List<CollaborativeDemandDTO>? CollaborativeDemands { get; set; }
+
+    public List<CollaborativeDemandComponentsDetail>? ComponentDetails { get; set; }
 
     [Parameter]
     [SupplyParameterFromQuery]
@@ -127,6 +144,7 @@ else
             return false;
         }
         CollaborativeDemands = response.Response;
+
         return true;
     }
 
@@ -141,48 +159,110 @@ else
             return;
         }
         totalPages = response.Response;
-    }    
-
-    // private Func<CollaborativeDemand, object> _sortBy => x =>
-    // {
-    //     if (_sortNameByLength)
-    //         return x.ProductId!.Length;
-    //     else
-    //         return x.Cliente!;
-    // };
-
-    // private Func<CollaborativeDemand, bool> _quickFilter => x =>
-    // {
-    //     if (string.IsNullOrWhiteSpace(_searchString))
-    //         return true;
-
-    //     // if (x.Producto!.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
-    //     //     return true;
-
-    //     // if (x.Cliente!.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
-    //     //     return true;
-
-    //     // if ($"{x.Number} {x.Position} {x.CanalDistribucion}".Contains(_searchString))
-    //     //     return true;
-
-    //     return false;
-    // };
+    }
 
     void RowClicked(DataGridRowClickEventArgs<CollaborativeDemandDTO> args)
     {
         _events.Insert(0, $"Event = RowClick, Index = {args.RowIndex}, Data = {System.Text.Json.JsonSerializer.Serialize(args.Item)}");
     }
 
-    // public class StringColumn : Column<string>
+    void StartedEditingItem(CollaborativeDemandDTO item)
+    {
+        _events.Insert(0, $"Event = StartedEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+
+    void CanceledEditingItem(CollaborativeDemandDTO item)
+    {
+        _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+
+    async Task CommittedItemChanges(CollaborativeDemandDTO item)
+    {
+        _events.Insert(0, $"Event = CommittedItemChanges, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+
+        if (!EsDecimalOEntero(item.Quantity))
+        {            
+            await sweetAlertService.FireAsync("Error", "El valor de colaboración no es un número decimal o entero válido.", SweetAlertIcon.Error);
+            return;
+        }
+
+        var collaboration = new CollaborativeDemandComponentsDetail
+            {
+                Id = item.CollaborativeDemandDetailId,
+                Quantity = item.Quantity,
+                CollaborativeDemandId = item.Id
+
+            };
+
+        var responseHTTP = await repository.PutAsync("api/CollaborativeDemandComponentsDetail/full", collaboration);
+        if (responseHTTP.Error)
+        {
+            var mensajeError = await responseHTTP.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", mensajeError, SweetAlertIcon.Error);
+            return;
+        }
+
+        var toast = sweetAlertService.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                Position = SweetAlertPosition.BottomEnd,
+                ShowConfirmButton = true,
+                Timer = 3000
+            });
+        await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Cambios guardados con éxito.");
+    }
+
+    bool EsDecimalOEntero(decimal cantidad)
+    {        
+        return decimal.Truncate(cantidad) == cantidad;
+    }
+
+
+    // async Task ExportarExcel()
     // {
-    //     public StringColumn(string field) : base(field)
-    //     {
-    //     }
+    //     FileDownLoadName = $"MiArchivo_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+    //     // FileDownLoadName = $"MiArchivo_20231113144934.xlsx";
+    //     ExcelExporter.ExportToExcel(CollaborativeDemands!, FileDownLoadName);
 
-    //     public override Func<TItem, string> PropertyFunc<TItem>()
-    //     {
-    //         return (item) => item.Field;
-    //     }
+    //     // ExcelExporter.ExportToExcel(datosDePrueba, FileDownLoadName);
+    //     FileDownloadUrl = navigationManager.ToAbsoluteUri($"Downloads/{FileDownLoadName}").ToString();
+
+    //     await JSRuntime.InvokeVoidAsync("alert", "Datos exportados a Excel exitosamente!");
     // }
-}
 
+    //navigationManager.NavigateTo("/download");
+    private async Task ExportarExcel()
+    {
+        int page = 1;
+        try
+        {
+            //            var url = $"api/CollaborativeDemand/ExcelGenerate?page={page}";
+            // var response = await repository.GetAsync<List<CollaborativeDemandDTO>>(url);
+
+            var url = $"api/CollaborativeDemand/ExcelGenerate?page={page}";
+            //            
+            var response = await repository.GetExportAsync(url);
+
+            if (!response.Error)
+            {             
+                var downloadLink = response.Response;
+                if (!string.IsNullOrEmpty(downloadLink))
+                {
+                    await JSRuntime.InvokeVoidAsync("open", downloadLink, "_blank");
+                }
+                else
+                {                    
+                }
+            }
+            else
+            {
+                
+            }
+        }
+
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+    }
+}

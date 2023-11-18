@@ -24,17 +24,6 @@ namespace WaCollaborative.Backend.Controllers
             _context = context;
         }
 
-        [AllowAnonymous]
-        [HttpGet("combo/{portfolioId:int}")]
-        public async Task<ActionResult> GetComboAsync(int portfolioId)
-        {
-            return Ok(await _context.PortfolioCustomers
-                .Include(p => p.Customer)
-                .Where(s => s.PortfolioId == portfolioId)
-                .OrderBy(s => s.Customer!.Name)
-                .ToListAsync());
-        }
-
         [HttpGet]
         public override async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
         {
@@ -75,15 +64,17 @@ namespace WaCollaborative.Backend.Controllers
         [HttpGet("{id}")]
         public override async Task<IActionResult> GetAsync(int id)
         {
-            var state = await _context.PortfolioCustomers
+            var portfolioCustomer = await _context.PortfolioCustomers
                 .Include(p => p.Customer)
                 .Include(s => s.Portfolio)
-                .FirstOrDefaultAsync(s => s.Id == id);
-            if (state == null)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (portfolioCustomer == null)
             {
                 return NotFound();
             }
-            return Ok(state);
+
+            return Ok(portfolioCustomer);
         }
     }
 }

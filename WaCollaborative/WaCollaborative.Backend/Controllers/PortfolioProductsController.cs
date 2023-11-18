@@ -18,22 +18,11 @@ namespace WaCollaborative.Backend.Controllers
         private readonly IGenericUnitOfWork<PortfolioProduct> _unitOfWork;
         private readonly DataContext _context;
 
-        public PortfolioProductsController(IGenericUnitOfWork<PortfolioProduct> unitOfWork, DataContext context) 
+        public PortfolioProductsController(IGenericUnitOfWork<PortfolioProduct> unitOfWork, DataContext context)
             : base(unitOfWork, context)
         {
             _unitOfWork = unitOfWork;
             _context = context;
-        }
-
-        [AllowAnonymous]
-        [HttpGet("combo/{portfolioId:int}")]
-        public async Task<ActionResult> GetComboAsync(int portfolioId)
-        {
-            return Ok(await _context.PortfolioProducts
-                .Include(p => p.Product)
-                .Where(s => s.PortfolioId == portfolioId)
-                .OrderBy(s => s.Product!.Name)
-                .ToListAsync());
         }
 
         [HttpGet]

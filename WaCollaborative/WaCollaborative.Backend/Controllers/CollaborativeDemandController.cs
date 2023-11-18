@@ -6,11 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 using WaCollaborative.Backend.Data;
+using WaCollaborative.Backend.Helpers;
 using WaCollaborative.Backend.Helpers.Interfaces;
 using WaCollaborative.Backend.Interfaces;
 using WaCollaborative.Shared.DTOs;
 using WaCollaborative.Shared.Entities;
 using WaCollaborative.Shared.Enums;
+using WaCollaborative.Shared.Helpers;
 
 #endregion using
 
@@ -23,11 +25,13 @@ namespace WaCollaborative.Backend.Controllers
     {
         private readonly DataContext _context;
         private readonly IUserHelper _userHelper;
+        private readonly IMailHelper _mailHelper;
 
-        public CollaborativeDemandController(IGenericUnitOfWork<CollaborativeDemand> unitOfWork, DataContext context, IUserHelper userHelper) : base(unitOfWork, context)
+        public CollaborativeDemandController(IGenericUnitOfWork<CollaborativeDemand> unitOfWork, DataContext context, IUserHelper userHelper,IMailHelper mailHelper) : base(unitOfWork, context)
         {
             _context = context;
             _userHelper = userHelper;
+            _mailHelper = mailHelper;
         }
         
 
@@ -103,57 +107,6 @@ namespace WaCollaborative.Backend.Controllers
             return result;
         }
 
-        private List<CollaborativeDemandDTO> PivotCollaborativeDemands(List<CollaborativeDemand> collaborativeDemands)
-        {
-            var result = new List<CollaborativeDemandDTO>();
-
-            // Crear un diccionario para almacenar los valores de YearMonth y Quantity
-            var yearMonthQuantities = new Dictionary<int, decimal>();
-
-            foreach (var collaborativeDemand in collaborativeDemands)
-            {
-                foreach (var detail in collaborativeDemand.CollaborativeDemandComponentsDetails)
-                {
-                    // Actualizar el diccionario con los valores de YearMonth y Quantity
-                    if (yearMonthQuantities.ContainsKey(detail.YearMonth))
-                    {
-                        yearMonthQuantities[detail.YearMonth] += detail.Quantity;
-                    }
-                    else
-                    {
-                        yearMonthQuantities[detail.YearMonth] = detail.Quantity;
-                    }
-                }
-            }
-
-            foreach (var collaborativeDemand in collaborativeDemands)
-            {
-                var collaborativeDemandDTO = new CollaborativeDemandDTO
-                {
-                    CollaborativeDemandId = collaborativeDemand.Id,
-                    CustomerName = collaborativeDemand.ShippingPoint!.Customer!.Name,
-                    CustomerCode = collaborativeDemand.ShippingPoint!.Customer!.Code,
-                    DistributionChannel = collaborativeDemand.ShippingPoint!.Customer!.DistributionChannel!.Name,
-                    ShippingPointName = collaborativeDemand.ShippingPoint!.Name,
-                    CityName = collaborativeDemand.ShippingPoint.City!.Name,
-                    ProductName = collaborativeDemand.Product!.Name,
-                    ProductCode = collaborativeDemand.Product.Code,
-                    UserEmail = "waltermorales",
-                    UserId = "1"
-                };
-
-                // Asignar las cantidades del diccionario a las columnas YearMonth
-                foreach (var yearMonthQuantity in yearMonthQuantities)
-                {
-                    var yearMonthColumnName = "YM_" + yearMonthQuantity.Key;
-                    collaborativeDemandDTO.GetType().GetProperty(yearMonthColumnName)?.SetValue(collaborativeDemandDTO, yearMonthQuantity.Value);
-                }
-
-                result.Add(collaborativeDemandDTO);
-            }
-            return result;
-        }
-
         [AllowAnonymous]
         [HttpGet("{id:int}")]
         public override async Task<IActionResult> GetAsync(int id)
@@ -215,7 +168,7 @@ namespace WaCollaborative.Backend.Controllers
 
         [AllowAnonymous]
         [HttpGet("ExcelGenerate")]
-        public async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination, [FromServices] IWebHostEnvironment webHostEnvironment)
+        public async Task<IActionResult> GetAsync([FromServices] IWebHostEnvironment webHostEnvironment)
         {
             try
             {
@@ -232,49 +185,59 @@ namespace WaCollaborative.Backend.Controllers
                 var collaborativeDemands = await queryable.ToListAsync();
 
                 var result = FlattenCollaborativeDemands(collaborativeDemands);
-
-                // Ruta donde se almacenará el archivo Excel dentro del proyecto
+                
                 var fileDownloadName = $"CollaborativeDemands{DateTime.Now:yyyyMMddHHmmss}.xlsx";
-
+                                
                 var excelFilePath = Path.Combine(webHostEnvironment.ContentRootPath, "ExcelFiles", fileDownloadName);
-                //var excelFilePath = Path.Combine(webHostEnvironment.ContentRootPath, "ExcelFiles", "CollaborativeDemands.xlsx");
 
                 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+                
                 // Crear el archivo Excel
                 using (var package = new ExcelPackage())
                 {
                     // Crear la hoja de trabajo
                     var worksheet = package.Workbook.Worksheets.Add("CollaborativeDemands");
-
-                    // Encabezados de columna
-                    var headers = new string[]  { "CollaborativeDemandId", "CustomerName", "DistributionChannel", "YearMonth", "Quantity" };
+                    
+                    var headers = result.First().GetType().GetProperties().Select(property => property.Name).ToArray();
 
                     for (var i = 0; i < headers.Length; i++)
                     {
                         worksheet.Cells[1, i + 1].Value = headers[i];
                         worksheet.Cells[1, i + 1].Style.Font.Bold = true;
-                    }
+                    }                    
 
-                    // Llenar los datos
                     for (var i = 0; i < result.Count; i++)
                     {
                         var rowData = result[i];
-                        worksheet.Cells[i + 2, 1].Value = rowData.CollaborativeDemandId;
-                        worksheet.Cells[i + 2, 2].Value = rowData.CustomerName;
-                        worksheet.Cells[i + 2, 3].Value = rowData.DistributionChannel;
-                        worksheet.Cells[i + 2, 4].Value = rowData.YearMonth;
-                        worksheet.Cells[i + 2, 5].Value = rowData.Quantity;
+                        var properties = rowData.GetType().GetProperties();
+                        for (var j = 0; j < properties.Length; j++)
+                        {
+                            worksheet.Cells[i + 2, j + 1].Value = properties[j].GetValue(rowData);
+                        }
                     }
 
-                    // Guardar el archivo                    
+
                     FileInfo excelFile = new FileInfo(excelFilePath);
                     package.SaveAs(excelFile);
                 }
+                                
 
-                // Devolver el enlace al frontend
+                var downloadLink = Path.Combine("ExcelFiles", excelFilePath);             
+
+                var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == User.Identity!.Name);
+                if (user == null)
+                {
+                    return NotFound();
+                }
+
                 
-
-                var downloadLink = Path.Combine("ExcelFiles", excelFilePath);
+                var emailSubject = "WaCollaborative - Descarga de archivo";
+                var emailBody = $"<h1>WaCollaborative - Descarga de archivo</h1>" +
+                                $"<p>Puedes descargar el archivo haciendo clic en el siguiente enlace:</p>" +
+                                $"<b><a href={downloadLink}>Descargar Archivo</a></b>";
+                
+                var response = _mailHelper.SendMail(user.FullName,user.Email!,
+                    emailSubject, emailBody);
 
                 return Ok(new { ExcelLink = downloadLink });
             }
@@ -282,6 +245,7 @@ namespace WaCollaborative.Backend.Controllers
             {
                 return BadRequest(new { ErrorMessage = ex.Message });
             }
-        }
+        }       
+
     }
 }

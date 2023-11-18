@@ -32,9 +32,7 @@ else
                         <MudButton OnClick="ExportarExcel">Exportar a Excel</MudButton>
                         @if (!string.IsNullOrEmpty(FileDownLoadName))
                         {
-                            <a href="@navigationManager.ToAbsoluteUri($"Downloads/{FileDownLoadName}")" target="_blank" download>Descargar archivo</a>
-                            @* <a href="@($"{navigationManager.BaseUri}Downloads/{FileDownLoadName}")" target="_blank" download>Descargar archivo</a> *@
-
+                            <a href="@navigationManager.ToAbsoluteUri($"Downloads/{FileDownLoadName}")" target="_blank" download>Descargar archivo</a>                            
                             <p>Ruta generada: @FileDownloadUrl</p>
 
                         }
@@ -169,16 +167,6 @@ else
         _events.Insert(0, $"Event = RowClick, Index = {args.RowIndex}, Data = {System.Text.Json.JsonSerializer.Serialize(args.Item)}");
     }
 
-    private void ToCollaborate(CollaborativeDemandDTO collaboration)
-    {
-        // Aquí puedes realizar acciones específicas cuando se contrata a un empleado.
-        // Por ejemplo, mostrar una alerta con los datos del empleado.
-        string message = $"Contrataste a {collaboration.CustomerName} .";
-        // Puedes usar la variable 'message' para mostrar una alerta o realizar otras acciones.
-        // Por ejemplo, mostrar una alerta utilizando MudBlazor's MudDialogService.
-        // MudDialogService.ShowMessageBox("Empleado Contratado", message, "Aceptar");
-    }
-
     void StartedEditingItem(CollaborativeDemandDTO item)
     {
         _events.Insert(0, $"Event = StartedEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
@@ -193,12 +181,11 @@ else
     {
         _events.Insert(0, $"Event = CommittedItemChanges, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
 
-        // if (!EsDecimalOEntero(item.Quantity))
-        // {
-        //     // Mostrar mensaje de error o manejar la situación de validación fallida
-        //     await sweetAlertService.FireAsync("Error", "El valor de colaboración no es un número decimal o entero válido.", SweetAlertIcon.Error);
-        //     return;
-        // }
+        if (!EsDecimalOEntero(item.Quantity))
+        {            
+            await sweetAlertService.FireAsync("Error", "El valor de colaboración no es un número decimal o entero válido.", SweetAlertIcon.Error);
+            return;
+        }
 
         var collaboration = new CollaborativeDemandComponentsDetail
             {
@@ -227,25 +214,10 @@ else
     }
 
     bool EsDecimalOEntero(decimal cantidad)
-    {
-        // Utiliza el tipo decimal directamente para la validación
+    {        
         return decimal.Truncate(cantidad) == cantidad;
     }
 
-    // public class Persona
-    // {
-    //     public string Nombre { get; set; }
-    //     public int Edad { get; set; }
-    //     public string CorreoElectronico { get; set; }
-    // }
-
-    // En tu método ExportToExcel
-    //     List<Persona> datosDePrueba = new List<Persona>
-    // {
-    //     new Persona { Nombre = "Juan Pérez", Edad = 30, CorreoElectronico = "juan@example.com" },
-    //     new Persona { Nombre = "María López", Edad = 25, CorreoElectronico = "maria@example.com" },
-    //     new Persona { Nombre = "Carlos Rodríguez", Edad = 40, CorreoElectronico = "carlos@example.com" }
-    // };
 
     // async Task ExportarExcel()
     // {
@@ -265,41 +237,33 @@ else
         int page = 1;
         try
         {
+            //            var url = $"api/CollaborativeDemand/ExcelGenerate?page={page}";
+            // var response = await repository.GetAsync<List<CollaborativeDemandDTO>>(url);
+
             var url = $"api/CollaborativeDemand/ExcelGenerate?page={page}";
-            var response = await repository.GetAsync<List<CollaborativeDemandDTO>>(url);
-            
+            //            
+            var response = await repository.GetExportAsync(url);
 
             if (!response.Error)
-            {
-                var resp = response.Response;
-                // Obtener la ruta del archivo desde la respuesta del backend
-                var result = resp;//await resp.Content.ReadFromJsonAsync<ExcelResponse>();
-
-                // Construir la URL de descarga
-                // var downloadUrl = $"{navigationManager.BaseUri}{result.ExcelLink}";
-
-                // Iniciar la descarga del archivo
-                // await jsRuntime.InvokeVoidAsync("open", downloadUrl, "_blank");
+            {             
+                var downloadLink = response.Response;
+                if (!string.IsNullOrEmpty(downloadLink))
+                {
+                    await JSRuntime.InvokeVoidAsync("open", downloadLink, "_blank");
+                }
+                else
+                {                    
+                }
             }
             else
             {
-                // Manejar el caso en que la solicitud no fue exitosa
-                // Puedes mostrar un mensaje de error al usuario, por ejemplo.
-                // var errorMessage = await response.Content.ReadAsStringAsync();
-                // MostrarMensajeDeError(errorMessage);
+                
             }
         }
+
         catch (Exception ex)
         {
-            // Manejar las excepciones
-            // Puedes mostrar un mensaje de error al usuario, por ejemplo.
-            // MostrarMensajeDeError("Ocurrió un error al exportar a Excel: " + ex.Message);
+            throw new Exception(ex.Message);
         }
     }
-
-    private class ExcelResponse
-    {
-        public string ExcelLink { get; set; }
-    }
-}
 }

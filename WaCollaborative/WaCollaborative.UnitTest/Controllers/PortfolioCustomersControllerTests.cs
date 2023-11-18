@@ -87,7 +87,14 @@ namespace WaCollaborative.UnitTest.Controllers
         {
             /// Arrange
             using var context = new DataContext(_options);
-            context.PortfolioCustomers.Add(new PortfolioCustomer { Id = 1, CustomerId = 1, PortfolioId = 1 });
+            context.PortfolioCustomers.Add(new PortfolioCustomer 
+            { 
+                Id = 1, 
+                CustomerId = 1, 
+                PortfolioId = 1,
+                Customer = new Customer { Id = 1, Name = "Test", Code = "1", DistributionChannelId = 1},
+                Portfolio = new Portfolio { Id = 1, Name = "Test" }
+            });
             context.SaveChanges();
 
             var controller = new PortfolioCustomersController(_unitOfWorkMock.Object, context);

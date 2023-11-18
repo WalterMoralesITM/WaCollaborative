@@ -93,7 +93,7 @@ namespace WaCollaborative.Backend.Controllers
                         CityName = collaborativeDemand.ShippingPoint.City!.Name,
                         ProductName = collaborativeDemand.Product!.Name,
                         ProductCode = collaborativeDemand.Product.Code,
-                        //UserEmail = collaborativeDemand.us,
+                        UserEmail = "wmorales@yopmail.com",
                         UserId = "1",
                         CollaborativeDemandDetailId = detail.Id,
                         YearMonth = detail.YearMonth, 

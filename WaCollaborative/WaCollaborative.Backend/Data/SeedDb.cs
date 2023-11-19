@@ -59,6 +59,54 @@ namespace WaCollaborative.Backend.Data
             await CheckUserAsync("1010", "Efrain", "Trujillo", "truji@yopmail.com", "322 111 2222", "Avenida siempre viva 123", "EfrainTrujillo.jpeg", UserType.Planner);
             await CheckUserAsync("1020", "Jose", "Daza", "josedaza@yopmail.com", "313 644 9685", "Calle 5", "JoseDaza.jpeg", UserType.Planner);
             await CheckUserAsync("71469531", "Walter", "Morales", "wmorales@yopmail.com", "3053699685", "Calle 52 36 98", "Walter.jpeg", UserType.Planner);
+            await CheckCollaborationCyclesAsync();
+            //await CheckCollaborativeDemand();
+        }
+
+        private async Task CheckCollaborationCyclesAsync() {
+            _context.CollaborationCycles.Add(new CollaborationCycle { Period = 202311,StatusId = 1 });
+            _context.CollaborationCycles.Add(new CollaborationCycle { Period = 202312, StatusId = 1 });
+            _context.CollaborationCycles.Add(new CollaborationCycle { Period = 202401, StatusId = 1 });
+            _context.CollaborationCycles.Add(new CollaborationCycle { Period = 202402, StatusId = 1 });
+            _context.CollaborationCycles.Add(new CollaborationCycle { Period = 202403, StatusId = 1 });
+            _context.CollaborationCycles.Add(new CollaborationCycle { Period = 202404, StatusId = 1 });
+          
+            await _context.SaveChangesAsync();
+        }
+        private async Task CheckCollaborativeDemand()
+        {
+            // Consulta para obtener los datos necesarios
+            var query = from p in _context.Portfolios
+                        join pd in _context.PortfolioProducts on p.Id equals pd.PortfolioId
+                        join cu in _context.PortfolioCustomers on p.Id equals cu.PortfolioId
+                        join s in _context.ShippingPoints on cu.Id equals s.CustomerId
+                        join c in _context.CollaborativeDemand on new { ProductId = pd.ProductId, ShippingPointId = s.Id } equals new { ProductId = c.ProductId, ShippingPointId = c.ShippingPointId } into temp
+                        from cTemp in temp.DefaultIfEmpty()
+                        where cTemp == null
+                        select new
+                        {
+                            DemandTypeId = 1,
+                            EventTypeId = 1,
+                            pd.ProductId,
+                            ShippingPointId = s.Id,
+                            StatusId = 1
+                        };
+
+            // Insertar los datos en CollaborativeDemand si no existen
+            foreach (var item in query)
+            {
+                _context.CollaborativeDemand.Add(new CollaborativeDemand
+                {
+                    DemandTypeId = item.DemandTypeId,
+                    EventTypeId = item.EventTypeId,
+                    ProductId = item.ProductId,
+                    ShippingPointId = item.ShippingPointId,
+                    StatusId = item.StatusId
+                    // Agrega otras propiedades según sea necesario
+                });
+            }
+
+            await _context.SaveChangesAsync();
         }
 
         private async Task CheckDistributionChannels()

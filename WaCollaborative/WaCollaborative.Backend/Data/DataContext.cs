@@ -26,6 +26,8 @@ namespace WaCollaborative.Backend.Data
         public DbSet<InternalRole> InternalRoles { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<City> Cities { get; set; }
+
+        public DbSet<CollaborationCycle> CollaborationCycles { get; set; }
         public DbSet<CollaborativeDemand> CollaborativeDemand { get; set; }
         public DbSet<CollaborativeDemandComponentsDetail> CollaborativeDemandComponentsDetail { get; set; }
         public DbSet<Country> Countries { get; set; }
@@ -77,6 +79,7 @@ namespace WaCollaborative.Backend.Data
                 .OnDelete(DeleteBehavior.NoAction);
             modelBuilder.Entity<CollaborativeDemand>().HasIndex(c => new { c.DemandTypeId, c.EventTypeId,c.ProductId, c.ShippingPointId }).IsUnique();
             modelBuilder.Entity<CollaborativeDemandComponentsDetail>().HasIndex(c => new { c.YearMonth,c.CollaborativeDemandId,c.UserId }).IsUnique();
+            modelBuilder.Entity<CollaborationCycle>();
             modelBuilder.Entity<InternalRole>().HasIndex(c => new { c.Name }).IsUnique();
             modelBuilder.Entity<CollaborationCalendar>();
             modelBuilder.Entity<Portfolio>().HasIndex(c => new { c.Name }).IsUnique();

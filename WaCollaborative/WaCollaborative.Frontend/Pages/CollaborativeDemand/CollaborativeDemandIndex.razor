@@ -1,12 +1,11 @@
 ﻿@page "/collaboration"
+@attribute [Authorize(Roles = "Planner,Collaborator")]
 @using System.Globalization;
 @inject IRepository repository
 @inject NavigationManager navigationManager
 @inject SweetAlertService sweetAlertService
 @inject IJSRuntime JSRuntime
 @inject ExcelExporter ExcelExporter
-
-@attribute [Authorize(Roles = "Planner,Collaborator")]
 
 @if (CollaborativeDemands is null)
 {
@@ -29,14 +28,15 @@ else
                              Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditTrigger.OnRowClick : DataGridEditTrigger.Manual)"
                              Hideable="true">
                     <ToolBarContent>
-                        <MudButton OnClick="ExportarExcel" Class="mud-btn-outlined mud-btn-lg mud-btn-success">Exportar a Excel</MudButton>
+                        @* <MudButton OnClick="ExportarExcel" Class="mud-btn-outlined mud-btn-lg mud-btn-success">Exportar a Excel</MudButton> *@
+                        <button class="btn btn-sm btn-primary" @onclick="ExportarExcel"><i class="oi oi-spreadsheet" /> Exportar a Excel</button>
                         @if (!string.IsNullOrEmpty(FileDownLoadName))
                         {
                             <a href="@navigationManager.ToAbsoluteUri($"Downloads/{FileDownLoadName}")" target="_blank" download>Descargar archivo</a>                            
                             <p>Ruta generada: @FileDownloadUrl</p>
 
                         }
-                        <MudSpacer />
+                        <MudSpacer />                        
                         <MudTextField Placeholder="Buscar" Adornment="Adornment.Start" Immediate="true"
                                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                     </ToolBarContent>
@@ -56,7 +56,7 @@ else
                          <MudDataGridPager T="CollaborativeDemandDTO" />
                      </PagerContent>
                  </MudDataGrid>
-                 <div class="d-flex flex-wrap mt-4">
+                 <div class="d-flex flex-wrap mt-4 visually-hidden">
                      <div class="d-flex justify-start align-center">
 
                          <MudSwitch @bind-Checked="@_isCellEditMode">Cell</MudSwitch>
@@ -97,6 +97,9 @@ else
     private bool _editTriggerRowClick;
     string FileDownLoadName = "";
     string FileDownloadUrl;
+    private DateTime collaborationEndDate;
+
+    public UserCalendarDTO userCalendarDTO { get; set; }
 
     private List<string> _events = new();
 
@@ -108,9 +111,48 @@ else
     [SupplyParameterFromQuery]
     public string Page { get; set; } = "";
 
+    // protected async override void OnInitialized()
+    // {
+    //     await ValidateUserAccess();
+    // }
+
+
     protected async override Task OnInitializedAsync()
     {
+        await ValidateEditionGrid();
         await LoadAsync();
+    }
+
+    private async Task<bool> ValidateEditionGrid()
+    {
+        var url = $"api/CollaborativeDemand/UserCalendar";
+        var response = await repository.GetAsync<UserCalendarDTO>(url);
+        try
+        {
+            var user = response.Response;
+            if (response.Error)
+            {
+
+                var message = await response.GetErrorMessageAsync();
+                await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+                return false;
+            }
+            if (user.Role != UserType.Planner.ToString())
+            {
+                if (user.CollaboartionEndDate < DateTime.Now)
+                {
+                   _isCellEditMode = false;
+                }
+
+            }
+
+            return true;
+        }
+        catch(Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+
     }
 
     private async Task SelectedPageAsync(int page)
@@ -144,6 +186,13 @@ else
             return false;
         }
         CollaborativeDemands = response.Response;
+
+        // collaborationEndDate = CollaborativeDemands[0].CollaborationEndDate;
+
+        // if (collaborationEndDate < DateTime.Now)
+        // {
+        //     _isCellEditMode = false;
+        // }
 
         return true;
     }

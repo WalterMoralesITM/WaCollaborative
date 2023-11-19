@@ -19,5 +19,11 @@ namespace WaCollaborative.Shared.Entities
         [Display(Name = "Rol")]
         [Range(1, int.MaxValue, ErrorMessage = "Debes seleccionar una {0}.")]
         public int? InternalRoleId { get; set; }
+
+        public CollaborationCycle? CollaborationCycle { get; set;}
+
+        [Display(Name = "Ciclo de Colaboración")]
+        [Range(1, int.MaxValue, ErrorMessage = "Debes seleccionar una {0}.")]
+        public int? CollaborationCycleId { get; set; }
     }
 }

@@ -33,19 +33,60 @@ namespace WaCollaborative.Backend.Controllers
             _userHelper = userHelper;
             _mailHelper = mailHelper;
         }
-        
 
-        [AllowAnonymous]
+        [HttpGet("UserCalendar")]
+        public async Task<ActionResult> GetAsync()
+        {
+            var user = await _context.Users                 
+                   .FirstOrDefaultAsync(x => x.Email == User.Identity!.Name);
+            var userCalendar = new UserCalendarDTO();
+            if (user!.UserType == UserType.Planner)
+            {
+                userCalendar.Role = user.UserType.ToString();
+                userCalendar.CollaboartionEndDate = DateTime.Now;
+                    return Ok(userCalendar);
+            }
+            else {
+                user = await _context.Users
+                .Include(u => u.InternalRole)
+                .ThenInclude(ir => ir.CollaborationCalendars)
+                .FirstOrDefaultAsync(x => x.Email == User.Identity!.Name);
+
+                var internalRole = user?.InternalRole;
+                var collaborationEnd = internalRole?.CollaborationCalendars?.FirstOrDefault().EndDate;
+                
+                if(internalRole == null || collaborationEnd ==null)
+                {
+                    userCalendar.Role = user!.UserType.ToString();
+                    userCalendar.CollaboartionEndDate = DateTime.MinValue;
+                    return Ok(userCalendar);
+                }
+                userCalendar.Role = user!.UserType.ToString();
+                userCalendar.CollaboartionEndDate = (DateTime)collaborationEnd!;
+            }
+
+            return Ok(userCalendar);
+        }
+
         [HttpGet]
         public override async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
         {
             try
             {
-                var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == User.Identity!.Name);
-                if (user == null)
-                {
-                    return BadRequest("User not valid.");
-                }
+                //var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == User.Identity!.Name);
+                //if (user == null)
+                //{
+                //    return BadRequest("User not valid.");
+                //}
+
+                    var user = await _context.Users
+                    //.Include(u => u.InternalRole)
+                    //.ThenInclude(ir => ir.CollaborationCalendars)
+                    .FirstOrDefaultAsync(x => x.Email == User.Identity!.Name);
+                
+                //   var internalRole = user?.InternalRole;
+                //var collaborationEnd = user?.UserType == UserType.Collaborator ? DateTime.Now
+                //    : internalRole?.CollaborationCalendars?.FirstOrDefault().EndDate;
 
                 var queryable = _context.CollaborativeDemand
                     .Include(cd => cd.Product)
@@ -54,20 +95,15 @@ namespace WaCollaborative.Backend.Controllers
                     .Include(cd => cd.ShippingPoint)
                     .ThenInclude(sp => sp!.Customer)
                     .ThenInclude(c => c!.DistributionChannel)
-                    .Include(cd => cd.CollaborativeDemandComponentsDetails)
+                    .Include(cd => cd.CollaborativeDemandComponentsDetails)                    
+                    .Where(cd => cd.CollaborativeDemandComponentsDetails!.Any(d => d.UserId == user.Id))
                     .AsQueryable();
 
                 var collaborativeDemands = await queryable.ToListAsync();
 
-                var result = FlattenCollaborativeDemands(collaborativeDemands);
+                var result = FlattenCollaborativeDemands(collaborativeDemands);                
 
-                var isAdmin = await _userHelper.IsUserInRoleAsync(user, UserType.Collaborator.ToString());
-                if (!isAdmin)
-                {
-                    result = result.Where(s => s.UserEmail == User.Identity!.Name!.ToString()).ToList();
-                }
-
-                return Ok(result);
+                return Ok(result);                
             }
             catch (Exception ex)
             {
@@ -79,10 +115,20 @@ namespace WaCollaborative.Backend.Controllers
         {
             var result = new List<CollaborativeDemandDTO>();
 
+            //var user =  _context.Users
+            //       .Include(u => u.InternalRole)
+            //       .ThenInclude(ir => ir.CollaborationCalendars)
+            //       .FirstOrDefault(x => x.Email == User.Identity!.Name);
+
+            //var internalRole = user?.InternalRole;
+            //var collaborationEnd = user?.UserType == UserType.Collaborator ? DateTime.Now
+            //    : internalRole?.CollaborationCalendars?.FirstOrDefault().EndDate;
+
             foreach (var collaborativeDemand in collaborativeDemands)
             {
                 foreach (var detail in collaborativeDemand.CollaborativeDemandComponentsDetails!)
                 {
+                                                          
                     var collaborativeDemandDTO = new CollaborativeDemandDTO
                     {
                         CollaborativeDemandId = collaborativeDemand.Id,
@@ -92,12 +138,11 @@ namespace WaCollaborative.Backend.Controllers
                         ShippingPointName = collaborativeDemand.ShippingPoint!.Name,
                         CityName = collaborativeDemand.ShippingPoint.City!.Name,
                         ProductName = collaborativeDemand.Product!.Name,
-                        ProductCode = collaborativeDemand.Product.Code,
-                        UserEmail = "wmorales@yopmail.com",
-                        UserId = "1",
+                        ProductCode = collaborativeDemand.Product.Code,                       
                         CollaborativeDemandDetailId = detail.Id,
                         YearMonth = detail.YearMonth, 
-                        Quantity = detail.Quantity 
+                        Quantity = detail.Quantity
+                        //CollaborationEndDate = (DateTime)collaborationEnd
                     };
 
                     result.Add(collaborativeDemandDTO);
@@ -107,7 +152,7 @@ namespace WaCollaborative.Backend.Controllers
             return result;
         }
 
-        [AllowAnonymous]
+        //[AllowAnonymous]
         [HttpGet("{id:int}")]
         public override async Task<IActionResult> GetAsync(int id)
         {
@@ -166,7 +211,7 @@ namespace WaCollaborative.Backend.Controllers
             }
         }
 
-        [AllowAnonymous]
+        //[AllowAnonymous]
         [HttpGet("ExcelGenerate")]
         public async Task<IActionResult> GetAsync([FromServices] IWebHostEnvironment webHostEnvironment)
         {

@@ -22,6 +22,7 @@ namespace WaCollaborative.Shared.DTOs
         public string UserEmail { get; set; }
         public string UserId { get; set; }
         public int YearMonth { get; set; }
+        public DateTime CollaborationEndDate { get; set; }
         public List<CollaborativeDemandComponentsDetail> CollaborativeDemandComponentsDetailsDTO { get; set; }
 
     }

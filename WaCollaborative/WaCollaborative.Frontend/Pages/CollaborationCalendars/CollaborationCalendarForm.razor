@@ -37,6 +37,22 @@
                                 </select>
                                 <ValidationMessage For="@(() => CollaborationCalendar.InternalRoleId)" />
                             </div>
+
+                            <br />
+                            <label>Período:</label>
+                            <div>
+                                <select class="form-select" @bind="CollaborationCalendar.CollaborationCycleId">
+                                    <option value="0">-- Seleccione un período --</option>
+                                    @if (collaborationCycles is not null)
+                                    {
+                                        @foreach (var cycle in collaborationCycles)
+                                        {
+                                            <option value="@cycle.Id">@cycle.Period</option>
+                                        }
+                                    }
+                                </select>
+                                <ValidationMessage For="@(() => CollaborationCalendar.CollaborationCycleId)" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -73,6 +89,9 @@
     public bool FormPostedSuccessfully { get; set; }
 
     private List<InternalRole>? internalRoles;
+
+    private List<CollaborationCycle>? collaborationCycles;
+
     private bool loading;
 
     protected override async Task OnInitializedAsync()
@@ -83,6 +102,7 @@
         Title = Title ?? "Guardar Nuevo Calendario de Colaboración";
 
         await LoadRolesAsync();
+        await LoadCollaborationCyclesAsync();
     }
 
     private async Task OnBeforeInternalNavigationAsync(LocationChangingContext context)
@@ -133,4 +153,19 @@
         loading = false;
     }
 
+    private async Task LoadCollaborationCyclesAsync()
+    {
+        loading = true;
+        var responseHttp = await repository.GetAsync<List<CollaborationCycle>>("/api/CollaborationCycles/combo");
+        if (responseHttp.Error)
+        {
+            loading = false;
+            var message = await responseHttp.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        collaborationCycles = responseHttp.Response;
+        loading = false;
+    }
 }

@@ -64,14 +64,17 @@ namespace WaCollaborative.Backend.Data
         }
 
         private async Task CheckCollaborationCyclesAsync() {
-            _context.CollaborationCycles.Add(new CollaborationCycle { Period = 202311,StatusId = 1 });
-            _context.CollaborationCycles.Add(new CollaborationCycle { Period = 202312, StatusId = 1 });
-            _context.CollaborationCycles.Add(new CollaborationCycle { Period = 202401, StatusId = 1 });
-            _context.CollaborationCycles.Add(new CollaborationCycle { Period = 202402, StatusId = 1 });
-            _context.CollaborationCycles.Add(new CollaborationCycle { Period = 202403, StatusId = 1 });
-            _context.CollaborationCycles.Add(new CollaborationCycle { Period = 202404, StatusId = 1 });
-          
-            await _context.SaveChangesAsync();
+            if (!_context.CollaborationCycles.Any())
+            {
+                _context.CollaborationCycles.Add(new CollaborationCycle { Period = 202311, StatusId = 1 });
+                _context.CollaborationCycles.Add(new CollaborationCycle { Period = 202312, StatusId = 1 });
+                _context.CollaborationCycles.Add(new CollaborationCycle { Period = 202401, StatusId = 1 });
+                _context.CollaborationCycles.Add(new CollaborationCycle { Period = 202402, StatusId = 1 });
+                _context.CollaborationCycles.Add(new CollaborationCycle { Period = 202403, StatusId = 1 });
+                _context.CollaborationCycles.Add(new CollaborationCycle { Period = 202404, StatusId = 1 });
+
+                await _context.SaveChangesAsync();
+            }
         }
         private async Task CheckCollaborativeDemand()
         {

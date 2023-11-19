@@ -28,17 +28,31 @@ else
                              Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditTrigger.OnRowClick : DataGridEditTrigger.Manual)"
                              Hideable="true">
                     <ToolBarContent>
-                        @* <MudButton OnClick="ExportarExcel" Class="mud-btn-outlined mud-btn-lg mud-btn-success">Exportar a Excel</MudButton> *@
-                        <button class="btn btn-sm btn-primary" @onclick="ExportarExcel"><i class="oi oi-spreadsheet" /> Exportar a Excel</button>
-                        @if (!string.IsNullOrEmpty(FileDownLoadName))
+
+                        <div class="mb-2" style="display: flex; flex-wrap:wrap; align-items: center;">
+                            
+                            <div class="mx-1">
+                                <button type="button" class="btn btn-outline-info" @onclick="ExportarExcel"><i class="oi oi-spreadsheet" /> Exportar a Excel</button>
+                                <button type="button" class="btn btn-outline-warning" @onclick="ApproveDemandPlan"><i class="oi oi-check" /> Aprobar Plan</button>
+                            </div>
+
+                            <div>
+                                <MudTextField Placeholder="Buscar" Adornment="Adornment.Start" Immediate="true"
+                                              AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                                @* <input style="width: 400px;" type="text" class="form-control" id="titulo" placeholder="Buscar estado..." @bind-value="Filter" /> *@
+                            </div>
+                        </div>
+
+                        @* <button class="btn btn-sm btn-primary" @onclick="ExportarExcel"><i class="oi oi-spreadsheet" /> Exportar a Excel</button> *@
+                        @* @if (!string.IsNullOrEmpty(FileDownLoadName))
                         {
                             <a href="@navigationManager.ToAbsoluteUri($"Downloads/{FileDownLoadName}")" target="_blank" download>Descargar archivo</a>                            
                             <p>Ruta generada: @FileDownloadUrl</p>
 
-                        }
+                        } *@
                         <MudSpacer />                        
-                        <MudTextField Placeholder="Buscar" Adornment="Adornment.Start" Immediate="true"
-                                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                        @* <MudTextField Placeholder="Buscar" Adornment="Adornment.Start" Immediate="true"
+                                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField> *@
                     </ToolBarContent>
                     <Columns>
                         <SelectColumn T="CollaborativeDemandDTO" />
@@ -111,11 +125,6 @@ else
     [SupplyParameterFromQuery]
     public string Page { get; set; } = "";
 
-    // protected async override void OnInitialized()
-    // {
-    //     await ValidateUserAccess();
-    // }
-
 
     protected async override Task OnInitializedAsync()
     {
@@ -141,7 +150,7 @@ else
             {
                 if (user.CollaboartionEndDate < DateTime.Now)
                 {
-                   _isCellEditMode = false;
+                    _isCellEditMode = false;
                 }
 
             }
@@ -305,7 +314,7 @@ else
             }
             else
             {
-                
+
             }
         }
 
@@ -313,5 +322,11 @@ else
         {
             throw new Exception(ex.Message);
         }
+    }
+
+    private async Task ApproveDemandPlan()
+    {
+        
+    
     }
 }

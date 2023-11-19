@@ -32,6 +32,23 @@ namespace WaCollaborative.Backend.Controllers
                 .ToListAsync());
         }
 
+        [HttpGet("all")]
+        public  async Task<ActionResult> GetAsync()
+        {
+            var queryable = _context.CollaborationCycles
+                .Include(c => c.Status)
+                .AsQueryable();
+
+            //if (!string.IsNullOrWhiteSpace(pagination.Filter))
+            //{
+            //    queryable = queryable.Where(x => x.Name.ToLower().Contains(pagination.Filter.ToLower()));
+            //}
+
+            return Ok(await queryable
+                .OrderBy(c => c.Id)
+                //.Paginate(pagination)
+                .ToListAsync());
+        }
 
     }
 }

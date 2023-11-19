@@ -1,6 +1,4 @@
-﻿#region Using
-
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using WaCollaborative.Backend.Controllers;
@@ -9,49 +7,34 @@ using WaCollaborative.Backend.Interfaces;
 using WaCollaborative.Shared.DTOs;
 using WaCollaborative.Shared.Entities;
 
-#endregion Using
-
 namespace WaCollaborative.UnitTest.Controllers
 {
-    /// <summary>
-    /// The class StatesControllerTests
-    /// </summary>
-
     [TestClass]
-    public class StatesControllerTests
+    public class DemandTypesControllerTests
     {
-
-        #region Attributes
-
         private readonly DbContextOptions<DataContext> _options;
-        private readonly Mock<IGenericUnitOfWork<State>> _unitOfWorkMock;
+        private readonly Mock<IGenericUnitOfWork<DemandType>> _unitOfWorkMock;
 
-        #endregion Attributes
-
-        #region Constructor
-
-        public StatesControllerTests()
+        public DemandTypesControllerTests()
         {
             _options = new DbContextOptionsBuilder<DataContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
-            _unitOfWorkMock = new Mock<IGenericUnitOfWork<State>>();
+             .UseInMemoryDatabase(Guid.NewGuid().ToString())
+             .Options;
+            _unitOfWorkMock = new Mock<IGenericUnitOfWork<DemandType>>();
         }
-
-        #endregion Constructor
-
-        #region Methods
 
         [TestMethod]
         public async Task GetComboAsync_ReturnsOkResult()
         {
             /// Arrange
             using var context = new DataContext(_options);
-            var controller = new StatesController(_unitOfWorkMock.Object, context);
-            var countryId = 1;
+            context.DemandTypes.Add(new DemandType { Id = 1, Name = "Test" });
+            context.SaveChanges();
+            var controller = new DemandTypesController(_unitOfWorkMock.Object, context);
+            int eventTypeId = 1;
 
             /// Act
-            var result = await controller.GetComboAsync(countryId) as OkObjectResult;
+            var result = await controller.GetComboAsync(eventTypeId) as OkObjectResult;
 
             /// Assert
             Assert.IsNotNull(result);
@@ -66,7 +49,7 @@ namespace WaCollaborative.UnitTest.Controllers
         {
             /// Arrange
             using var context = new DataContext(_options);
-            var controller = new StatesController(_unitOfWorkMock.Object, context);
+            var controller = new DemandTypesController(_unitOfWorkMock.Object, context);
             var pagination = new PaginationDTO { Id = 1, Filter = "Some" };
 
             /// Act
@@ -85,7 +68,7 @@ namespace WaCollaborative.UnitTest.Controllers
         {
             /// Arrange
             using var context = new DataContext(_options);
-            var controller = new StatesController(_unitOfWorkMock.Object, context);
+            var controller = new DemandTypesController(_unitOfWorkMock.Object, context);
             var pagination = new PaginationDTO { Id = 1, Filter = "Some" };
 
             /// Act
@@ -100,50 +83,48 @@ namespace WaCollaborative.UnitTest.Controllers
         }
 
         [TestMethod]
-        public async Task GetAsync_ReturnsNotFoundWhenStateNotFound()
+        public async Task GetAsyncWithId_NotFound_ReturnsOkResult()
         {
             /// Arrange
             using var context = new DataContext(_options);
-            var controller = new StatesController(_unitOfWorkMock.Object, context);
+            context.DemandTypes.Add(new DemandType { Id = 1, Name = "Test" });
+            context.SaveChanges();
+
+            var controller = new DemandTypesController(_unitOfWorkMock.Object, context);
+            int id = 2;
 
             /// Act
-            var result = await controller.GetAsync(1) as NotFoundResult;
+            var result = await controller.GetAsync(id) as OkObjectResult;
 
             /// Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(404, result.StatusCode);
+            Assert.IsNull(result);
 
             /// Clean up (if needed)
             context.Database.EnsureDeleted();
         }
 
         [TestMethod]
-        public async Task GetAsync_ReturnsOkWhenStateFound()
+        public async Task GetAsyncWithId_ReturnsOkResult()
         {
             /// Arrange
             using var context = new DataContext(_options);
-            List<City> cities = new List<City>();
-            cities.Add(new City { Id = 1, Name = "test",StateId = 1});
-            var state = new State { Id = 1, Name = "test", Cities = cities };
-            context.States.Add(state);
+            context.DemandTypes.Add(new DemandType { Id = 1, Name = "Test" });
             context.SaveChanges();
 
-            var controller = new StatesController(_unitOfWorkMock.Object, context);
+            var controller = new DemandTypesController(_unitOfWorkMock.Object, context);
+            int id = 1;
 
             /// Act
-            var result = await controller.GetAsync(state.Id) as OkObjectResult;
-            State resultState = (State)result!.Value!;
+            var result = await controller.GetAsync(id) as OkObjectResult;
+            DemandType resultDemandType = (DemandType)result!.Value!;
 
             /// Assert
             Assert.IsNotNull(result);
             Assert.AreEqual(200, result.StatusCode);
-            Assert.AreEqual(resultState.Name, "test");
+            Assert.AreEqual(resultDemandType.Name, "Test");
 
             /// Clean up (if needed)
             context.Database.EnsureDeleted();
         }
-
-        #endregion Methods
-
     }
 }

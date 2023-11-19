@@ -1,33 +1,21 @@
 ﻿#region Using
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Moq;
-using WaCollaborative.Backend.Controllers;
-using WaCollaborative.Backend.Data;
-using WaCollaborative.Backend.Helpers;
-using WaCollaborative.Shared.Entities;
-using WaCollaborative.Shared.DTOs;
-using WaCollaborative.Shared.Responses;
-using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
-using WaCollaborative.Shared.Enums;
-using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
-using WaCollaborative.Backend.Helpers.Interfaces;
 using WaCollaborative.Backend.Controllers;
 using WaCollaborative.Backend.Data;
 using WaCollaborative.Backend.Helpers.Interfaces;
 using WaCollaborative.Shared.DTOs;
 using WaCollaborative.Shared.Entities;
 using WaCollaborative.Shared.Enums;
+using WaCollaborative.Shared.Responses;
+using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
 #endregion Using
 
@@ -40,7 +28,6 @@ namespace WaCollaborative.UnitTest.Controllers
     [TestClass]
     public class AccountsControllerTests
     {
-
         #region Attributes
 
         private Mock<IUserHelper> _mockUserHelper = null!;
@@ -923,6 +910,5 @@ namespace WaCollaborative.UnitTest.Controllers
         }
 
         #endregion Methods
-
     }
 }

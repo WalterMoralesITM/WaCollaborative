@@ -12,8 +12,7 @@
     <Loading />
 }
 else
-{
-    @* <div class="container-fluid"> *@
+{    
         <div class="card">
             <div class="card-header">
                 <span>
@@ -47,18 +46,7 @@ else
                                 </AuthorizeView>
                                 <label class="btn btn-secondary" style="margin-left:5px;" disabled>Plan de demanda estado @estadoPlanDemanda</label>
                                 </div>                              
-                            </div>
-                        
-                            @* <button class="btn btn-sm btn-primary" @onclick="ExportarExcel"><i class="oi oi-spreadsheet" /> Exportar a Excel</button> *@
-                            @* @if (!string.IsNullOrEmpty(FileDownLoadName))
-                        {
-                        <a href="@navigationManager.ToAbsoluteUri($"Downloads/{FileDownLoadName}")" target="_blank" download>Descargar archivo</a>
-                        <p>Ruta generada: @FileDownloadUrl</p>
-
-                        } *@
-                            <MudSpacer />
-                            @* <MudTextField Placeholder="Buscar" Adornment="Adornment.Start" Immediate="true"
-                        AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField> *@
+                            </div>                                                            
                         </ToolBarContent>
                         <Columns>
                             <SelectColumn T="CollaborativeDemandDTO" />
@@ -103,8 +91,7 @@ else
                     </MudExpansionPanels>
                 </div>
             </div>
-        </div>
-    @* </div> *@
+        </div>    
 }
 @code {
 
@@ -116,9 +103,7 @@ else
     private bool _isCellEditMode = true;
     private bool _editTriggerRowClick;
     private bool isDemandPlanActive = true;
-    private string estadoPlanDemanda = "";
-    string FileDownLoadName = "";
-    string FileDownloadUrl;
+    private string estadoPlanDemanda = "";    
     private DateTime collaborationEndDate;
 
     public UserCalendarDTO? userCalendarDTO { get; set; }
@@ -246,44 +231,7 @@ else
     private async Task ApproveDemandPlan()
     {
         await ChangeDemandPlandStatus(EnumStatus.Aprobado.ToString());
-
-        // await LoadStatusAsync();
-
-        // var statusId = Status!
-        //     .Where(s => s.Name == "Aprobado")
-        //     .Select(s => s.Id)
-        //     .FirstOrDefault();
-
-        // await LoadCollaborationCyclesAsync();
-        // var collaborationCylceId = collaborationCyclesList!
-        // .Where(c => c.Period == int.Parse(DateTime.Now.ToString("yyyyMM")))
-        // .Select(c => c.Id)
-        // .FirstOrDefault();
-
-        // var result = await sweetAlertService.FireAsync(new SweetAlertOptions
-        //     {
-        //         Title = "Confirmación",
-        //         Text = $"¿Esta seguro que quieres aprobar el plan de demanda?",
-        //         Icon = SweetAlertIcon.Question,
-        //         ShowCancelButton = true
-        //     });
-
-        // var confirm = string.IsNullOrEmpty(result.Value);
-
-        // if (confirm)
-        // {
-        //     return;
-        // }
-        // var collaborationCycle = new CollaborationCycle
-        //     {
-        //         Id = collaborationCylceId,
-        //         Period = int.Parse(DateTime.Now.ToString("yyyyMM")),
-        //         StatusId = statusId
-        //     };
-        // await UpdateAsync(collaborationCycle);
-        // _isCellEditMode = false;
-        // isDemandPlanActive = false;
-        // estadoPlanDemanda = "Aprobado";
+        
     }
 
     private async Task ActiveDemandPlan()
@@ -310,7 +258,7 @@ else
         var result = await sweetAlertService.FireAsync(new SweetAlertOptions
             {
                 Title = "Confirmación",
-                Text = $"¿Esta seguro que quieres aprobar el plan de demanda?",
+                Text = $"¿Esta seguro que quieres cambiar el plan de demanda a estado{status}?",
                 Icon = SweetAlertIcon.Question,
                 ShowCancelButton = true
             });
@@ -334,19 +282,16 @@ else
     }
 
     private async Task LoadStatusAsync()
-    {
-        // loading = true;
+    {        
         var responseHttp = await repository.GetAsync<List<Status>>("/api/Status/combo");
         if (responseHttp.Error)
-        {
-            // loading = false;
+        {            
             var message = await responseHttp.GetErrorMessageAsync();
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
             return;
         }
 
-        Status = responseHttp.Response;
-        // loading = false;
+        Status = responseHttp.Response;        
     }
 
     private async Task LoadCollaborationCyclesAsync()
@@ -459,21 +404,7 @@ else
     bool EsDecimalOEntero(decimal cantidad)
     {
         return decimal.Truncate(cantidad) == cantidad;
-    }
-
-    // async Task ExportarExcel()
-    // {
-    //     FileDownLoadName = $"MiArchivo_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
-    //     // FileDownLoadName = $"MiArchivo_20231113144934.xlsx";
-    //     ExcelExporter.ExportToExcel(CollaborativeDemands!, FileDownLoadName);
-
-    //     // ExcelExporter.ExportToExcel(datosDePrueba, FileDownLoadName);
-    //     FileDownloadUrl = navigationManager.ToAbsoluteUri($"Downloads/{FileDownLoadName}").ToString();
-
-    //     await JSRuntime.InvokeVoidAsync("alert", "Datos exportados a Excel exitosamente!");
-    // }
-
-    //navigationManager.NavigateTo("/download");
+    }    
 
     private async Task ExportarExcel()
     {

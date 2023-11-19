@@ -54,7 +54,7 @@ namespace WaCollaborative.Backend.Controllers
                 .FirstOrDefaultAsync(x => x.Email == User.Identity!.Name);
 
                 var internalRole = user?.InternalRole;
-                var collaborationEnd = internalRole?.CollaborationCalendars?.FirstOrDefault().EndDate;
+                var collaborationEnd = internalRole?.CollaborationCalendars?.FirstOrDefault()!.EndDate;
                 
                 if(internalRole == null || collaborationEnd ==null)
                 {
@@ -294,7 +294,7 @@ namespace WaCollaborative.Backend.Controllers
         //}       
 
         [HttpGet("ExcelGenerate")]
-        public async Task<IActionResult> GetAsync([FromServices] IWebHostEnvironment webHostEnvironment, [FromServices] IMailHelper mailHelper)
+        public async Task<IActionResult> GetAsync([FromServices] IWebHostEnvironment webHostEnvironment)
         {
             try
             {
@@ -355,7 +355,7 @@ namespace WaCollaborative.Backend.Controllers
                 // Enviar el archivo como adjunto por correo electrónico
                 using (var stream = new MemoryStream(System.IO.File.ReadAllBytes(excelFilePath)))
                 {
-                    var response = await mailHelper.SendMailWithAttachmentAsync(user.FullName, user.Email!, "WaCollaborative - Descarga de archivo", "Adjunto encontrarás el archivo de Excel.", stream, fileDownloadName);
+                    var response = await _mailHelper.SendMailWithAttachmentAsync(user.FullName, user.Email!, "WaCollaborative - Descarga de archivo", "Adjunto encontrarás el archivo de Excel.", stream, fileDownloadName);
                 }
 
                 // Eliminar el archivo después de enviarlo por correo electrónico

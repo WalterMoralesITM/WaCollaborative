@@ -479,29 +479,27 @@ else
     {
         int page = 1;
         try
-        {
-            //            var url = $"api/CollaborativeDemand/ExcelGenerate?page={page}";
-            // var response = await repository.GetAsync<List<CollaborativeDemandDTO>>(url);
+        {          
 
             var url = $"api/CollaborativeDemand/ExcelGenerate?page={page}";
-            //
-            var response = await repository.GetExportAsync(url);
+            
+            var responseHTTP = await repository.GetExportAsync(url);
 
-            if (!response.Error)
+            if (responseHTTP.Error)
             {
-                var downloadLink = response.Response;
-                if (!string.IsNullOrEmpty(downloadLink))
-                {
-                    await JSRuntime.InvokeVoidAsync("open", downloadLink, "_blank");
-                }
-                else
-                {
-                }
+                var mensajeError = await responseHTTP.GetErrorMessageAsync();
+                await sweetAlertService.FireAsync("Error", mensajeError, SweetAlertIcon.Error);
+                return;
             }
-            else
-            {
 
-            }
+            var toast = sweetAlertService.Mixin(new SweetAlertOptions
+                {
+                    Toast = true,
+                    Position = SweetAlertPosition.BottomEnd,
+                    ShowConfirmButton = true,
+                    Timer = 3000
+                });
+            await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Archivo enviado al correo electrónico con éxito.");
         }
 
         catch (Exception ex)

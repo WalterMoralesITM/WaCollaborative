@@ -18,6 +18,7 @@
 
         public Response<string> SendMail(string toName, string toEmail, string subject, string body);
 
+        Task<Response<string>> SendMailWithAttachmentAsync(string toName, string toEmail, string subject, string body, Stream attachmentStream, string attachmentFileName);
         #endregion Methods
 
     }

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
+using System.Net.Mail;
 using WaCollaborative.Backend.Data;
 using WaCollaborative.Backend.Helpers;
 using WaCollaborative.Backend.Helpers.Interfaces;
@@ -211,9 +212,89 @@ namespace WaCollaborative.Backend.Controllers
             }
         }
 
-        //[AllowAnonymous]
+
+        //[HttpGet("ExcelGenerate")]
+        //public async Task<IActionResult> GetAsync([FromServices] IWebHostEnvironment webHostEnvironment)
+        //{
+        //    try
+        //    {
+        //        var queryable = _context.CollaborativeDemand
+        //            .Include(cd => cd.Product)
+        //            .Include(cd => cd.ShippingPoint)
+        //            .ThenInclude(sp => sp!.City)
+        //            .Include(cd => cd.ShippingPoint)
+        //            .ThenInclude(sp => sp!.Customer)
+        //            .ThenInclude(c => c!.DistributionChannel)
+        //            .Include(cd => cd.CollaborativeDemandComponentsDetails)
+        //            .AsQueryable();
+
+        //        var collaborativeDemands = await queryable.ToListAsync();
+
+        //        var result = FlattenCollaborativeDemands(collaborativeDemands);
+
+        //        var fileDownloadName = $"CollaborativeDemands{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+
+        //        var excelFilePath = Path.Combine(webHostEnvironment.ContentRootPath, "ExcelFiles", fileDownloadName);
+
+        //        ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+        //        // Crear el archivo Excel
+        //        using (var package = new ExcelPackage())
+        //        {
+        //            // Crear la hoja de trabajo
+        //            var worksheet = package.Workbook.Worksheets.Add("CollaborativeDemands");
+
+        //            var headers = result.First().GetType().GetProperties().Select(property => property.Name).ToArray();
+
+        //            for (var i = 0; i < headers.Length; i++)
+        //            {
+        //                worksheet.Cells[1, i + 1].Value = headers[i];
+        //                worksheet.Cells[1, i + 1].Style.Font.Bold = true;
+        //            }                    
+
+        //            for (var i = 0; i < result.Count; i++)
+        //            {
+        //                var rowData = result[i];
+        //                var properties = rowData.GetType().GetProperties();
+        //                for (var j = 0; j < properties.Length; j++)
+        //                {
+        //                    worksheet.Cells[i + 2, j + 1].Value = properties[j].GetValue(rowData);
+        //                }
+        //            }
+
+
+        //            FileInfo excelFile = new FileInfo(excelFilePath);
+        //            package.SaveAs(excelFile);
+        //        }
+
+
+        //        var downloadLink = Path.Combine("ExcelFiles", excelFilePath);             
+
+        //        var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == User.Identity!.Name);
+        //        if (user == null)
+        //        {
+        //            return NotFound();
+        //        }
+
+
+        //        var emailSubject = "WaCollaborative - Descarga de archivo";
+        //        var emailBody = $"<h1>WaCollaborative - Descarga de archivo</h1>" +
+        //                        $"<p>Puedes descargar el archivo haciendo clic en el siguiente enlace:</p>" +
+        //                        $"<b><a href={downloadLink}>Descargar Archivo</a></b>";
+
+        //        var response = _mailHelper.SendMail(user.FullName,user.Email!,
+        //            emailSubject, emailBody);
+
+        //        return Ok(new { ExcelLink = downloadLink });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(new { ErrorMessage = ex.Message });
+        //    }
+        //}       
+
         [HttpGet("ExcelGenerate")]
-        public async Task<IActionResult> GetAsync([FromServices] IWebHostEnvironment webHostEnvironment)
+        public async Task<IActionResult> GetAsync([FromServices] IWebHostEnvironment webHostEnvironment, [FromServices] IMailHelper mailHelper)
         {
             try
             {
@@ -230,26 +311,26 @@ namespace WaCollaborative.Backend.Controllers
                 var collaborativeDemands = await queryable.ToListAsync();
 
                 var result = FlattenCollaborativeDemands(collaborativeDemands);
-                
+
                 var fileDownloadName = $"CollaborativeDemands{DateTime.Now:yyyyMMddHHmmss}.xlsx";
-                                
+
                 var excelFilePath = Path.Combine(webHostEnvironment.ContentRootPath, "ExcelFiles", fileDownloadName);
 
                 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-                
+
                 // Crear el archivo Excel
                 using (var package = new ExcelPackage())
                 {
                     // Crear la hoja de trabajo
                     var worksheet = package.Workbook.Worksheets.Add("CollaborativeDemands");
-                    
+
                     var headers = result.First().GetType().GetProperties().Select(property => property.Name).ToArray();
 
                     for (var i = 0; i < headers.Length; i++)
                     {
                         worksheet.Cells[1, i + 1].Value = headers[i];
                         worksheet.Cells[1, i + 1].Style.Font.Bold = true;
-                    }                    
+                    }
 
                     for (var i = 0; i < result.Count; i++)
                     {
@@ -261,13 +342,9 @@ namespace WaCollaborative.Backend.Controllers
                         }
                     }
 
-
                     FileInfo excelFile = new FileInfo(excelFilePath);
                     package.SaveAs(excelFile);
                 }
-                                
-
-                var downloadLink = Path.Combine("ExcelFiles", excelFilePath);             
 
                 var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == User.Identity!.Name);
                 if (user == null)
@@ -275,22 +352,23 @@ namespace WaCollaborative.Backend.Controllers
                     return NotFound();
                 }
 
-                
-                var emailSubject = "WaCollaborative - Descarga de archivo";
-                var emailBody = $"<h1>WaCollaborative - Descarga de archivo</h1>" +
-                                $"<p>Puedes descargar el archivo haciendo clic en el siguiente enlace:</p>" +
-                                $"<b><a href={downloadLink}>Descargar Archivo</a></b>";
-                
-                var response = _mailHelper.SendMail(user.FullName,user.Email!,
-                    emailSubject, emailBody);
+                // Enviar el archivo como adjunto por correo electrónico
+                using (var stream = new MemoryStream(System.IO.File.ReadAllBytes(excelFilePath)))
+                {
+                    var response = await mailHelper.SendMailWithAttachmentAsync(user.FullName, user.Email!, "WaCollaborative - Descarga de archivo", "Adjunto encontrarás el archivo de Excel.", stream, fileDownloadName);
+                }
 
-                return Ok(new { ExcelLink = downloadLink });
+                // Eliminar el archivo después de enviarlo por correo electrónico
+                System.IO.File.Delete(excelFilePath);
+
+                return Ok(new { Message = "Archivo enviado por correo electrónico." });
             }
             catch (Exception ex)
             {
                 return BadRequest(new { ErrorMessage = ex.Message });
             }
-        }       
+        }
+
 
     }
 }

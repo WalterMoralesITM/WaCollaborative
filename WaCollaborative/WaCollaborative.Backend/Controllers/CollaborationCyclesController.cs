@@ -39,14 +39,8 @@ namespace WaCollaborative.Backend.Controllers
                 .Include(c => c.Status)
                 .AsQueryable();
 
-            //if (!string.IsNullOrWhiteSpace(pagination.Filter))
-            //{
-            //    queryable = queryable.Where(x => x.Name.ToLower().Contains(pagination.Filter.ToLower()));
-            //}
-
             return Ok(await queryable
                 .OrderBy(c => c.Id)
-                //.Paginate(pagination)
                 .ToListAsync());
         }
 

@@ -184,7 +184,8 @@ else
 
     private async Task<bool> LoadListAsync(int page)
     {
-        var url = $"api/CollaborativeDemand?page={page}";
+        //var url = $"api/CollaborativeDemand?page={page}";
+        var url = $"api/CollaborativeDemand/All";
         var response = await repository.GetAsync<List<CollaborativeDemandDTO>>(url);
         if (response.Error)
         {

@@ -27,12 +27,13 @@ namespace WaCollaborative.Backend.Controllers
         private readonly DataContext _context;
         private readonly IUserHelper _userHelper;
         private readonly IMailHelper _mailHelper;
-
+        private readonly IGenericUnitOfWork<CollaborativeDemand> _unitOfWork;
         public CollaborativeDemandController(IGenericUnitOfWork<CollaborativeDemand> unitOfWork, DataContext context, IUserHelper userHelper, IMailHelper mailHelper) : base(unitOfWork, context)
         {
             _context = context;
             _userHelper = userHelper;
             _mailHelper = mailHelper;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpGet("UserCalendar")]
@@ -70,8 +71,8 @@ namespace WaCollaborative.Backend.Controllers
             return Ok(userCalendar);
         }
 
-        [HttpGet]
-        public override async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
+        [HttpGet("All")]
+        public async Task<IActionResult> GetAllAsync()
         {
             try
             {

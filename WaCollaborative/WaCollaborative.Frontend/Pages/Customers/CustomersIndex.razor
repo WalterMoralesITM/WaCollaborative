@@ -36,6 +36,7 @@
                             <th>Cliente</th>
                             <th>Código</th>
                             <th style="width:210px">Canal de Distribución</th>
+                            <th style="width:210px">Puntos de envío</th>
                             <th style="width:168px"></th>
                         </tr>
                     </thead>
@@ -45,7 +46,8 @@
                             <tr>
                                 <td>@customer.Name</td>
                                 <td>@customer.Code</td>
-                                <td>@customer.DistributionChannel!.Name</td>
+                                <td>@customer.DistributionChannel!.Name</td>                                
+                                <td><a href="/customers/customerdetails/@customer.Id">Ver @customer.ShippingPointsNumber Puntos de envío</a></td>
                                 <td>
                                     <a class="btn btn-warning btn-sm" @onclick=@(() => ShowModalAsync(customer.Id, true))><i class="oi oi-pencil" /> Editar</a>
                                     @* <button class="btn btn-danger btn-sm" @onclick=@(() => DeleteAsync(cliente))><i class="oi oi-trash" /> Borrar</button> *@

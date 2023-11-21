@@ -55,6 +55,7 @@ namespace WaCollaborative.Backend.Controllers
         {
             var queryable = _context.Customers
                 .Include(x => x.DistributionChannel)
+                .Include(x => x.ShippingPoint)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(pagination.Filter))
@@ -88,6 +89,7 @@ namespace WaCollaborative.Backend.Controllers
         {
             var customer = await _context.Customers
                .Include(x => x.DistributionChannel)
+               .Include(x => x.ShippingPoint)
                .FirstOrDefaultAsync(c => c.Id == id);
             if (customer == null)
             {

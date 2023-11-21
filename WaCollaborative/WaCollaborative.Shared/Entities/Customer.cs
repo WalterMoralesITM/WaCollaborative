@@ -34,7 +34,10 @@ namespace WaCollaborative.Shared.Entities
         public int DistributionChannelId { get; set; }
 
         public ICollection<ShippingPoint>? ShippingPoint { get; set; }
-        
+
+        [Display(Name = "ShippingPoints")]
+        public int ShippingPointsNumber => ShippingPoint == null ? 0 : ShippingPoint.Count;
+
         #endregion
 
     }

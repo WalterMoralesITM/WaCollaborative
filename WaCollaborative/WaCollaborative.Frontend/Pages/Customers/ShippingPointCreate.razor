@@ -1,0 +1,172 @@
+﻿@page "/ShippingPoints/create/{customerId:int}"
+@attribute [Authorize(Roles = "Planner")]
+@inject IRepository repository
+@inject SweetAlertService sweetAlertService
+@inject NavigationManager navigationManager
+
+<h4>Agregar cliente al portafolio</h4>
+
+@if (loading)
+{
+    <Loading />
+}
+else
+{
+    <EditForm Model="shippingPoint" OnValidSubmit="CreateAsync">
+        <DataAnnotationsValidator />
+        <div class="card">
+            <div class="card-header">
+                <span>
+                    <label> Registrar Nuevo Punto de Envío:</label>
+                    <button class="btn btn-sm btn-primary float-end" type="submit"><i class="oi oi-check" /> Registrar</button>
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="mb-3">
+                            <label>Punto de Envío:</label>
+                            <div>
+                                <InputText class="form-control" @bind-Value="@shippingPoint.Name" />
+                                <ValidationMessage For="@(() => shippingPoint.Name)" />
+                            </div>
+                        </div>
+                        <br>
+                        <h5>Estados/Departamentos:</h5>
+                        <div>
+                            <select class="form-select" @onchange="HandleStateChange">
+                                <option value="0">-- Seleccione un estado --</option>
+                                @if (states is not null)
+                                {
+                                    @foreach (var state in states)
+                                    {
+                                        <option value="@state.Id">@state.Name</option>
+                                    }
+                                }
+                            </select>                            
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Ciuidades:</label>
+                            <div>
+                                <select class="form-select" @bind="shippingPoint.CityId">
+                                    <option value="0">-- Seleccione una ciudad --</option>
+                                    @foreach (var city in cities!)
+                                    {
+                                        <option value="@city.Id">@city.Name</option>
+                                    }
+                                </select>     
+                                 <ValidationMessage For="@(() => shippingPoint.CityId)"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        <button class="btn btn-success" @onclick="Return">Regresar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+}
+
+@code {
+    private ShippingPoint shippingPoint = new();    
+    private List<State>? states;
+    private List<City>? cities = new List<City>();
+    public int countryId = 37;
+    private bool loading;
+
+    [Parameter]
+    public int customerId { get; set; }
+
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStatesAsync();
+    }
+
+    private async Task LoadStatesAsync()
+    {
+        loading = true;
+        var responseHttp = await repository.GetAsync<List<State>>($"/api/States/combo/{countryId}");
+        if (responseHttp.Error)
+        {
+
+            loading = false;
+            var message = await responseHttp.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        states = responseHttp.Response;
+        loading = false;
+    }
+
+    private async Task HandleStateChange(ChangeEventArgs e)
+    {
+        int selectedStateId = Convert.ToInt32(e.Value); 
+
+        await LoadCytiesAsync(selectedStateId);
+    }
+
+    private async Task LoadCytiesAsync(int stateId)
+    {
+        loading = true;
+        var responseHttp = await repository.GetAsync<List<City>>($"/api/cities/combo/{stateId}");
+        if (responseHttp.Error)
+        {
+
+            loading = false;
+            var message = await responseHttp.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        cities = responseHttp.Response;
+        loading = false;
+    }
+
+    private async Task CreateAsync()
+    {
+        shippingPoint.CustomerId = customerId;
+        shippingPoint.StatusId = (int)EnumStatus.Activo;
+        if (shippingPoint.CityId <= 0)
+        {
+            await sweetAlertService.FireAsync("Error", "Falta la ciudad de Distribución.", SweetAlertIcon.Error);
+            return;
+        }
+
+        var response = await repository.PostAsync("/api/ShippingPoints", shippingPoint);
+        if (response.Error)
+        {
+            var message = await response.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        await BlazoredModal.CloseAsync(ModalResult.Ok());
+        Return();
+
+        var toast = sweetAlertService.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                Position = SweetAlertPosition.BottomEnd,
+                ShowConfirmButton = true,
+                Timer = 3000
+            });
+        await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Registro creado con éxito.");
+
+    }
+
+    private void Return()
+    {        
+        
+//        navigationManager.NavigateTo($"/customers/customerdetails/{customerId}");
+        navigationManager.NavigateTo($"/customers");
+    }
+
+}

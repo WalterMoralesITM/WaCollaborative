@@ -29,6 +29,7 @@ namespace WaCollaborative.Backend.Data
 
         public DbSet<CollaborationCycle> CollaborationCycles { get; set; }
         public DbSet<CollaborativeDemand> CollaborativeDemand { get; set; }
+        public DbSet<CollaborativeDemandDemo> CollaborativeDemandDemo { get; set; }
         public DbSet<CollaborativeDemandComponentsDetail> CollaborativeDemandComponentsDetail { get; set; }
         public DbSet<Country> Countries { get; set; }
         public DbSet<Customer> Customers { get; set; }
@@ -82,6 +83,7 @@ namespace WaCollaborative.Backend.Data
             modelBuilder.Entity<CollaborationCycle>();
             modelBuilder.Entity<InternalRole>().HasIndex(c => new { c.Name }).IsUnique();
             modelBuilder.Entity<CollaborationCalendar>();
+            modelBuilder.Entity<CollaborativeDemandDemo>();
             modelBuilder.Entity<Portfolio>().HasIndex(c => new { c.Name }).IsUnique();
             modelBuilder.Entity<PortfolioCustomer>().HasIndex(c => new { c.PortfolioId, c.CustomerId }).IsUnique();
             modelBuilder.Entity<PortfolioProduct>().HasIndex(c => new { c.PortfolioId, c.ProductId }).IsUnique();

@@ -60,10 +60,111 @@ namespace WaCollaborative.Backend.Data
             await CheckUserAsync("1020", "Jose", "Daza", "josedaza@yopmail.com", "313 644 9685", "Calle 5", "JoseDaza.jpeg", UserType.Planner);
             await CheckUserAsync("71469531", "Walter", "Morales", "wmorales@yopmail.com", "3053699685", "Calle 52 36 98", "Walter.jpeg", UserType.Planner);
             await CheckCollaborationCyclesAsync();
-            //await CheckCollaborativeDemand();
+            await CheckCollaborativeDemandDemo();
         }
 
-        private async Task CheckCollaborationCyclesAsync() {
+        private async Task CheckCollaborativeDemandDemo()
+        {
+            if (!_context.CollaborativeDemandDemo.Any())
+            {
+                _context.CollaborativeDemandDemo.Add(new CollaborativeDemandDemo
+                {
+                    CustomerName = "ALMACENES ÉXITO",
+                    ProductName = "SAL REFISAL"
+                    ,
+                    CityName = "Medellín",
+                    YearMonth = 202312,
+                    Quantity = 0
+                });
+                _context.CollaborativeDemandDemo.Add(new CollaborativeDemandDemo
+                {
+                    CustomerName = "ALMACENES ÉXITO",
+                    ProductName = "SAL REFISAL"
+,
+                    CityName = "Medellín",
+                    YearMonth = 202401,
+                    Quantity = 0
+                });
+
+                _context.CollaborativeDemandDemo.Add(new CollaborativeDemandDemo
+                {
+                    CustomerName = "ALMACENES ÉXITO",
+                    ProductName = "LAVALOZA"
+                    ,
+                    CityName = "Medellín",
+                    YearMonth = 202312,
+                    Quantity = 0
+                });
+                _context.CollaborativeDemandDemo.Add(new CollaborativeDemandDemo
+                {
+                    CustomerName = "ALMACENES ÉXITO",
+                    ProductName = "LAVALOZA"
+,
+                    CityName = "Medellín",
+                    YearMonth = 202401,
+                    Quantity = 0
+                });
+
+                _context.CollaborativeDemandDemo.Add(new CollaborativeDemandDemo
+                {
+                    CustomerName = "ALMACENES ÉXITO",
+                    ProductName = "DISNFECTANTE"
+                    ,
+                    CityName = "Medellín",
+                    YearMonth = 202312,
+                    Quantity = 0
+                });
+                _context.CollaborativeDemandDemo.Add(new CollaborativeDemandDemo
+                {
+                    CustomerName = "ALMACENES ÉXITO",
+                    ProductName = "DISNFECTANTE"
+,
+                    CityName = "Medellín",
+                    YearMonth = 202401,
+                    Quantity = 0
+                });
+                _context.CollaborativeDemandDemo.Add(new CollaborativeDemandDemo
+                {
+                    CustomerName = "ALMACENES JUMBO",
+                    ProductName = "LAVALOZA"
+                   ,
+                    CityName = "Medellín",
+                    YearMonth = 202312,
+                    Quantity = 0
+                });
+                _context.CollaborativeDemandDemo.Add(new CollaborativeDemandDemo
+                {
+                    CustomerName = "ALMACENES JUMBO",
+                    ProductName = "LAVALOZA"
+,
+                    CityName = "Medellín",
+                    YearMonth = 202401,
+                    Quantity = 0
+                });
+
+                _context.CollaborativeDemandDemo.Add(new CollaborativeDemandDemo
+                {
+                    CustomerName = "ALMACENES JUMBO",
+                    ProductName = "DETERGENTE EN POLVO"
+                   ,
+                    CityName = "Medellín",
+                    YearMonth = 202312,
+                    Quantity = 0
+                });
+                _context.CollaborativeDemandDemo.Add(new CollaborativeDemandDemo
+                {
+                    CustomerName = "ALMACENES JUMBO",
+                    ProductName = "DETERGENTE EN POLVO"
+,
+                    CityName = "Medellín",
+                    YearMonth = 202401,
+                    Quantity = 0
+                });
+                await _context.SaveChangesAsync();
+            }
+        }
+        private async Task CheckCollaborationCyclesAsync()
+        {
             if (!_context.CollaborationCycles.Any())
             {
                 _context.CollaborationCycles.Add(new CollaborationCycle { Period = 202311, StatusId = 1 });
@@ -78,7 +179,6 @@ namespace WaCollaborative.Backend.Data
         }
         private async Task CheckCollaborativeDemand()
         {
-            // Consulta para obtener los datos necesarios
             var query = from p in _context.Portfolios
                         join pd in _context.PortfolioProducts on p.Id equals pd.PortfolioId
                         join cu in _context.PortfolioCustomers on p.Id equals cu.PortfolioId
@@ -105,7 +205,6 @@ namespace WaCollaborative.Backend.Data
                     ProductId = item.ProductId,
                     ShippingPointId = item.ShippingPointId,
                     StatusId = item.StatusId
-                    // Agrega otras propiedades según sea necesario
                 });
             }
 
@@ -196,7 +295,7 @@ namespace WaCollaborative.Backend.Data
                 _context.Categories.Add(new Category { Name = "ASEO" });
                 _context.Categories.Add(new Category { Name = "CONDIMENTOS" });
                 _context.Categories.Add(new Category { Name = "SAL" });
-                _context.Categories.Add(new Category { Name = "SERVICIOS" });                
+                _context.Categories.Add(new Category { Name = "SERVICIOS" });
                 await _context.SaveChangesAsync();
             }
         }
@@ -218,9 +317,9 @@ namespace WaCollaborative.Backend.Data
                 await _context.SaveChangesAsync();
             }
         }
-        private async Task CheckStatusType() 
+        private async Task CheckStatusType()
         {
-            if (!_context.StatusType.Any()) 
+            if (!_context.StatusType.Any())
             {
                 _context.StatusType.Add(new StatusType { Name = "Paramétrico" });
                 _context.StatusType.Add(new StatusType { Name = "Proceso" });
@@ -251,11 +350,11 @@ namespace WaCollaborative.Backend.Data
         {
             if (!_context.MeasurementUnits.Any())
             {
-                _context.MeasurementUnits.Add(new MeasurementUnit {Name = "BANDEJA" });
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "BANDEJA" });
                 _context.MeasurementUnits.Add(new MeasurementUnit { Name = "BIG BAG" });
                 _context.MeasurementUnits.Add(new MeasurementUnit { Name = "BOLSA" });
-                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "BULTO" });                                                
-                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "CILINDRO" });                
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "BULTO" });
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "CILINDRO" });
                 _context.MeasurementUnits.Add(new MeasurementUnit { Name = "DISPLAY" });
                 _context.MeasurementUnits.Add(new MeasurementUnit { Name = "DOYPACK" });
                 _context.MeasurementUnits.Add(new MeasurementUnit { Name = "GRANEL" });
@@ -263,7 +362,7 @@ namespace WaCollaborative.Backend.Data
                 _context.MeasurementUnits.Add(new MeasurementUnit { Name = "SACO 50 KG" });
                 _context.MeasurementUnits.Add(new MeasurementUnit { Name = "SACO 40 KG" });
                 _context.MeasurementUnits.Add(new MeasurementUnit { Name = "SACO 25 KG" });
-                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "TERMOENCOGIBLE" });                          
+                _context.MeasurementUnits.Add(new MeasurementUnit { Name = "TERMOENCOGIBLE" });
                 await _context.SaveChangesAsync();
             }
         }
@@ -273,7 +372,7 @@ namespace WaCollaborative.Backend.Data
             if (!_context.EventTypes.Any())
             {
                 _context.EventTypes.Add(new EventType { Name = "Demada Regular" });
-                _context.EventTypes.Add(new EventType { Name = "Lanzamiento" });                
+                _context.EventTypes.Add(new EventType { Name = "Lanzamiento" });
                 _context.EventTypes.Add(new EventType { Name = "Descuentos" });
                 _context.EventTypes.Add(new EventType { Name = "Licitaciones" });
                 _context.EventTypes.Add(new EventType { Name = "2x1" });
@@ -288,8 +387,8 @@ namespace WaCollaborative.Backend.Data
         {
             if (!_context.DemandTypes.Any())
             {
-                _context.DemandTypes.Add(new DemandType { Name = "Demanda Extraordinaria"});
-                _context.DemandTypes.Add(new DemandType { Name = "Demanda Regular"});
+                _context.DemandTypes.Add(new DemandType { Name = "Demanda Extraordinaria" });
+                _context.DemandTypes.Add(new DemandType { Name = "Demanda Regular" });
 
                 await _context.SaveChangesAsync();
             }

@@ -28,11 +28,22 @@ namespace WaCollaborative.Backend.Controllers
         private readonly IUserHelper _userHelper;
         private readonly IMailHelper _mailHelper;
         private readonly IGenericUnitOfWork<CollaborativeDemand> _unitOfWork;
+
+        //public readonly ICollaborativeDemandsHelper _collaborativeDemandsHelper;
+
+        //public CollaborativeDemandController(IGenericUnitOfWork<CollaborativeDemand> unitOfWork, DataContext context, IUserHelper userHelper, IMailHelper mailHelper,ICollaborativeDemandsHelper collaborativeDemandsHelper) : base(unitOfWork, context)
+        //{
+        //    _context = context;
+        //    _userHelper = userHelper;
+        //    _mailHelper = mailHelper;
+        //    _collaborativeDemandsHelper = collaborativeDemandsHelper;
+        //    _unitOfWork = unitOfWork;
+        //}
         public CollaborativeDemandController(IGenericUnitOfWork<CollaborativeDemand> unitOfWork, DataContext context, IUserHelper userHelper, IMailHelper mailHelper) : base(unitOfWork, context)
         {
             _context = context;
             _userHelper = userHelper;
-            _mailHelper = mailHelper;
+            _mailHelper = mailHelper;            
             _unitOfWork = unitOfWork;
         }
 
@@ -76,6 +87,9 @@ namespace WaCollaborative.Backend.Controllers
         {
             try
             {
+                CollaborativeDemandsHelper collaborativeDemandsHelper = new CollaborativeDemandsHelper(_context);
+                var response = await collaborativeDemandsHelper.SynchronizeCollaborativeDemandsAsync();
+
                 var user = await _context.Users
                 .FirstOrDefaultAsync(x => x.Email == User.Identity!.Name);
 

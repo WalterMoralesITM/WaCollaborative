@@ -13,7 +13,7 @@ namespace WaCollaborative.Backend.Controllers
     [ApiController]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
-    public class PortfoliosController :  GenericController<Portfolio>
+    public class PortfoliosController : GenericController<Portfolio>
     {
         private readonly IGenericUnitOfWork<Portfolio> _unitOfWork;
         private readonly DataContext _context;
@@ -38,9 +38,19 @@ namespace WaCollaborative.Backend.Controllers
         public override async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
         {
             var queryable = _context.Portfolios
-                .Include(c => c.PortfolioCustomers)
+                .Include(c => c.PortfolioCustomers!)
+                .ThenInclude(cu => cu.Customer!)
+                .ThenInclude(s => s.ShippingPoint)
                 .Include(c => c.PortfolioProducts)
+                .Include(c => c.Users)
                 .AsQueryable();
+
+            //if (queryable != null)
+            //{
+            //    var portfolios = await queryable.ToListAsync();
+            //    await AddToDemandPlanAsync(portfolios);
+            //}
+
 
             if (!string.IsNullOrWhiteSpace(pagination.Filter))
             {
@@ -52,6 +62,42 @@ namespace WaCollaborative.Backend.Controllers
                 .Paginate(pagination)
                 .ToListAsync());
         }
+
+        //private async Task<List<Portfolio>> AddToDemandPlanAsync(List<Portfolio> portfolios)
+        //{
+        //    CollaborativeDemand collaborativeDemand = new CollaborativeDemand();
+
+        //    foreach (var portfolio in portfolios)
+        //    {
+        //        foreach (var portfolioCustomer in portfolio.PortfolioCustomers!)
+        //        {
+        //            foreach (var customer in portfolioCustomer.Customer)
+        //            {
+        //                foreach (var shippingPoint in customer.ShippingPoints)
+        //                {
+        //                    collaborativeDemand = new CollaborativeDemand();
+        //                    //{
+        //                    //    DemandTypeId = 1,  // Puedes asignar el valor adecuado
+        //                    //    ShippingPointId = shippingPoint.Id,
+        //                    //    // Otras propiedades...
+        //                    //};
+
+        //                    var collaborativeDemandDetail = new CollaborativeDemandComponentsDetail
+        //                    {
+        //                        Quantity = 10,  // Puedes asignar el valor adecuado
+        //                        UpdateDate = DateTime.Now,
+        //                        CollaborativeDemand = collaborativeDemand,
+        //                        // Otras propiedades...
+        //                    };
+
+        //                    _context.CollaborativeDemands.Add(collaborativeDemand);
+        //                    _context.CollaborativeDemandComponentsDetails.Add(collaborativeDemandDetail);
+        //                }
+        //            }
+        //        }
+        //    }
+        //    await _context.SaveChangesAsync();
+        //}
 
         [HttpGet("totalPages")]
         public override async Task<ActionResult> GetPagesAsync([FromQuery] PaginationDTO pagination)

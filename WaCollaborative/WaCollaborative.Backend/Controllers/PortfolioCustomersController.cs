@@ -28,7 +28,7 @@ namespace WaCollaborative.Backend.Controllers
         public override async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
         {
             var queryable = _context.PortfolioCustomers
-                .Include(p => p.Customer)
+                .Include(p => p.Customer)                                                                                  
                 .Where(x => x.Portfolio!.Id == pagination.Id)
                 .AsQueryable();
 

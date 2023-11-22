@@ -31,7 +31,7 @@ namespace WaCollaborative.Backend.Controllers
 
         //public readonly ICollaborativeDemandsHelper _collaborativeDemandsHelper;
 
-        //public CollaborativeDemandController(IGenericUnitOfWork<CollaborativeDemand> unitOfWork, DataContext context, IUserHelper userHelper, IMailHelper mailHelper,ICollaborativeDemandsHelper collaborativeDemandsHelper) : base(unitOfWork, context)
+        //public CollaborativeDemandController(IGenericUnitOfWork<CollaborativeDemand> unitOfWork, DataContext context, IUserHelper userHelper, IMailHelper mailHelper, ICollaborativeDemandsHelper collaborativeDemandsHelper) : base(unitOfWork, context)
         //{
         //    _context = context;
         //    _userHelper = userHelper;
@@ -43,7 +43,7 @@ namespace WaCollaborative.Backend.Controllers
         {
             _context = context;
             _userHelper = userHelper;
-            _mailHelper = mailHelper;            
+            _mailHelper = mailHelper;
             _unitOfWork = unitOfWork;
         }
 
@@ -104,6 +104,7 @@ namespace WaCollaborative.Backend.Controllers
                     .Where(cd => cd.CollaborativeDemandComponentsDetails!.Any(d => d.UserId == user.Id))
                     .AsQueryable();
 
+
                 var collaborativeDemands = await queryable.ToListAsync();
 
                 var result = FlattenCollaborativeDemands(collaborativeDemands);
@@ -118,16 +119,7 @@ namespace WaCollaborative.Backend.Controllers
 
         private List<CollaborativeDemandDTO> FlattenCollaborativeDemands(List<CollaborativeDemand> collaborativeDemands)
         {
-            var result = new List<CollaborativeDemandDTO>();
-
-            //var user =  _context.Users
-            //       .Include(u => u.InternalRole)
-            //       .ThenInclude(ir => ir.CollaborationCalendars)
-            //       .FirstOrDefault(x => x.Email == User.Identity!.Name);
-
-            //var internalRole = user?.InternalRole;
-            //var collaborationEnd = user?.UserType == UserType.Collaborator ? DateTime.Now
-            //    : internalRole?.CollaborationCalendars?.FirstOrDefault().EndDate;
+            var result = new List<CollaborativeDemandDTO>();          
 
             foreach (var collaborativeDemand in collaborativeDemands)
             {
@@ -146,8 +138,7 @@ namespace WaCollaborative.Backend.Controllers
                         ProductCode = collaborativeDemand.Product.Code,
                         CollaborativeDemandDetailId = detail.Id,
                         YearMonth = detail.YearMonth,
-                        Quantity = detail.Quantity
-                        //CollaborationEndDate = (DateTime)collaborationEnd
+                        Quantity = detail.Quantity                        
                     };
 
                     result.Add(collaborativeDemandDTO);

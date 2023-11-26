@@ -16,5 +16,8 @@
         public Status? Status { get; set; }
         public int StatusId { get; set; }
         public ICollection<CollaborativeDemandComponentsDetail>? CollaborativeDemandComponentsDetails { get; set; }
+        public ICollection<UserCollaborativeDemand>? UserCollaborativeDemands { get; set; }
+        public ICollection<CollaborativeDemandUsers>? CollaborativeDemandUsers { get; set; }
+        public int CollaborativeDemandUsersNumber => CollaborativeDemandUsers == null ? 0 : CollaborativeDemandUsers.Count;
     }
 }

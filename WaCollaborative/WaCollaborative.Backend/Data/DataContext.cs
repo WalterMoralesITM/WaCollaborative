@@ -44,9 +44,11 @@ namespace WaCollaborative.Backend.Data
         public DbSet<StatusType> StatusType { get; set; }
         public DbSet<Segment> Segments { get; set; }
         public DbSet<CollaborationCalendar> CollaborationCalendars { get; set; }
+        public DbSet<CollaborativeDemandUsers> CollaborativeDemandUsers { get; set; }
         public DbSet<Portfolio> Portfolios { get; set; }
         public DbSet<PortfolioCustomer> PortfolioCustomers { get; set; }
         public DbSet<PortfolioProduct> PortfolioProducts { get; set; }
+        public DbSet<UserCollaborativeDemand> UserCollaborativeDemands { get; set; }
 
 
         #endregion Entities
@@ -86,8 +88,21 @@ namespace WaCollaborative.Backend.Data
             modelBuilder.Entity<CollaborativeDemandDemo>();
             modelBuilder.Entity<Portfolio>().HasIndex(c => new { c.Name }).IsUnique();
             modelBuilder.Entity<PortfolioCustomer>().HasIndex(c => new { c.PortfolioId, c.CustomerId }).IsUnique();
-            modelBuilder.Entity<PortfolioProduct>().HasIndex(c => new { c.PortfolioId, c.ProductId }).IsUnique();
+            modelBuilder.Entity<PortfolioProduct>().HasIndex(c => new { c.PortfolioId, c.ProductId }).IsUnique();                        
+            
+            modelBuilder.Entity<UserCollaborativeDemand>()
+            .HasKey(ucd => new { ucd.UserId, ucd.CollaborativeDemandId });
 
+            modelBuilder.Entity<UserCollaborativeDemand>()
+                .HasOne(ucd => ucd.User)
+                .WithMany(u => u.UserCollaborativeDemands)
+                .HasForeignKey(ucd => ucd.UserId);
+
+            modelBuilder.Entity<UserCollaborativeDemand>()
+                .HasOne(ucd => ucd.CollaborativeDemand)
+                .WithMany(cd => cd.UserCollaborativeDemands)
+                .HasForeignKey(ucd => ucd.CollaborativeDemandId);
+            modelBuilder.Entity<CollaborativeDemandUsers>();
         }
 
         #endregion Methods

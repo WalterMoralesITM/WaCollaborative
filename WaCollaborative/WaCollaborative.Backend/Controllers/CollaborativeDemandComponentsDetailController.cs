@@ -8,6 +8,7 @@ using WaCollaborative.Backend.Interfaces;
 using WaCollaborative.Shared.DTOs;
 using WaCollaborative.Shared.Entities;
 using WaCollaborative.Shared.Enums;
+using WaCollaborative.Shared.Helpers;
 
 namespace WaCollaborative.Backend.Controllers
 {
@@ -18,26 +19,18 @@ namespace WaCollaborative.Backend.Controllers
     {
         
         private readonly DataContext _context;
-        //private readonly IUserHelper _userHelper;
+        private readonly IGenericUnitOfWork<CollaborativeDemandComponentsDetail> _unitOfWork;
 
         public CollaborativeDemandComponentsDetailController(IGenericUnitOfWork<CollaborativeDemandComponentsDetail> unitOfWork, DataContext context) : base(unitOfWork, context)
         {
+            _unitOfWork = unitOfWork;
             _context = context;            
         }
-        //public CollaborativeDemandComponentsDetailController( DataContext context, IUserHelper userHelper) : base(unitOfWork, context)
-        //{
-        //    _context = context;
-        //    _userHelper = userHelper;
-        //}
+      
 
         [HttpPut("full")]
         public override async Task<IActionResult> PutAsync(CollaborativeDemandComponentsDetail collaboration)
-        {
-            //var user = await _userHelper.GetUserAsync(User.Identity!.Name!);
-            //if (user == null)
-            //{
-            //    return NotFound();
-            //}
+        {        
 
             var collaborationDetail = await _context.CollaborativeDemandComponentsDetail
                 .FirstOrDefaultAsync(s => s.Id == collaboration.Id);
@@ -51,6 +44,36 @@ namespace WaCollaborative.Backend.Controllers
             await _context.SaveChangesAsync();
             return Ok(collaborationDetail);
         }
-        
+
+        [HttpGet("Portfolio")]
+        public override async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
+        {
+            var queryable = _context.CollaborativeDemandComponentsDetail                
+                .Include(d => d.User!)                    
+                .Include(d => d.CollaborativeDemand!)
+                    .ThenInclude(c => c.Product)
+                 .Include(d => d.CollaborativeDemand!)
+                    .ThenInclude(s => s.ShippingPoint)
+                .AsQueryable();
+            
+
+            return Ok(await queryable
+                //.OrderBy(c => c.Name)
+                //.Paginate(pagination)
+                .ToListAsync());
+        }
+
+        [HttpGet("Periods")]
+        public async Task<IActionResult> GetPeriodsAsync([FromQuery] int collaborativeDemandId, [FromQuery] string userId)
+        {
+            var queryable = _context.CollaborativeDemandComponentsDetail                
+                .AsQueryable();
+            queryable = queryable
+        .Where(detail => detail.CollaborativeDemandId == collaborativeDemandId && detail.UserId == userId);
+
+            return Ok(await queryable
+            
+                .ToListAsync());
+        }
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WaCollaborative.Backend.Data;
 
@@ -11,9 +12,11 @@ using WaCollaborative.Backend.Data;
 namespace WaCollaborative.Backend.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20231122165816_AddCollaborationDetailToUser")]
+    partial class AddCollaborationDetailToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -356,30 +359,6 @@ namespace WaCollaborative.Backend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("CollaborativeDemandDemo");
-                });
-
-            modelBuilder.Entity("WaCollaborative.Shared.Entities.CollaborativeDemandUsers", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CollaborativeDemandId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CollaborativeDemandId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("CollaborativeDemandUsers");
                 });
 
             modelBuilder.Entity("WaCollaborative.Shared.Entities.Country", b =>
@@ -892,24 +871,6 @@ namespace WaCollaborative.Backend.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("WaCollaborative.Shared.Entities.UserCollaborativeDemand", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("CollaborativeDemandId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
-                    b.HasKey("UserId", "CollaborativeDemandId");
-
-                    b.HasIndex("CollaborativeDemandId");
-
-                    b.ToTable("UserCollaborativeDemands");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -1052,25 +1013,6 @@ namespace WaCollaborative.Backend.Migrations
                     b.HasOne("WaCollaborative.Shared.Entities.User", "User")
                         .WithMany("CollaborativeDemandComponentsDetail")
                         .HasForeignKey("UserId");
-
-                    b.Navigation("CollaborativeDemand");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("WaCollaborative.Shared.Entities.CollaborativeDemandUsers", b =>
-                {
-                    b.HasOne("WaCollaborative.Shared.Entities.CollaborativeDemand", "CollaborativeDemand")
-                        .WithMany("CollaborativeDemandUsers")
-                        .HasForeignKey("CollaborativeDemandId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WaCollaborative.Shared.Entities.User", "User")
-                        .WithMany("CollaborativeDemandUsers")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
 
                     b.Navigation("CollaborativeDemand");
 
@@ -1229,25 +1171,6 @@ namespace WaCollaborative.Backend.Migrations
                     b.Navigation("Portfolio");
                 });
 
-            modelBuilder.Entity("WaCollaborative.Shared.Entities.UserCollaborativeDemand", b =>
-                {
-                    b.HasOne("WaCollaborative.Shared.Entities.CollaborativeDemand", "CollaborativeDemand")
-                        .WithMany("UserCollaborativeDemands")
-                        .HasForeignKey("CollaborativeDemandId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WaCollaborative.Shared.Entities.User", "User")
-                        .WithMany("UserCollaborativeDemands")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CollaborativeDemand");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("WaCollaborative.Shared.Entities.Category", b =>
                 {
                     b.Navigation("Products");
@@ -1266,10 +1189,6 @@ namespace WaCollaborative.Backend.Migrations
             modelBuilder.Entity("WaCollaborative.Shared.Entities.CollaborativeDemand", b =>
                 {
                     b.Navigation("CollaborativeDemandComponentsDetails");
-
-                    b.Navigation("CollaborativeDemandUsers");
-
-                    b.Navigation("UserCollaborativeDemands");
                 });
 
             modelBuilder.Entity("WaCollaborative.Shared.Entities.Country", b =>
@@ -1331,10 +1250,6 @@ namespace WaCollaborative.Backend.Migrations
             modelBuilder.Entity("WaCollaborative.Shared.Entities.User", b =>
                 {
                     b.Navigation("CollaborativeDemandComponentsDetail");
-
-                    b.Navigation("CollaborativeDemandUsers");
-
-                    b.Navigation("UserCollaborativeDemands");
                 });
 #pragma warning restore 612, 618
         }

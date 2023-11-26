@@ -1,0 +1,136 @@
+﻿@page "/collaboraiveDemadDetails/create/{CollaborativeDemandId:int}/{UserId}"
+@attribute [Authorize(Roles = "Planner")]
+@inject IRepository repository
+@inject SweetAlertService sweetAlertService
+@inject NavigationManager navigationManager
+
+@if (loading)
+{
+    <Loading />
+}
+else
+{
+    <EditForm Model="collaborativeDemandComponentsDetail" OnValidSubmit="CreateAsync">
+        <DataAnnotationsValidator />
+        <div class="card">
+            <div class="card-header">
+                <span>
+                    <label> Agregar clientes y productos al portafolio</label>
+                    <button class="btn btn-sm btn-primary float-end" type="submit"><i class="oi oi-check" /> Registrar</button>
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <br>
+                        <h5>Periodos:</h5>
+                        <div>                            
+                            <select class="form-select" @oninput="HandleUserSelection" @bind="collaborativeDemandComponentsDetail.YearMonth">
+                                <option value="0">-- Seleccione un periodo --</option>
+                                @foreach (var period in collaborationCycles!)
+                                {
+                                    <option value="@period.Id">@period.Period</option>
+                                }
+                            </select>
+                            <ValidationMessage For="@(() => collaborativeDemandComponentsDetail.YearMonth)" />
+                        </div>
+
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        <button class="btn btn-success" @onclick="Return">Regresar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+}
+
+@code {
+    private CollaborativeDemandComponentsDetail collaborativeDemandComponentsDetail = new();
+    private List<CollaborationCycle>? collaborationCycles;
+    private int selectedPeriodId;
+    private int selectedPeriodValue;
+    private bool loading;
+
+    [Parameter]
+    public int CollaborativeDemandId { get; set; }
+
+    [Parameter]
+    public string UserId { get; set; }
+
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCollaborationCyclesAsync();
+    }
+
+    private async Task LoadCollaborationCyclesAsync()
+    {
+        loading = true;
+        var responseHttp = await repository.GetAsync<List<CollaborationCycle>>("/api/CollaborationCycles/combo");
+        if (responseHttp.Error)
+        {
+            loading = false;
+            var message = await responseHttp.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        collaborationCycles = responseHttp.Response;
+        loading = false;
+    }
+
+    private void HandleUserSelection(ChangeEventArgs args)
+    {
+        int.TryParse(args.Value.ToString(), out selectedPeriodId);
+        
+        var selectedPeriod = collaborationCycles.FirstOrDefault(p => p.Id == selectedPeriodId);
+
+        if (selectedPeriod != null)
+        {
+            selectedPeriodValue = selectedPeriod.Period;
+
+        }
+    }
+
+
+    private async Task CreateAsync()
+    {
+
+        collaborativeDemandComponentsDetail.UserId = UserId;
+        collaborativeDemandComponentsDetail.CollaborativeDemandId = CollaborativeDemandId;
+        collaborativeDemandComponentsDetail.YearMonth = selectedPeriodValue;
+
+
+        var response = await repository.PostAsync("/api/CollaborativeDemandComponentsDetail", collaborativeDemandComponentsDetail);
+        if (response.Error)
+        {
+            var message = await response.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        await BlazoredModal.CloseAsync(ModalResult.Ok());
+        Return();
+
+        var toast = sweetAlertService.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                Position = SweetAlertPosition.BottomEnd,
+                ShowConfirmButton = true,
+                Timer = 3000
+            });
+        await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Registro creado con éxito.");
+
+    }
+
+    private void Return()
+    {
+        navigationManager.NavigateTo($"/portfolios/portfolioPeriodDetails/{CollaborativeDemandId}/{UserId}");
+    }
+
+}

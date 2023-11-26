@@ -28,17 +28,7 @@ namespace WaCollaborative.Backend.Controllers
         private readonly IUserHelper _userHelper;
         private readonly IMailHelper _mailHelper;
         private readonly IGenericUnitOfWork<CollaborativeDemand> _unitOfWork;
-
-        //public readonly ICollaborativeDemandsHelper _collaborativeDemandsHelper;
-
-        //public CollaborativeDemandController(IGenericUnitOfWork<CollaborativeDemand> unitOfWork, DataContext context, IUserHelper userHelper, IMailHelper mailHelper, ICollaborativeDemandsHelper collaborativeDemandsHelper) : base(unitOfWork, context)
-        //{
-        //    _context = context;
-        //    _userHelper = userHelper;
-        //    _mailHelper = mailHelper;
-        //    _collaborativeDemandsHelper = collaborativeDemandsHelper;
-        //    _unitOfWork = unitOfWork;
-        //}
+        
         public CollaborativeDemandController(IGenericUnitOfWork<CollaborativeDemand> unitOfWork, DataContext context, IUserHelper userHelper, IMailHelper mailHelper) : base(unitOfWork, context)
         {
             _context = context;
@@ -82,14 +72,49 @@ namespace WaCollaborative.Backend.Controllers
             return Ok(userCalendar);
         }
 
+        //portafolioIndex 
+        [HttpGet("Portfolio")]
+        public override async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
+        {
+            var queryable = _context.CollaborativeDemand
+                .Include(c => c.Product)
+                .Include(c => c.ShippingPoint)
+                .Include(c => c.CollaborativeDemandUsers)               
+                .AsQueryable();
+
+
+            return Ok(await queryable
+                .OrderBy(c => c.Product!.Name)
+                .Paginate(pagination)
+                .ToListAsync());
+        }
+
+        //[HttpGet("PortfolioAll")]
+        //public async Task<ActionResult> GetPortfolioAsync([FromQuery] PaginationDTO pagination)
+        //{
+        //    var queryable = _context.Users
+        //        .Include(c => c.InternalRole)
+        //        .Include(c => c.CollaborativeDemandComponentsDetail!)
+        //            .ThenInclude(d => d.CollaborativeDemand)
+        //                .ThenInclude(d => d.ProductId)
+        //        .Include(c => c.CollaborativeDemandComponentsDetail!)
+        //            .ThenInclude(p => p.CollaborativeDemand)
+        //                .ThenInclude(p => p.ShippingPoint)                       
+
+        //        .AsQueryable();           
+
+        //    return Ok(await queryable
+        //        //.OrderBy(c => c.Name)
+        //        .Paginate(pagination)
+        //        .ToListAsync());
+        //}
+
+        //CollaborativeDemandIndex
         [HttpGet("All")]
         public async Task<IActionResult> GetAllAsync()
         {
             try
-            {
-                CollaborativeDemandsHelper collaborativeDemandsHelper = new CollaborativeDemandsHelper(_context);
-                var response = await collaborativeDemandsHelper.SynchronizeCollaborativeDemandsAsync();
-
+            {         
                 var user = await _context.Users
                 .FirstOrDefaultAsync(x => x.Email == User.Identity!.Name);
 
@@ -148,19 +173,19 @@ namespace WaCollaborative.Backend.Controllers
             return result;
         }
 
-        [HttpGet("{id:int}")]
-        public override async Task<IActionResult> GetAsync(int id)
-        {
-            var collaborativeDemand = await _context.CollaborativeDemand
-                .Include(cd => cd.CollaborativeDemandComponentsDetails)
-                .FirstOrDefaultAsync(x => x.Id == id);
-            if (collaborativeDemand == null)
-            {
-                return NotFound();
-            }
+        //[HttpGet("{id:int}")]
+        //public override async Task<IActionResult> GetAsync(int id)
+        //{
+        //    var collaborativeDemand = await _context.CollaborativeDemand
+        //        .Include(cd => cd.CollaborativeDemandComponentsDetails)
+        //        .FirstOrDefaultAsync(x => x.Id == id);
+        //    if (collaborativeDemand == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            return Ok(collaborativeDemand);
-        }
+        //    return Ok(collaborativeDemand);
+        //}
 
         [HttpGet("totalPages")]
         public override async Task<ActionResult> GetPagesAsync([FromQuery] PaginationDTO pagination)

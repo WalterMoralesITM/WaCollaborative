@@ -1,0 +1,151 @@
+﻿@page "/collaboraiveDemadUsers/create/{CollaborativeDemandId:int}"
+@attribute [Authorize(Roles = "Planner")]
+@inject IRepository repository
+@inject SweetAlertService sweetAlertService
+@inject NavigationManager navigationManager
+
+@if (loading)
+{
+    <Loading />
+}
+else
+{
+    <EditForm Model="collaborativeDemandUsers" OnValidSubmit="CreateAsync">
+        <DataAnnotationsValidator />
+        <div class="card">
+            <div class="card-header">
+                <span>
+                    <label> Agregar clientes y productos al portafolio</label>
+                    <button class="btn btn-sm btn-primary float-end" type="submit"><i class="oi oi-check" /> Registrar</button>
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-6">                      
+                        <br>
+                        <h5>Usuarios:</h5>
+                        <div>                            
+                            <select class="form-select" @oninput="HandleUserSelection">
+                                <option value="0">-- Seleccione un usuario --</option>
+                                @foreach (var user in users!)
+                                {
+                                    <option value="@user.Id">@user.FullName</option>
+                                }
+                            </select>
+                            <ValidationMessage For="@(() => collaborativeDemandUsers.UserId)" />
+                        </div>
+                        
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        <button class="btn btn-success" @onclick="Return">Regresar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+}
+
+@code {
+    private CollaborativeDemandUsers collaborativeDemandUsers = new();    
+    public HashSet<User>? users = new HashSet<User>();
+    public User? userSelected;
+
+
+    private bool loading;
+
+    [Parameter]
+    public int CollaborativeDemandId { get; set; }
+
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsersAsync();
+    }
+
+    private async Task LoadUsersAsync()
+    {
+        loading = true;
+        string url = string.Empty;
+        url = $"api/accounts/all";
+        var responseHttp = await repository.GetAsync<HashSet<User>>(url);
+        if (responseHttp.Error)
+        {
+
+            loading = false;
+            var message = await responseHttp.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        users = responseHttp.Response;
+        loading = false;
+    }
+
+    private void HandleUserSelection(ChangeEventArgs e)
+    {
+        // Aquí puedes manejar la lógica para agregar o quitar usuarios del conjunto
+        if (e.Value != null)
+        {
+            var userId = e.Value.ToString();
+            var user = users.FirstOrDefault(u => u.Id == userId);
+
+            if (user != null)
+            {
+                userSelected = user;
+                // usersSelected.Add(user);
+                // if (users.Contains(user))
+                // {
+                //     users.Remove(user);
+                // }
+                // else
+                // {
+                //     users.Add(user);
+                // }
+            }
+        }
+    }
+
+    private async Task CreateAsync()
+    {
+        if (userSelected == null)
+        {
+            await sweetAlertService.FireAsync("Error", "Debe seleccionar el usuario.", SweetAlertIcon.Error);
+            return;
+
+        }
+        collaborativeDemandUsers.UserId = userSelected.Id;
+        collaborativeDemandUsers.CollaborativeDemandId = CollaborativeDemandId;
+       
+
+        var response = await repository.PostAsync("/api/CollaborativeDemandUsers", collaborativeDemandUsers);
+        if (response.Error)
+        {
+            var message = await response.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        await BlazoredModal.CloseAsync(ModalResult.Ok());
+        Return();
+
+        var toast = sweetAlertService.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                Position = SweetAlertPosition.BottomEnd,
+                ShowConfirmButton = true,
+                Timer = 3000
+            });
+        await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Registro creado con éxito.");
+
+    }
+
+    private void Return()
+    {
+        navigationManager.NavigateTo($"/portfolios/portfoliodetails/{CollaborativeDemandId}");
+    }
+
+}

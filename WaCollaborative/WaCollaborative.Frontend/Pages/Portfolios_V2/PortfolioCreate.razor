@@ -1,0 +1,170 @@
+﻿@page "/portfoliosUser/create/{userId}"
+@attribute [Authorize(Roles = "Planner")]
+@inject IRepository repository
+@inject SweetAlertService sweetAlertService
+@inject NavigationManager navigationManager
+
+@if (loading)
+{
+    <Loading />
+}
+else
+{
+    <EditForm Model="collaborativeDemandUsers" OnValidSubmit="CreateAsync">
+        <DataAnnotationsValidator />
+        <div class="card">
+            <div class="card-header">
+                <span>
+                    <label> Agregar clientes y productos al portafolio</label>
+                    <button class="btn btn-sm btn-primary float-end" type="submit"><i class="oi oi-check" /> Registrar</button>
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        @* <div class="mb-3">
+                    <label>Portafolio</label>
+                    <div>
+                    </div>
+                    </div> *@
+                        <br>
+                        <h5>Productos:</h5>
+                        <div>
+                            @* <select class="form-select" @bind="collaborativeDemand.ProductId"> *@
+                            <select class="form-select" >
+                                <option value="0">-- Seleccione una ciudad --</option>
+                                @foreach (var product in products!)
+                                {
+                                    <option value="@product.Id">@product.Name</option>
+                                }
+                            </select>
+                            @* <ValidationMessage For="@(() => collaborativeDemand.ShippingPointId)" /> *@
+                        </div>                        
+
+                        <div class="mb-3">
+                            <h5>Puntos de Envío:</h5>
+                            <div>
+                                @* <select class="form-select" @bind="collaborativeDemand.ProductId"> *@
+                                <select class="form-select">
+                                    <option value="0">-- Seleccione una ciudad --</option>
+                                    @foreach (var shippingPoint in shippingPoints!)
+                                    {
+                                        <option value="@shippingPoint.Id">@shippingPoint.Name</option>
+                                    }
+                                </select>
+                                @* <ValidationMessage For="@(() => collaborativeDemand.ProductId)" /> *@
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        <button class="btn btn-success" @onclick="Return">Regresar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+}
+
+@code {
+    private CollaborativeDemandUsers collaborativeDemandUsers = new();
+    private List<CollaborativeDemandUsers>? collaborativeDemandsUsers;
+    private CollaborativeDemand collaborativeDemandProducts = new();
+    private CollaborativeDemand collaborativeDemandShippingPoints = new();
+    
+    private List<ShippingPoint>? shippingPoints;
+    private List<Product>? products;
+    private bool loading;
+
+    [Parameter]
+    public int userId { get; set; }
+
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProductsAsync();
+        await LoadShippingPointssAsync();
+    }
+
+    private async Task LoadProductsAsync()
+    {
+        loading = true;
+        var responseHttp = await repository.GetAsync<List<CollaborativeDemandUsers>>($"/api/CollaborativeDemandUsers/Products");
+        if (responseHttp.Error)
+        {
+
+            loading = false;
+            var message = await responseHttp.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        collaborativeDemandsUsers = responseHttp.Response;
+        loading = false;
+    }
+
+    private async Task LoadShippingPointssAsync()
+    {
+        loading = true;
+        var responseHttp = await repository.GetAsync<List<ShippingPoint>>($"/api/CollaborativeDemandUsers/ShippingPoints");
+        if (responseHttp.Error)
+        {
+
+            loading = false;
+            var message = await responseHttp.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        shippingPoints = responseHttp.Response;
+        loading = false;
+    }
+
+    private async Task CreateAsync()
+    {
+
+        // collaborativeDemand.DemandTypeId = 1;
+        // collaborativeDemand.EventTypeId = 1;
+        // collaborativeDemand.StatusId = (int)EnumStatus.Activo;
+        // if (collaborativeDemand.ProductId <= 0)
+        // {
+        //     await sweetAlertService.FireAsync("Error", "Falta seleccionar el producto.", SweetAlertIcon.Error);
+        //     return;
+        // }
+
+        // if (collaborativeDemand.ShippingPointId <= 0)
+        // {
+        //     await sweetAlertService.FireAsync("Error", "Falta seleccionar el punto de envío.", SweetAlertIcon.Error);
+        //     return;
+        // }
+        // var response = await repository.PostAsync("/api/CollaborativeDemand", collaborativeDemand);
+        // if (response.Error)
+        // {
+        //     var message = await response.GetErrorMessageAsync();
+        //     await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+        //     return;
+        // }
+
+        // await BlazoredModal.CloseAsync(ModalResult.Ok());
+        // Return();
+
+        // var toast = sweetAlertService.Mixin(new SweetAlertOptions
+        //     {
+        //         Toast = true,
+        //         Position = SweetAlertPosition.BottomEnd,
+        //         ShowConfirmButton = true,
+        //         Timer = 3000
+        //     });
+        // await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Registro creado con éxito.");
+
+    }
+
+    private void Return()
+    {        
+        navigationManager.NavigateTo($"/collaboration");
+    }
+
+}

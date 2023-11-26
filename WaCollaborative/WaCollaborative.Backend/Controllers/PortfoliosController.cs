@@ -34,6 +34,7 @@ namespace WaCollaborative.Backend.Controllers
                 .ToListAsync());
         }
 
+        /*versión 1*/
         [HttpGet]
         public override async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
         {
@@ -45,13 +46,6 @@ namespace WaCollaborative.Backend.Controllers
                 .Include(c => c.Users)
                 .AsQueryable();
 
-            //if (queryable != null)
-            //{
-            //    var portfolios = await queryable.ToListAsync();
-            //    await AddToDemandPlanAsync(portfolios);
-            //}
-
-
             if (!string.IsNullOrWhiteSpace(pagination.Filter))
             {
                 queryable = queryable.Where(x => x.Name.ToLower().Contains(pagination.Filter.ToLower()));
@@ -62,43 +56,7 @@ namespace WaCollaborative.Backend.Controllers
                 .Paginate(pagination)
                 .ToListAsync());
         }
-
-        //private async Task<List<Portfolio>> AddToDemandPlanAsync(List<Portfolio> portfolios)
-        //{
-        //    CollaborativeDemand collaborativeDemand = new CollaborativeDemand();
-
-        //    foreach (var portfolio in portfolios)
-        //    {
-        //        foreach (var portfolioCustomer in portfolio.PortfolioCustomers!)
-        //        {
-        //            foreach (var customer in portfolioCustomer.Customer)
-        //            {
-        //                foreach (var shippingPoint in customer.ShippingPoints)
-        //                {
-        //                    collaborativeDemand = new CollaborativeDemand();
-        //                    //{
-        //                    //    DemandTypeId = 1,  // Puedes asignar el valor adecuado
-        //                    //    ShippingPointId = shippingPoint.Id,
-        //                    //    // Otras propiedades...
-        //                    //};
-
-        //                    var collaborativeDemandDetail = new CollaborativeDemandComponentsDetail
-        //                    {
-        //                        Quantity = 10,  // Puedes asignar el valor adecuado
-        //                        UpdateDate = DateTime.Now,
-        //                        CollaborativeDemand = collaborativeDemand,
-        //                        // Otras propiedades...
-        //                    };
-
-        //                    _context.CollaborativeDemands.Add(collaborativeDemand);
-        //                    _context.CollaborativeDemandComponentsDetails.Add(collaborativeDemandDetail);
-        //                }
-        //            }
-        //        }
-        //    }
-        //    await _context.SaveChangesAsync();
-        //}
-
+        
         [HttpGet("totalPages")]
         public override async Task<ActionResult> GetPagesAsync([FromQuery] PaginationDTO pagination)
         {

@@ -55,7 +55,7 @@ namespace WaCollaborative.Frontend.Repositories
                 if (responseObject != null)
                 {
                     return new HttpResponseWrapper<string>(responseObject.ExcelLink, false, responseHTTP);
-                }                
+                }
             }
 
             return new HttpResponseWrapper<string>(null, true, responseHTTP);
@@ -66,17 +66,26 @@ namespace WaCollaborative.Frontend.Repositories
             return new HttpResponseWrapper<object>(null, !responseHTTP.IsSuccessStatusCode, responseHTTP);
 
         }
-
         public async Task<HttpResponseWrapper<T>> GetAsync<T>(string url)
         {
-            var responseHttp = await _httpClient.GetAsync(url);
-            if (responseHttp.IsSuccessStatusCode)
+            try
             {
-                var response = await UnserializeAnswer<T>(responseHttp);
-                return new HttpResponseWrapper<T>(response, false, responseHttp);
+                var responseHttp = await _httpClient.GetAsync(url);
+                if (responseHttp.IsSuccessStatusCode)
+                {
+                    var response = await UnserializeAnswer<T>(responseHttp);
+                    return new HttpResponseWrapper<T>(response, false, responseHttp);
+                }
+
+                return new HttpResponseWrapper<T>(default, true, responseHttp);
+            }
+            catch (Exception ex)
+            {
+                throw new(ex.Message);
             }
 
-            return new HttpResponseWrapper<T>(default, true, responseHttp);
+
+
         }
 
         public async Task<HttpResponseWrapper<object>> PostAsync<T>(string url, T model)
@@ -128,7 +137,7 @@ namespace WaCollaborative.Frontend.Repositories
             var responseHttp = await _httpClient.DeleteAsync(url);
             return new HttpResponseWrapper<object>(null, !responseHttp.IsSuccessStatusCode, responseHttp);
         }
-        
+
 
         #endregion Methods
 

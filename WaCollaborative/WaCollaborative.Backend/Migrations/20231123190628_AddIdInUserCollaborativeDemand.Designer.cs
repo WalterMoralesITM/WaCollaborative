@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WaCollaborative.Backend.Data;
 
@@ -11,9 +12,11 @@ using WaCollaborative.Backend.Data;
 namespace WaCollaborative.Backend.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20231123190628_AddIdInUserCollaborativeDemand")]
+    partial class AddIdInUserCollaborativeDemand
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -356,30 +359,6 @@ namespace WaCollaborative.Backend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("CollaborativeDemandDemo");
-                });
-
-            modelBuilder.Entity("WaCollaborative.Shared.Entities.CollaborativeDemandUsers", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CollaborativeDemandId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CollaborativeDemandId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("CollaborativeDemandUsers");
                 });
 
             modelBuilder.Entity("WaCollaborative.Shared.Entities.Country", b =>
@@ -1058,25 +1037,6 @@ namespace WaCollaborative.Backend.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("WaCollaborative.Shared.Entities.CollaborativeDemandUsers", b =>
-                {
-                    b.HasOne("WaCollaborative.Shared.Entities.CollaborativeDemand", "CollaborativeDemand")
-                        .WithMany("CollaborativeDemandUsers")
-                        .HasForeignKey("CollaborativeDemandId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WaCollaborative.Shared.Entities.User", "User")
-                        .WithMany("CollaborativeDemandUsers")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CollaborativeDemand");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("WaCollaborative.Shared.Entities.Customer", b =>
                 {
                     b.HasOne("WaCollaborative.Shared.Entities.DistributionChannel", "DistributionChannel")
@@ -1267,8 +1227,6 @@ namespace WaCollaborative.Backend.Migrations
                 {
                     b.Navigation("CollaborativeDemandComponentsDetails");
 
-                    b.Navigation("CollaborativeDemandUsers");
-
                     b.Navigation("UserCollaborativeDemands");
                 });
 
@@ -1331,8 +1289,6 @@ namespace WaCollaborative.Backend.Migrations
             modelBuilder.Entity("WaCollaborative.Shared.Entities.User", b =>
                 {
                     b.Navigation("CollaborativeDemandComponentsDetail");
-
-                    b.Navigation("CollaborativeDemandUsers");
 
                     b.Navigation("UserCollaborativeDemands");
                 });

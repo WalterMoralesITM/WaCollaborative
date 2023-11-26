@@ -51,6 +51,15 @@ namespace WaCollaborative.Shared.Entities
 
         [Display(Name = "Portafolio")]
         [Range(1, int.MaxValue, ErrorMessage = "Debes seleccionar una {0}.")]
-        public int? PortfolioId { get; set; }
+        public int? PortfolioId { get; set; }        
+        public ICollection<CollaborativeDemandComponentsDetail>? CollaborativeDemandComponentsDetail { get; set; }
+
+        public ICollection<UserCollaborativeDemand>? UserCollaborativeDemands { get; set; }
+
+        public int UserCollaborativeDemandsNumber => UserCollaborativeDemands == null ? 0 : UserCollaborativeDemands.Count;
+
+        public ICollection<CollaborativeDemandUsers>? CollaborativeDemandUsers { get; set; }
+
+        public int CollaborativeDemandUsersNumber => CollaborativeDemandUsers == null ? 0 : CollaborativeDemandUsers.Count;
     }
 }

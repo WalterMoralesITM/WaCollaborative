@@ -26,5 +26,6 @@ namespace WaCollaborative.Shared.Entities
 
         [Display(Name = "Productos")]
         public int ProductsNumber => PortfolioProducts == null ? 0 : PortfolioProducts.Count;
+        
     }
 }

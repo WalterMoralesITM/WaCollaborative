@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Localization;
+using MudBlazor;
 using MudBlazor.Services;
 using OfficeOpenXml;
 
@@ -26,7 +27,8 @@ builder.Services.AddScoped<AuthenticationStateProvider, AuthenticationProviderJW
 builder.Services.AddScoped<ILoginService, AuthenticationProviderJWT>(x => x.GetRequiredService<AuthenticationProviderJWT>());
 builder.Services.AddBlazoredModal();
 builder.Services.AddMudServices();
-builder.Services.AddLocalization();
+//builder.Services.AddLocalization();
+builder.Services.AddTransient<MudLocalizer, DictionaryMudLocalizer>();
 
 builder.Services.AddSingleton<ExcelExporter>();
 //builder.Services.AddHttpClient();

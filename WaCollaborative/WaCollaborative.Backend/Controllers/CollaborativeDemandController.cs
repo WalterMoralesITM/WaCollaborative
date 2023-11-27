@@ -4,10 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using OfficeOpenXml;
-using System.Net.Mail;
 using WaCollaborative.Backend.Data;
-using WaCollaborative.Backend.Helpers;
 using WaCollaborative.Backend.Helpers.Interfaces;
 using WaCollaborative.Backend.Interfaces;
 using WaCollaborative.Shared.DTOs;
@@ -27,21 +24,22 @@ namespace WaCollaborative.Backend.Controllers
         private readonly DataContext _context;
         private readonly IUserHelper _userHelper;
         private readonly IMailHelper _mailHelper;
+        private readonly IExcelGenerator _excelGenerator;
         private readonly IGenericUnitOfWork<CollaborativeDemand> _unitOfWork;
-        
-        public CollaborativeDemandController(IGenericUnitOfWork<CollaborativeDemand> unitOfWork, DataContext context, IUserHelper userHelper, IMailHelper mailHelper) : base(unitOfWork, context)
+
+        public CollaborativeDemandController(IGenericUnitOfWork<CollaborativeDemand> unitOfWork, DataContext context, IUserHelper userHelper, IMailHelper mailHelper, IExcelGenerator excelGenerator) : base(unitOfWork, context)
         {
             _context = context;
             _userHelper = userHelper;
             _mailHelper = mailHelper;
+            _excelGenerator = excelGenerator;
             _unitOfWork = unitOfWork;
         }
 
         [HttpGet("UserCalendar")]
         public async Task<ActionResult> GetAsync()
         {
-            var user = await _context.Users
-                   .FirstOrDefaultAsync(x => x.Email == User.Identity!.Name);
+            var user = await _userHelper.GetUserAsync(User.Identity!.Name!);
             var userCalendar = new UserCalendarDTO();
             if (user!.UserType == UserType.Planner)
             {
@@ -59,12 +57,6 @@ namespace WaCollaborative.Backend.Controllers
                 var internalRole = user?.InternalRole;
                 var collaborationEnd = internalRole?.CollaborationCalendars?.FirstOrDefault()!.EndDate;
 
-                if (internalRole == null || collaborationEnd == null)
-                {
-                    userCalendar.Role = user!.UserType.ToString();
-                    userCalendar.CollaboartionEndDate = DateTime.MinValue;
-                    return Ok(userCalendar);
-                }
                 userCalendar.Role = user!.UserType.ToString();
                 userCalendar.CollaboartionEndDate = (DateTime)collaborationEnd!;
             }
@@ -72,16 +64,15 @@ namespace WaCollaborative.Backend.Controllers
             return Ok(userCalendar);
         }
 
-        //portafolioIndex 
+        //portafolioIndex
         [HttpGet("Portfolio")]
         public override async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
         {
             var queryable = _context.CollaborativeDemand
                 .Include(c => c.Product)
                 .Include(c => c.ShippingPoint)
-                .Include(c => c.CollaborativeDemandUsers)               
+                .Include(c => c.CollaborativeDemandUsers)
                 .AsQueryable();
-
 
             return Ok(await queryable
                 .OrderBy(c => c.Product!.Name)
@@ -89,34 +80,12 @@ namespace WaCollaborative.Backend.Controllers
                 .ToListAsync());
         }
 
-        //[HttpGet("PortfolioAll")]
-        //public async Task<ActionResult> GetPortfolioAsync([FromQuery] PaginationDTO pagination)
-        //{
-        //    var queryable = _context.Users
-        //        .Include(c => c.InternalRole)
-        //        .Include(c => c.CollaborativeDemandComponentsDetail!)
-        //            .ThenInclude(d => d.CollaborativeDemand)
-        //                .ThenInclude(d => d.ProductId)
-        //        .Include(c => c.CollaborativeDemandComponentsDetail!)
-        //            .ThenInclude(p => p.CollaborativeDemand)
-        //                .ThenInclude(p => p.ShippingPoint)                       
-
-        //        .AsQueryable();           
-
-        //    return Ok(await queryable
-        //        //.OrderBy(c => c.Name)
-        //        .Paginate(pagination)
-        //        .ToListAsync());
-        //}
-
-        //CollaborativeDemandIndex
         [HttpGet("All")]
         public async Task<IActionResult> GetAllAsync()
         {
             try
-            {         
-                var user = await _context.Users
-                .FirstOrDefaultAsync(x => x.Email == User.Identity!.Name);
+            {
+                var user = await _userHelper.GetUserAsync(User.Identity!.Name!);
 
                 var queryable = _context.CollaborativeDemand
                     .Include(cd => cd.Product)
@@ -128,7 +97,6 @@ namespace WaCollaborative.Backend.Controllers
                     .Include(cd => cd.CollaborativeDemandComponentsDetails)
                     .Where(cd => cd.CollaborativeDemandComponentsDetails!.Any(d => d.UserId == user.Id))
                     .AsQueryable();
-
 
                 var collaborativeDemands = await queryable.ToListAsync();
 
@@ -144,13 +112,12 @@ namespace WaCollaborative.Backend.Controllers
 
         private List<CollaborativeDemandDTO> FlattenCollaborativeDemands(List<CollaborativeDemand> collaborativeDemands)
         {
-            var result = new List<CollaborativeDemandDTO>();          
+            var result = new List<CollaborativeDemandDTO>();
 
             foreach (var collaborativeDemand in collaborativeDemands)
             {
                 foreach (var detail in collaborativeDemand.CollaborativeDemandComponentsDetails!)
                 {
-
                     var collaborativeDemandDTO = new CollaborativeDemandDTO
                     {
                         CollaborativeDemandId = collaborativeDemand.Id,
@@ -163,7 +130,7 @@ namespace WaCollaborative.Backend.Controllers
                         ProductCode = collaborativeDemand.Product.Code,
                         CollaborativeDemandDetailId = detail.Id,
                         YearMonth = detail.YearMonth,
-                        Quantity = detail.Quantity                        
+                        Quantity = detail.Quantity
                     };
 
                     result.Add(collaborativeDemandDTO);
@@ -173,24 +140,10 @@ namespace WaCollaborative.Backend.Controllers
             return result;
         }
 
-        //[HttpGet("{id:int}")]
-        //public override async Task<IActionResult> GetAsync(int id)
-        //{
-        //    var collaborativeDemand = await _context.CollaborativeDemand
-        //        .Include(cd => cd.CollaborativeDemandComponentsDetails)
-        //        .FirstOrDefaultAsync(x => x.Id == id);
-        //    if (collaborativeDemand == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return Ok(collaborativeDemand);
-        //}
-
         [HttpGet("totalPages")]
         public override async Task<ActionResult> GetPagesAsync([FromQuery] PaginationDTO pagination)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == User.Identity!.Name);
+            var user = await _userHelper.GetUserAsync(User.Identity!.Name!);
             if (user == null)
             {
                 return BadRequest("User not valid.");
@@ -231,7 +184,6 @@ namespace WaCollaborative.Backend.Controllers
             }
         }
 
-
         [HttpGet("ExcelGenerate")]
         public async Task<IActionResult> GetAsync([FromServices] IWebHostEnvironment webHostEnvironment)
         {
@@ -251,39 +203,9 @@ namespace WaCollaborative.Backend.Controllers
 
                 var result = FlattenCollaborativeDemands(collaborativeDemands);
 
-                var fileDownloadName = $"CollaborativeDemands{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+                var (excelFilePath, fileDownloadName) = await _excelGenerator.GenerateExcelFileAsync(FlattenCollaborativeDemands(collaborativeDemands));
 
-                var excelFilePath = Path.Combine(webHostEnvironment.ContentRootPath, "ExcelFiles", fileDownloadName);
-
-                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-
-                using (var package = new ExcelPackage())
-                {
-                    var worksheet = package.Workbook.Worksheets.Add("CollaborativeDemands");
-
-                    var headers = result.First().GetType().GetProperties().Select(property => property.Name).ToArray();
-
-                    for (var i = 0; i < headers.Length; i++)
-                    {
-                        worksheet.Cells[1, i + 1].Value = headers[i];
-                        worksheet.Cells[1, i + 1].Style.Font.Bold = true;
-                    }
-
-                    for (var i = 0; i < result.Count; i++)
-                    {
-                        var rowData = result[i];
-                        var properties = rowData.GetType().GetProperties();
-                        for (var j = 0; j < properties.Length; j++)
-                        {
-                            worksheet.Cells[i + 2, j + 1].Value = properties[j].GetValue(rowData);
-                        }
-                    }
-
-                    FileInfo excelFile = new FileInfo(excelFilePath);
-                    package.SaveAs(excelFile);
-                }
-
-                var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == User.Identity!.Name);
+                var user = await _userHelper.GetUserAsync(User.Identity!.Name!);
                 if (user == null)
                 {
                     return NotFound();
@@ -303,7 +225,5 @@ namespace WaCollaborative.Backend.Controllers
                 return BadRequest(new { ErrorMessage = ex.Message });
             }
         }
-
-
     }
 }

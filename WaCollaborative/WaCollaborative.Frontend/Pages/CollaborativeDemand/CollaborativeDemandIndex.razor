@@ -12,14 +12,21 @@
 }
 else
 {
-    <div class="container-fluid">
-        <div class="row-cols-lg-9 row-cols-md-9 row-cols-sm-9 ">
-
-            <MudDataGrid T="CollaborativeDemandDTO" Height="600px"
+    <div class="card">
+<div class="card-header">
+    <span>
+        <i class="oi oi-people" /> Demanda Collaborativa
+    </span>
+</div>
+        <div class="card-body">
+            <MudDataGrid T="CollaborativeDemandDTO" ColumnResizeMode="@(_resizeColumn ? ResizeMode.Column : ResizeMode.Container)"
                          Items="@CollaborativeDemands"
-                         SortMode="SortMode.Multiple" Filterable="true"
+                         SortMode="SortMode.Multiple" 
+                          Filterable="true" 
                          ReadOnly="@_isReadOnly" EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
-                         StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" CommittedItemChanges="@CommittedItemChanges"
+                         StartedEditingItem="@StartedEditingItem" 
+                         CanceledEditingItem="@CanceledEditingItem" 
+                         CommittedItemChanges="@CommittedItemChanges"
                          Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditTrigger.OnRowClick : DataGridEditTrigger.Manual)"
                          Hideable="true">
                 <ToolBarContent>
@@ -44,15 +51,15 @@ else
                 </ToolBarContent>
                 <Columns>
                     <SelectColumn T="CollaborativeDemandDTO" />
-                    <PropertyColumn Property="x => x.CollaborativeDemandId" IsEditable="false" Hidden />
-                     <PropertyColumn Property="x => x.CollaborativeDemandDetailId" IsEditable="false" Hidden />
-                     <PropertyColumn Property="x => x.CustomerName" IsEditable="false" Title="Cliente" Class="mud-col-lg-6 mud-col-md-6" />
-                     <PropertyColumn Property="x => x.CityName" IsEditable="false" Title="Ciudad" Class="mud-col-lg-6 mud-col-md-6" />
-                     <PropertyColumn Property="x => x.DistributionChannel" IsEditable="false" Title="Canal Distribución" Class="mud-col-lg-6 mud-col-md-6" />
-                     <PropertyColumn Property="x => x.ShippingPointName" IsEditable="false" Title="Punto de Envío" Class="mud-col-lg-6 mud-col-md-6" />
-                     <PropertyColumn Property="x => x.ProductName" IsEditable="false" Title="Producto" Class="mud-col-lg-6 mud-col-md-6" />
-                     <PropertyColumn Property="x => x.YearMonth" IsEditable="false" Title="Año-Mes" Class="mud-col-lg-6 mud-col-md-6" />
-                     <PropertyColumn Property="x => x.Quantity" IsEditable="true" Title="Colaboración" Format="N2" Culture="@(new CultureInfo("en-US"))" Class="mud-col-lg-6 mud-col-md-6" />
+                    <PropertyColumn Property="x => x.CollaborativeDemandId" Resizable="true" IsEditable="false" Hidden />
+                     <PropertyColumn Property="x => x.CollaborativeDemandDetailId" Resizable="true" IsEditable="false" Hidden />
+                     <PropertyColumn Property="x => x.CustomerName" Resizable="true" IsEditable="false" Title="Cliente"/>
+                     <PropertyColumn Property="x => x.CityName" Resizable="true" IsEditable="false" Title="Ciudad"/>
+                     <PropertyColumn Property="x => x.DistributionChannel" Resizable="true" IsEditable="false" Title="Canal" />
+                     <PropertyColumn Property="x => x.ShippingPointName" Resizable="true" IsEditable="false" Title="Punto de Envío"/>
+                     <PropertyColumn Property="x => x.ProductName" Resizable="true" IsEditable="false" Title="Producto" />
+                     <PropertyColumn Property="x => x.YearMonth" Resizable="true" IsEditable="false" Title="Año-Mes" />
+                     <PropertyColumn Property="x => x.Quantity" Resizable="true" IsEditable="true" Title="Colaboración" Format="N2" Culture="@(new CultureInfo("en-US"))" />
                      @*  <TemplateColumn CellClass="d-flex justify-end">
                 <CellTemplate>
                 <MudStack Row>
@@ -63,18 +70,24 @@ else
                 </TemplateColumn> *@
                  </Columns>
                  <PagerContent>
-                     <MudDataGridPager T="CollaborativeDemandDTO" />
+                     <MudDataGridPager T="CollaborativeDemandDTO" PageSizeOptions=@(new int[] {5, 10, 20}) />
                  </PagerContent>
              </MudDataGrid>
-             <div class="d-flex flex-wrap mt-4 visually-hidden">
-                 <div class="d-flex justify-start align-center">
+         </div>
+     </div>
+             <div class="d-flex flex-wrap mt-4 visually-hidden">             
+                 <div class="d-flex justify-start align-left">
 
                      <MudSwitch @bind-Checked="@_isCellEditMode">Cell</MudSwitch>
                  </div>
-                 <div class="d-flex justify-start align-center">
+                 <div class="d-flex justify-start align-left">
                      <p class="mud-typography mud-typography-body1 mud-inherit-text mr-2">Manual</p>
                      <MudSwitch @bind-Checked="@_editTriggerRowClick">On Row Click</MudSwitch>
                  </div>
+                 <div class="d-flex justify-start align-celeftnter">
+                 <p class="mud-typography mud-typography-body1 mud-inherit-text mr-2">ResizeMode.Container</p>
+                 <MudSwitch @bind-Checked="@_resizeColumn">ResizeMode.Column</MudSwitch>
+             </div>
              </div>
              @* <MudExpansionPanels Style="flex:1">
         <MudExpansionPanel Text="Show Events">
@@ -91,8 +104,8 @@ else
         }
         </MudExpansionPanel>
         </MudExpansionPanels> *@
-         </div>
-     </div>
+   
+   
 
 }
 @code {
@@ -105,6 +118,7 @@ else
     private bool _isCellEditMode = true;
     private bool _editTriggerRowClick;
     private bool isDemandPlanActive = true;
+    private bool _resizeColumn = true;
     private string estadoPlanDemanda = "";
     private DateTime collaborationEndDate;
 

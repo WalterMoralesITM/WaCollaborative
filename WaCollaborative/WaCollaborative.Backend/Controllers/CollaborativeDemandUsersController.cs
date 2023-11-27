@@ -101,11 +101,6 @@ namespace WaCollaborative.Backend.Controllers
         {
             var queryable = _context.CollaborativeDemandUsers.AsQueryable();
 
-            //if (!string.IsNullOrWhiteSpace(pagination.Filter))
-            //{
-            //    queryable = queryable.Where(x => x.Id.ToLower().Contains(pagination.Filter.ToLower()));
-            //}
-
             double count = await queryable.CountAsync();
             double totalPages = Math.Ceiling(count / pagination.RecordsNumber);
             return Ok(totalPages);

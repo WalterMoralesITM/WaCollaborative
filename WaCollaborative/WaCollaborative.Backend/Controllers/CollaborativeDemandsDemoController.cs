@@ -19,6 +19,16 @@ namespace WaCollaborative.Backend.Controllers
         {
             _context = context;
             _unitOfWork = unitOfWork;
-        }       
+        }
+
+        [HttpGet("totalPages")]
+        public override async Task<ActionResult> GetPagesAsync([FromQuery] PaginationDTO pagination)
+        {
+            var queryable = _context.CollaborativeDemandDemo.AsQueryable();
+
+            double count = await queryable.CountAsync();
+            double totalPages = Math.Ceiling(count / pagination.RecordsNumber);
+            return Ok(totalPages);
+        }
     }
 }

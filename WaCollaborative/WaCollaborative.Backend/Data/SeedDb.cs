@@ -54,7 +54,7 @@ namespace WaCollaborative.Backend.Data
             await CheckDistributionChannels();
             await CheckEventTypes();
             await CheckDemandTypes();
-            await CheckCountriesAsync();
+            //await CheckCountriesAsync();
             await CheckRolesAsync();
             await CheckUserAsync("1010", "Efrain", "Trujillo", "truji@yopmail.com", "322 111 2222", "Avenida siempre viva 123", "EfrainTrujillo.jpeg", UserType.Planner);
             await CheckUserAsync("1020", "Jose", "Daza", "josedaza@yopmail.com", "313 644 9685", "Calle 5", "JoseDaza.jpeg", UserType.Planner);
@@ -251,7 +251,7 @@ namespace WaCollaborative.Backend.Data
                     filePath = $"{Environment.CurrentDirectory}/Images/users/{image}";
                 }
 
-                var fileBytes = File.ReadAllBytes(filePath);
+                //var fileBytes = File.ReadAllBytes(filePath);
                 //var imagePath = await _fileStorage.SaveFileAsync(fileBytes, "jpg", "users");
 
                 user = new User

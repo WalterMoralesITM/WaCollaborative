@@ -32,16 +32,5 @@ namespace WaCollaborative.Backend.Controllers
                 .ToListAsync());
         }
 
-        //[HttpGet("{id}")]
-        //public override async Task<IActionResult> GetAsync(int id)
-        //{
-        //    var portfolio = await _unitOfWork.GetPortfolioAsync(id);
-        //    if (portfolio == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    return Ok(portfolio);
-        //}
-
     }
 }

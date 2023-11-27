@@ -74,6 +74,10 @@ namespace WaCollaborative.Backend.Controllers
                 .Include(c => c.CollaborativeDemandUsers)
                 .AsQueryable();
 
+            if (!string.IsNullOrWhiteSpace(pagination.Filter))
+            {
+                queryable = queryable.Where(x => x.Product!.Name.ToLower().Contains(pagination.Filter.ToLower()));
+            }
             return Ok(await queryable
                 .OrderBy(c => c.Product!.Name)
                 .Paginate(pagination)
@@ -148,40 +152,21 @@ namespace WaCollaborative.Backend.Controllers
             {
                 return BadRequest("User not valid.");
             }
-            try
+
+            var queryable = _context.CollaborativeDemand
+                .Include(c => c.Product)
+                .Include(c => c.ShippingPoint)
+                .Include(c => c.CollaborativeDemandUsers)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(pagination.Filter))
             {
-                var queryable = _context.CollaborativeDemand
-                    .Include(cd => cd.CollaborativeDemandComponentsDetails)
-                    .AsQueryable();
-
-                var result = await queryable
-                        .Select(cd => new
-                        {
-                            CollaborativeDemandId = cd.Id,
-                            CollaborativeDemandComponentsDetails = cd.CollaborativeDemandComponentsDetails!
-                                .Select(detail => new
-                                {
-                                    CollaborativeDemandId = cd.Id,
-                                    UserEmail = detail.User != null ? detail.User.Email : null,
-                                    UserId = detail.User != null ? detail.User.Id : null,
-                                })
-                        .ToList()
-                        }).ToListAsync();
-
-                var isAdmin = await _userHelper.IsUserInRoleAsync(user, UserType.Planner.ToString());
-                if (!isAdmin)
-                {
-                    result = result.Where(s => s.CollaborativeDemandComponentsDetails.Any(detail => detail.UserEmail == User.Identity!.Name.ToString())).ToList();
-                }
-
-                double count = await queryable.CountAsync();
+                queryable = queryable.Where(x => x.Product!.Name.ToLower().Contains(pagination.Filter.ToLower()));
+            }
+            double count = await queryable.CountAsync();
                 double totalPages = Math.Ceiling(count / pagination.RecordsNumber);
                 return Ok(totalPages);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+            
         }
 
         [HttpGet("ExcelGenerate")]

@@ -138,11 +138,11 @@ else
         var url = string.Empty;
         if (string.IsNullOrEmpty(Filter))
         {
-            url = $"api/portfolios/totalPages";
+            url = $"api/CollaborativeDemand/totalPages";
         }
         else
         {
-            url = $"api/portfolios/totalPages?filter={Filter}";
+            url = $"api/CollaborativeDemand/totalPages?filter={Filter}";
         }
 
         var response = await repository.GetAsync<int>(url);
